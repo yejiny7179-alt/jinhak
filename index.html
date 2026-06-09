@@ -1,0 +1,2808 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026 경기진협 진학한마당</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Gowun+Dodum&family=Black+Han+Sans&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1a2238;
+    --paper:#f4f1ea;
+    --paper2:#ebe6da;
+    --line:#d6cfc0;
+    --accent:#1f5fae;     /* 아주대 블루 */
+    --accent-deep:#16407a;
+    --accent-soft:#e4eef9;
+    --gold:#c79a3a;
+    --rest:#9a9384;
+    --lunch:#8a8474;
+    --shadow:0 10px 30px rgba(26,34,56,.12);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:'Gowun Dodum',sans-serif;
+    background:
+      radial-gradient(circle at 12% 8%, #fff 0, transparent 40%),
+      radial-gradient(circle at 88% 92%, #fff 0, transparent 40%),
+      var(--paper);
+    color:var(--ink);
+    line-height:1.75;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1080px;margin:0 auto;padding:0 20px}
+
+  /* ===== HERO ===== */
+  header.hero{
+    position:relative;
+    padding:64px 0 48px;
+    text-align:center;
+    overflow:hidden;
+  }
+  header.hero::before{
+    content:"";position:absolute;inset:0;
+    background:
+      repeating-linear-gradient(135deg, rgba(31,95,174,.04) 0 2px, transparent 2px 22px);
+    pointer-events:none;
+  }
+  .kicker{
+    display:inline-block;
+    font-family:'Gowun Dodum';
+    letter-spacing:.5em;
+    font-size:13px;
+    color:var(--accent);
+    border:1px solid var(--accent);
+    border-radius:999px;
+    padding:7px 20px 7px 25px;
+    margin-bottom:22px;
+    background:#fff;
+  }
+  h1.title{
+    font-family:'Black Han Sans',sans-serif;
+    font-weight:400;
+    font-size:clamp(38px,7vw,72px);
+    line-height:1.05;
+    letter-spacing:-.01em;
+    color:var(--ink);
+  }
+  h1.title .blue{color:var(--accent)}
+  .subtitle{
+    margin-top:18px;
+    font-family:'Gowun Batang';
+    font-size:clamp(15px,2.4vw,20px);
+    color:#5a5446;
+  }
+  .meta-row{
+    margin-top:26px;display:flex;gap:14px;justify-content:center;flex-wrap:wrap;
+  }
+  .meta-chip{
+    background:#fff;border:1px solid var(--line);border-radius:12px;
+    padding:10px 18px;font-size:14px;box-shadow:var(--shadow);
+  }
+  .meta-chip b{color:var(--accent-deep)}
+
+  /* ===== SECTION TITLES ===== */
+  .sec{padding:40px 0}
+  .sec-head{display:flex;align-items:center;gap:14px;margin-bottom:24px}
+  .sec-num{
+    font-family:'Black Han Sans';background:var(--accent);color:#fff;
+    width:42px;height:42px;display:grid;place-items:center;border-radius:10px;
+    font-size:22px;flex:none;box-shadow:var(--shadow);
+  }
+  .sec-head h2{
+    font-family:'Gowun Batang';font-weight:700;font-size:clamp(22px,4vw,30px);
+  }
+  .sec-head .en{font-size:12px;letter-spacing:.3em;color:#9a9384;display:block;margin-top:2px}
+
+  /* ===== TIMETABLE ===== */
+  .tt-note{font-family:'Gowun Batang';color:#6a6456;margin-bottom:18px;font-size:15px}
+  .tt-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+  @media(max-width:760px){.tt-grid{grid-template-columns:1fr}}
+  .tt-card{
+    background:#fff;border:1px solid var(--line);border-radius:18px;
+    overflow:hidden;box-shadow:var(--shadow);
+  }
+  .tt-card .day-head{
+    background:linear-gradient(135deg,var(--accent),var(--accent-deep));
+    color:#fff;padding:16px 20px;
+  }
+  .tt-card .day-head .d{font-family:'Black Han Sans';font-size:18px}
+  .tt-card .day-head .loc{font-size:13px;opacity:.9;margin-top:3px}
+  table.tt{width:100%;border-collapse:collapse;font-size:14px}
+  table.tt td{padding:9px 14px;border-bottom:1px solid #efeadf}
+  table.tt tr:last-child td{border-bottom:none}
+  table.tt .time{color:#8a8474;white-space:nowrap;font-size:12.5px;width:42%}
+  table.tt .uni{font-weight:bold;color:var(--ink)}
+  table.tt tr.rest td,table.tt tr.lunch td{
+    text-align:center;color:#fff;font-size:13px;letter-spacing:.1em;
+  }
+  table.tt tr.rest td{background:var(--rest)}
+  table.tt tr.lunch td{background:var(--lunch)}
+  table.tt tr.greet .uni{color:var(--accent-deep)}
+  /* 강의자료 있는 대학 버튼 */
+  .uni-btn{
+    display:inline-flex;align-items:center;gap:7px;
+    background:var(--accent-soft);color:var(--accent-deep);
+    border:1px solid var(--accent);border-radius:9px;
+    padding:5px 13px;font-weight:bold;font-size:14px;cursor:pointer;
+    transition:.18s;font-family:'Gowun Dodum';
+    text-decoration:none;
+  }
+  .uni-btn:hover{background:var(--accent);color:#fff;transform:translateY(-1px)}
+  .uni-btn .dot{width:7px;height:7px;border-radius:50%;background:var(--gold)}
+  .pending{color:#a8a294;font-size:13px}
+
+  /* ===== UNIVERSITY DETAIL (accordion) ===== */
+  .uni-list{display:flex;flex-direction:column;gap:16px}
+  .acc{
+    background:#fff;border:1px solid var(--line);border-radius:18px;
+    overflow:hidden;box-shadow:var(--shadow);
+  }
+  .acc-head{
+    display:flex;align-items:center;gap:16px;padding:20px 22px;cursor:pointer;
+    user-select:none;transition:.2s;
+  }
+  .acc-head:hover{background:var(--accent-soft)}
+  .acc-logo{
+    width:48px;height:48px;border-radius:12px;flex:none;
+    background:linear-gradient(135deg,var(--accent),var(--accent-deep));
+    color:#fff;display:grid;place-items:center;
+    font-family:'Black Han Sans';font-size:20px;
+  }
+  .acc-head .ti{flex:1}
+  .acc-head .ti .nm{font-family:'Gowun Batang';font-weight:700;font-size:20px}
+  .acc-head .ti .sub{font-size:13px;color:#8a8474}
+  .acc-head .chev{
+    width:30px;height:30px;flex:none;display:grid;place-items:center;
+    color:var(--accent);transition:transform .3s;font-size:20px;
+  }
+  .acc.open .chev{transform:rotate(180deg)}
+  .acc-body{
+    max-height:0;overflow:hidden;transition:max-height .5s ease;
+  }
+  .acc-body-inner{padding:0 22px 26px}
+
+  /* link buttons row */
+  .links{
+    display:grid;grid-template-columns:repeat(3,1fr);gap:10px;
+    margin:6px 0 26px;
+  }
+  @media(max-width:680px){.links{grid-template-columns:1fr}}
+  .link-btn{
+    display:flex;flex-direction:column;gap:5px;align-items:flex-start;
+    background:var(--paper2);border:1px solid var(--line);border-radius:13px;
+    padding:14px 15px;text-decoration:none;color:var(--ink);transition:.18s;
+  }
+  .link-btn:hover{background:var(--accent);color:#fff;transform:translateY(-2px);box-shadow:var(--shadow)}
+  .link-btn .ico{font-size:20px;line-height:0}
+  .link-btn .ico svg{width:26px;height:26px}
+  .link-btn .lb{font-weight:bold;font-size:14px}
+  .link-btn .ds{font-size:11.5px;opacity:.7}
+  .link-btn:hover .ds{opacity:.9}
+  .link-btn.disabled{
+    background:var(--paper);border-style:dashed;color:#b3ad9f;cursor:not-allowed;
+    pointer-events:none;box-shadow:none;
+  }
+  .link-btn.disabled:hover{background:var(--paper);color:#b3ad9f;transform:none}
+
+  /* lecture content */
+  .lec h3{
+    font-family:'Gowun Batang';font-weight:700;font-size:19px;color:var(--accent-deep);
+    margin:30px 0 12px;padding-bottom:8px;border-bottom:2px solid var(--accent-soft);
+    display:flex;align-items:center;gap:9px;
+  }
+  .lec h3 .n{
+    background:var(--accent);color:#fff;font-family:'Black Han Sans';font-size:13px;
+    width:26px;height:26px;border-radius:7px;display:grid;place-items:center;flex:none;
+  }
+  .lec p{margin:10px 0;font-size:15.5px}
+  .lec ul{margin:10px 0 10px 4px;list-style:none}
+  .lec ul li{position:relative;padding-left:20px;margin:7px 0;font-size:15px}
+  .lec ul li::before{content:"";position:absolute;left:3px;top:11px;width:7px;height:7px;border-radius:50%;background:var(--gold)}
+  .lec .tip{
+    background:linear-gradient(135deg,#fff8e8,#fdf1d6);
+    border-left:4px solid var(--gold);border-radius:0 12px 12px 0;
+    padding:14px 18px;margin:16px 0;font-size:14.5px;
+  }
+  .lec .tip b{color:#9a7420}
+  .lec .key{color:var(--accent-deep);font-weight:bold}
+  .lec figure{margin:18px 0}
+  .lec figure img{
+    width:100%;border-radius:14px;border:1px solid var(--line);
+    box-shadow:var(--shadow);display:block;cursor:zoom-in;
+  }
+  .lec figure figcaption{
+    text-align:center;font-size:12.5px;color:#8a8474;margin-top:8px;font-family:'Gowun Batang';
+  }
+  .twocol{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:680px){.twocol{grid-template-columns:1fr}}
+
+  /* 사진 대신 쓰는 정보 시각화 요소 */
+  .statrow{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:18px 0}
+  @media(max-width:680px){.statrow{grid-template-columns:1fr}}
+  .stat{
+    background:linear-gradient(150deg,var(--accent-soft),#fff);
+    border:1px solid var(--line);border-radius:16px;padding:18px 16px;text-align:center;
+    box-shadow:var(--shadow);
+  }
+  .stat .big{font-family:'Black Han Sans';font-size:30px;color:var(--accent-deep);line-height:1.1}
+  .stat .lbl{font-size:13px;color:#6a6456;margin-top:6px;font-family:'Gowun Batang'}
+  .infocard{
+    background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px 20px;
+    margin:16px 0;box-shadow:var(--shadow);
+  }
+  .infocard h4{
+    font-family:'Gowun Batang';font-weight:700;font-size:16px;color:var(--accent-deep);
+    margin-bottom:10px;display:flex;align-items:center;gap:8px;
+  }
+  .infocard h4 .badge{
+    background:var(--accent);color:#fff;font-size:11px;font-family:'Gowun Dodum';
+    padding:3px 10px;border-radius:999px;font-weight:normal;
+  }
+  table.simple{width:100%;border-collapse:collapse;font-size:14px;margin:14px 0}
+  table.simple th{
+    background:var(--accent);color:#fff;padding:10px 12px;text-align:left;font-weight:bold;
+    font-size:13px;
+  }
+  table.simple th:first-child{border-radius:10px 0 0 0}
+  table.simple th:last-child{border-radius:0 10px 0 0}
+  table.simple td{padding:9px 12px;border-bottom:1px solid #efeadf}
+  table.simple tr:last-child td{border-bottom:none}
+  table.simple tr:nth-child(even) td{background:var(--paper)}
+  table.simple .em{color:var(--accent-deep);font-weight:bold}
+
+  .disclaimer{
+    font-size:12px;color:#a8a294;font-style:italic;margin-top:14px;
+    border-top:1px dashed var(--line);padding-top:12px;
+  }
+
+  /* lightbox */
+  .lb{position:fixed;inset:0;background:rgba(16,20,34,.92);display:none;
+    place-items:center;z-index:99;padding:20px;cursor:zoom-out}
+  .lb.on{display:grid}
+  .lb img{max-width:100%;max-height:92vh;border-radius:10px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+
+  footer{
+    text-align:center;padding:50px 20px 60px;color:#8a8474;font-size:13px;
+    font-family:'Gowun Batang';
+  }
+  footer .line{width:60px;height:2px;background:var(--gold);margin:0 auto 20px}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <span class="kicker">경기진협</span>
+    <h1 class="title">2026 <span class="blue">진학한마당</span></h1>
+    <div class="meta-row">
+      <div class="meta-chip">📅 <b>2026. 6. 6(토)</b> 경기대 텔레컨벤션센터</div>
+      <div class="meta-chip">📅 <b>2026. 6. 7(일)</b> 서울과학기술대 100주년기념관</div>
+    </div>
+  </div>
+</header>
+
+<!-- ===== 타임테이블 ===== -->
+<section class="sec" id="timetable">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="sec-num">Ⅴ</span>
+      <div><h2>타임 테이블</h2><span class="en">PROGRAM TIMETABLE</span></div>
+    </div>
+    <p class="tt-note">대학명 옆 <span class="uni-btn" style="padding:2px 9px;font-size:12px"><span class="dot"></span>버튼</span>을 누르면 해당 대학의 강의 정리·홈페이지·모집요강·입학자료로 이동합니다.</p>
+
+    <div class="tt-grid">
+      <!-- DAY 1 -->
+      <div class="tt-card">
+        <div class="day-head">
+          <div class="d">6월 6일 (토)</div>
+          <div class="loc">경기대 텔레컨벤션센터</div>
+        </div>
+        <table class="tt">
+          <tr class="greet"><td class="time">10:00 ~ 10:10</td><td class="uni">인사말</td></tr>
+          <tr><td class="time">10:10 ~ 10:30</td><td><a class="uni-btn" href="#aju"><span class="dot"></span>아주대학교</a></td></tr>
+          <tr><td class="time">10:30 ~ 10:50</td><td><a class="uni-btn" href="#knu"><span class="dot"></span>강남대학교</a></td></tr>
+          <tr><td class="time">10:50 ~ 11:10</td><td><a class="uni-btn" href="#wsu"><span class="dot"></span>우송대학교</a></td></tr>
+          <tr><td class="time">11:10 ~ 11:30</td><td><a class="uni-btn" href="#ptu"><span class="dot"></span>평택대학교</a></td></tr>
+          <tr class="rest"><td colspan="2">— 쉬는 시간 —</td></tr>
+          <tr><td class="time">11:50 ~ 12:10</td><td><a class="uni-btn" href="#cuk"><span class="dot"></span>가톨릭대학교</a></td></tr>
+          <tr><td class="time">12:10 ~ 12:30</td><td><a class="uni-btn" href="#kmu"><span class="dot"></span>계명대학교</a></td></tr>
+          <tr><td class="time">12:30 ~ 12:50</td><td><a class="uni-btn" href="#gcu"><span class="dot"></span>가천대학교</a></td></tr>
+          <tr><td class="time">12:50 ~ 13:10</td><td><a class="uni-btn" href="#kgu"><span class="dot"></span>경기대학교</a></td></tr>
+          <tr class="lunch"><td colspan="2">— 점심시간 —</td></tr>
+          <tr><td class="time">14:20 ~ 14:40</td><td><a class="uni-btn" href="#tku"><span class="dot"></span>한국공학대학교</a></td></tr>
+          <tr><td class="time">14:40 ~ 15:00</td><td><a class="uni-btn" href="#dku"><span class="dot"></span>단국대학교</a></td></tr>
+          <tr><td class="time">15:00 ~ 15:20</td><td><a class="uni-btn" href="#inu"><span class="dot"></span>인천대학교</a></td></tr>
+          <tr><td class="time">15:20 ~ 15:40</td><td><a class="uni-btn" href="#ihu"><span class="dot"></span>인하대학교</a></td></tr>
+          <tr class="greet"><td class="time">15:40 ~ 15:50</td><td class="uni">폐회 및 뒷정리</td></tr>
+        </table>
+      </div>
+
+      <!-- DAY 2 -->
+      <div class="tt-card">
+        <div class="day-head">
+          <div class="d">6월 7일 (일)</div>
+          <div class="loc">서울과학기술대 100주년기념관</div>
+        </div>
+        <table class="tt">
+          <tr class="greet"><td class="time">10:00 ~ 10:10</td><td class="uni">인사말</td></tr>
+          <tr><td class="time">10:10 ~ 10:30</td><td><a class="uni-btn" href="#ssu"><span class="dot"></span>성신여자대학교</a></td></tr>
+          <tr><td class="time">10:30 ~ 10:50</td><td><a class="uni-btn" href="#dju"><span class="dot"></span>대진대학교</a></td></tr>
+          <tr><td class="time">10:50 ~ 11:10</td><td><a class="uni-btn" href="#cku"><span class="dot"></span>차의과학대학교</a></td></tr>
+          <tr><td class="time">11:10 ~ 11:30</td><td><a class="uni-btn" href="#dsu"><span class="dot"></span>덕성여자대학교</a></td></tr>
+          <tr class="rest"><td colspan="2">— 쉬는 시간 —</td></tr>
+          <tr><td class="time">11:50 ~ 12:10</td><td><a class="uni-btn" href="#smu"><span class="dot"></span>상명대학교</a></td></tr>
+          <tr><td class="time">12:10 ~ 12:30</td><td><a class="uni-btn" href="#dcu"><span class="dot"></span>대구가톨릭대학교</a></td></tr>
+          <tr><td class="time">12:30 ~ 12:50</td><td><a class="uni-btn" href="#ktu"><span class="dot"></span>한국기술교육대학교</a></td></tr>
+          <tr><td class="time">12:50 ~ 13:10</td><td><a class="uni-btn" href="#stu"><span class="dot"></span>서울과학기술대학교</a></td></tr>
+          <tr class="lunch"><td colspan="2">— 점심시간 —</td></tr>
+          <tr><td class="time">14:20 ~ 14:40</td><td><a class="uni-btn" href="#mju"><span class="dot"></span>명지대학교</a></td></tr>
+          <tr><td class="time">14:40 ~ 15:00</td><td><a class="uni-btn" href="#swu"><span class="dot"></span>서울여자대학교</a></td></tr>
+          <tr><td class="time">15:00 ~ 15:20</td><td><a class="uni-btn" href="#kau"><span class="dot"></span>한국항공대학교</a></td></tr>
+          <tr><td class="time">15:20 ~ 15:40</td><td><a class="uni-btn" href="#hyu"><span class="dot"></span>한양대학교 ERICA</a></td></tr>
+          <tr class="greet"><td class="time">15:40 ~ 15:50</td><td class="uni">폐회 및 뒷정리</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 대학별 상세 ===== -->
+<section class="sec" id="universities">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="sec-num">Ⅵ</span>
+      <div><h2>대학별 강의 자료실</h2><span class="en">UNIVERSITY ARCHIVE</span></div>
+    </div>
+
+    <div class="uni-list">
+
+      <!-- ============ 아주대학교 ============ -->
+      <div class="acc" id="aju">
+        <div class="acc-head" onclick="toggleAcc(this)">
+          <div class="acc-logo">A</div>
+          <div class="ti">
+            <div class="nm">아주대학교</div>
+            <div class="sub">6/6(토) 10:10 · 입학사정관 발표 · 2027학년도 전형 안내</div>
+          </div>
+          <div class="chev">⌄</div>
+        </div>
+        <div class="acc-body">
+          <div class="acc-body-inner">
+
+            <!-- 링크 버튼 -->
+            <div class="links">
+              <a class="link-btn" href="https://www.iajou.ac.kr/main/" target="_blank" rel="noopener">
+                <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M3 8.5h18"/><circle cx="6" cy="6.25" r=".6" fill="currentColor" stroke="none"/><circle cx="8.2" cy="6.25" r=".6" fill="currentColor" stroke="none"/><circle cx="10.4" cy="6.25" r=".6" fill="currentColor" stroke="none"/></svg></span>
+                <span class="lb">입학처 홈페이지</span><span class="ds">입학처 바로가기</span>
+              </a>
+              <a class="link-btn" href="https://www.iajou.ac.kr/mojib/?m_type=SUSI" target="_blank" rel="noopener">
+                <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2.5"/><path d="M9 3.5h6a1 1 0 0 1 1 1V6a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V4.5a1 1 0 0 1 1-1Z"/><path d="m8.5 12 1.2 1.2 2-2.2"/><path d="m8.5 16.5 1.2 1.2 2-2.2"/><path d="M14 12.2h2.5M14 16.7h2.5"/></svg></span>
+                <span class="lb">수시 모집요강</span><span class="ds">2027학년도 수시</span>
+              </a>
+              <a class="link-btn" href="https://www.iajou.ac.kr/enterinfo/" target="_blank" rel="noopener">
+                <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3.5H7a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8.5Z"/><path d="M14 3.5V8.5h5"/><path d="M12 11.5v5"/><path d="m9.7 14.3 2.3 2.2 2.3-2.2"/></svg></span>
+                <span class="lb">입학자료신청</span><span class="ds">가이드북·자료</span>
+              </a>
+            </div>
+
+            <!-- 강의 정리본 -->
+            <div class="lec">
+
+              <h3><span class="n">1</span>2027학년도 주요 변경 사항</h3>
+              <p>아주대는 <span class="key">교과·종합·논술·수능</span> 전형 골격을 그대로 유지한다. 큰 틀의 변화는 없으나, 실무적으로 챙겨야 할 변경점이 몇 가지 있다.</p>
+              <ul>
+                <li><b>교과전형 수능최저 응시영역 요건 폐지</b> — 기존에는 수능 전 영역을 모두 응시해야 최저 적용이 가능했으나, 이 요건이 사라졌다. 가장 큰 변화 중 하나.</li>
+                <li><b>학생부종합 '지역선발전형' 신설</b> — 지역 단위에 맞춰 선발하는 전형이 새로 생겼다.</li>
+                <li>논술·수능 전형은 그대로 유지.</li>
+              </ul>
+              <div class="twocol">
+                <figure><img src="images/p01_변경요약.jpg" alt="2027학년도 주요 변경 사항"></figure>
+                <figure><img src="images/p02_학과개편.jpg" alt="학과 개편 표"></figure>
+              </div>
+
+              <h3><span class="n">2</span>첨단학과 개편 (가장 큰 변화)</h3>
+              <p>학과 통폐합으로 모집단위와 선발 전형이 달라졌다. 지도 시 반드시 확인이 필요한 부분이다.</p>
+              <ul>
+                <li><b>첨단에코에너지공학과</b> 신설 — 기존 <span class="key">환경안전공학과 + 응용화학과</span> 통합.</li>
+                <li><b>AI컴퓨터공학부</b> 신설 — 기존 <span class="key">소프트웨어학과 + 인공지능융합학부</span> 통합. (모집인원 82명→101명)</li>
+                <li><b>첨단스마트산업공학과</b> — 기존 산업공학과가 첨단학과 승인을 받아 개편. (68명→92명)</li>
+              </ul>
+              <figure><img src="images/p03_첨단학과.jpg" alt="첨단학과 안내"></figure>
+              <div class="tip"><b>지도 포인트</b> · 산업공학과와 AI컴퓨터공학부는 <b>ACE전형과 첨단융합인재전형 양쪽 모두 선발</b>한다. 학생 유형을 보고 어느 전형이 유리한지 살펴 지원하도록 안내.</div>
+
+              <h3><span class="n">3</span>2026 수시 결과 &amp; 전형 비율</h3>
+              <ul>
+                <li>정시 비율은 <span class="key">약 30%</span>를 유지 (40%까지 가지 않음). 수시 67.3% / 정시 32.7%.</li>
+                <li>교과전형 경쟁률은 통상 <span class="key">한 바퀴(충원 1회)</span> 정도, 종합전형도 비슷하게 돈다.</li>
+                <li>입시결과는 홈페이지(전형별)에 공개. <b>선생님 배포용 책자</b>에는 모집단위별 유형과 내신 등급 분포도까지 포함되어 더 상세함.</li>
+              </ul>
+              <div class="twocol">
+                <figure><img src="images/p04_수시결과.jpg" alt="2026 수시모집 전형결과"></figure>
+                <figure><img src="images/p05_모집비율.jpg" alt="2027 모집인원 및 비율"></figure>
+              </div>
+
+              <h3><span class="n">4</span>학생부교과 (고교추천전형)</h3>
+              <ul>
+                <li><b>학생부교과 100%</b>, 면접·비교과·자소서 등 별도 평가 없음. (365명 선발)</li>
+                <li>반영교과: 국어·수학·영어·과학·사회. <span class="key">진로선택과목은 성취도 상위 5과목</span>만 반영 (초과 시 성취도순 → 같으면 이수단위 높은 순).</li>
+                <li>수능최저: 의학과 제외 전체학과 <span class="key">2개 영역 등급 합 5 이내</span>, 의학과 <span class="key">4개 영역 등급 합 6 이내</span>. 통합사회·통합과학은 한 과목으로만 반영.</li>
+              </ul>
+              <div class="twocol">
+                <figure><img src="images/p06_교과반영.jpg" alt="학생부교과 고교추천전형 반영방법"></figure>
+                <figure><img src="images/p07_교과최저.jpg" alt="교과 수능최저 충족 조합"></figure>
+              </div>
+              <div class="tip"><b>등급 ≠ 환산점수</b> · 교과전형은 4등급부터 감점 폭이 커진다(환산식 구조). 단순 등급 평균이 아니라 <b>반드시 환산점수로, 3개년 결과와 함께</b> 비교해 지도할 것. 수능최저 충족률이 평균 약 50%라, 최저만 맞추면 실질 경쟁률은 크게 낮아진다.</div>
+
+              <h3><span class="n">5</span>논술 (논술우수자전형)</h3>
+              <ul>
+                <li>학생부교과 20% + 논술 80%. <span class="key">수능최저 미적용</span> (단, 의학과·약학과는 적용).</li>
+                <li>의학과·약학과만 최저 충족 필요, 의약학 외에는 <b>논술을 잘 보면 된다</b>가 핵심.</li>
+                <li>논술 유형 4가지: 토요일 오전 / 토요일 오후 / 의약 수리논술 / 자연 수리논술.</li>
+                <li>기출문제는 입학처 홈페이지 &amp; <b>선행학습 영향평가</b>에 해설까지 공개 — 준비생은 반드시 풀어볼 것.</li>
+              </ul>
+              <div class="twocol">
+                <figure><img src="images/p08_논술유형.jpg" alt="논술고사 유형 및 논술자료집"></figure>
+                <figure><img src="images/p09_논술결시율.jpg" alt="논술 결시율 및 실질경쟁률"></figure>
+              </div>
+
+              <h3><span class="n">6</span>학생부종합 (ACE전형 / 첨단융합인재전형)</h3>
+              <p>일반 학생이 지원하는 대표 종합전형 두 가지. 추구하는 인재상이 다르다.</p>
+              <ul>
+                <li><b>ACE전형</b> — 학업·진로·공동체를 <span class="key">고루 갖춘</span> 학생 선발. (고른기회1·국방·지역의사 선발도 동일 비율)</li>
+                <li><b>첨단융합인재전형</b> — 학업·진로 역량 합 85%로, <span class="key">특정 과목(수학 등) 우수</span> 학생에게 유리. 첨단학과 중심.</li>
+                <li>의학과는 사탐/과탐 무관 최저, 약학과는 별도 최저 충족 후 면접.</li>
+              </ul>
+              <div class="twocol">
+                <figure><img src="images/p10_종합표지.jpg" alt="학생부종합 ACE 첨단융합인재전형"></figure>
+                <figure><img src="images/p11_서류요소.jpg" alt="서류평가 평가요소 비율"></figure>
+              </div>
+
+              <h3><span class="n">7</span>서류평가 &amp; 면접</h3>
+              <ul>
+                <li>서류평가: 학업역량·진로역량·공동체역량 종합 평가. 학업만으로 결정되지 않음.</li>
+                <li>교복 착용 금지(블라인드 강화 — 교내 특별행사까지 블라인드 처리).</li>
+                <li>의학과: 서류기반 면접 + 인성 제시문 면접 2종. 그 외 학과: 서류 신뢰도 80%, <span class="key">꼬리질문</span> 많음.</li>
+                <li>의학과 제시문 면접은 <b>가치관 확인형</b>(예: 사전연명의료의향서 상담 롤플레이).</li>
+              </ul>
+              <div class="twocol">
+                <figure><img src="images/p12_블라인드면접.jpg" alt="블라인드 면접"></figure>
+                <figure><img src="images/p13_면접요소.jpg" alt="면접 평가요소 비율"></figure>
+              </div>
+              <div class="twocol">
+                <figure><img src="images/p14_면접질문.jpg" alt="면접 질문 예시"></figure>
+                <figure><img src="images/p15_의학과제시문.jpg" alt="의학과 제시문 면접"></figure>
+              </div>
+              <div class="tip"><b>면접 지도 포인트</b> · 학생이 <b>자기 활동의 원리·과정·역할</b>을 정확히 설명할 수 있는지, 읽은 책 내용을 제대로 아는지 사전 점검. "친구를 소집했다"는 식의 답변은 실제 활동 경험이 없음을 드러낸다.</div>
+
+              <h3><span class="n">8</span>특수 전형 &amp; 입시결과 해석</h3>
+              <ul>
+                <li><b>국방디지털융합학과(계약학과)</b> — 등록금 면제, 졸업 후 7년 의무복무. 입시결과 평균 등급이 낮아 보이나 고교유형과 함께 봐야 함. 군 관련·정보통신/SW 관심 학생에게 적합.</li>
+                <li><b>고른기회전형</b> 사회기여자 기준 변경 — 군인·소방·경찰 경력을 <span class="key">합산 인정</span>(중간에 직군이 바뀐 경우도 합산).</li>
+                <li>의대·약대 종합전형은 <b>서류평가 후 수능최저 미충족자를 제외</b>하고 재정렬해 1단계 선발 → 합격선이 크게 내려가는 '별 모양' 분포. 의약학 지원자는 최저를 어느 정도 맞춰야 함.</li>
+                <li>면접 역전율(최초합격 기준)이 <span class="key">약 30%</span> — 충원까지 가면 더 늘어남. 면접의 중요성 강조.</li>
+              </ul>
+              <div class="twocol">
+                <figure><img src="images/p16_국방IT.jpg" alt="국방IT우수인재전형"></figure>
+                <figure><img src="images/p17_고른기회.jpg" alt="고른기회전형"></figure>
+              </div>
+              <div class="twocol">
+                <figure><img src="images/p18_내신분포.jpg" alt="ACE 1단계 합격자 내신분포"></figure>
+                <figure><img src="images/p19_수능최저영향력.jpg" alt="학생부종합전형 수능최저 영향력"></figure>
+              </div>
+
+              <div style="text-align:center;margin:28px 0 8px">
+                <a href="#timetable" style="display:inline-flex;align-items:center;gap:8px;padding:10px 22px;background:var(--accent);color:#fff;border-radius:50px;font-size:14px;font-weight:600;text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,.15);">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                  타임테이블로 돌아가기
+                </a>
+              </div>
+              <p class="disclaimer">※ 정확한 내용은 대학 홈페이지를 확인하시기 바랍니다.</p>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ 강남대학교 ============ -->
+      <div class="acc" id="knu">
+        <div class="acc-head" onclick="toggleAcc(this)">
+          <div class="acc-logo">K</div>
+          <div class="ti">
+            <div class="nm">강남대학교</div>
+            <div class="sub">6/6(토) 10:30 · 입학사정관 발표 · 2026~2027학년도 전형 안내</div>
+          </div>
+          <div class="chev">⌄</div>
+        </div>
+        <div class="acc-body">
+          <div class="acc-body-inner">
+
+            <!-- 링크 버튼 -->
+            <div class="links">
+              <a class="link-btn" href="https://admission.kangnam.ac.kr/main.htm" target="_blank" rel="noopener">
+                <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M3 8.5h18"/><circle cx="6" cy="6.25" r=".6" fill="currentColor" stroke="none"/><circle cx="8.2" cy="6.25" r=".6" fill="currentColor" stroke="none"/><circle cx="10.4" cy="6.25" r=".6" fill="currentColor" stroke="none"/></svg></span>
+                <span class="lb">입학처 홈페이지</span><span class="ds">입학처 바로가기</span>
+              </a>
+              <a class="link-btn" href="https://admission.kangnam.ac.kr/iphak/mojib.htm" target="_blank" rel="noopener">
+                <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2.5"/><path d="M9 3.5h6a1 1 0 0 1 1 1V6a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V4.5a1 1 0 0 1 1-1Z"/><path d="m8.5 12 1.2 1.2 2-2.2"/><path d="m8.5 16.5 1.2 1.2 2-2.2"/><path d="M14 12.2h2.5M14 16.7h2.5"/></svg></span>
+                <span class="lb">모집요강</span><span class="ds">연도별 모집요강</span>
+              </a>
+              <a class="link-btn" href="https://admission.kangnam.ac.kr/doumi/notice.htm" target="_blank" rel="noopener">
+                <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3.5H7a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8.5Z"/><path d="M14 3.5V8.5h5"/><path d="M12 11.5v5"/><path d="m9.7 14.3 2.3 2.2 2.3-2.2"/></svg></span>
+                <span class="lb">수시 자료</span><span class="ds">공지·논술자료</span>
+              </a>
+            </div>
+
+            <!-- 강의 정리본 -->
+            <div class="lec">
+
+              <h3><span class="n">1</span>가장 큰 변화: 무게중심이 논술·실기 → 내신·서류로</h3>
+              <p>강남대는 작년에 큰 폭의 전형 개편을 단행했다. 입학정원은 약 1,491명으로 거의 같지만, 선발 무게중심이 <span class="key">논술·실기형에서 학생부(교과·종합) 중심</span>으로 이동했다.</p>
+              <ul>
+                <li><b>늘어난 전형</b> — 지역균형 +22, 학생부교과+종합 491 → 541(+50).</li>
+                <li><b>줄어든 전형</b> — 논술 −50(359→309), 실기 −12.</li>
+                <li><b>폐지·강화</b> — 자유전공학부(야간) 전 영역 폐지, 체육 실기 비중 70%→80% 강화.</li>
+                <li>없던 <b>교과전형 수능최저가 신설</b>되었고, 정시 반영 방식도 조정(국어/수학 택1 → 전 영역 반영)되었다.</li>
+              </ul>
+              <figure><img src="images/g01_무게중심.jpg" alt="2026→2027 무게중심 변화"></figure>
+              <div class="tip"><b>배경</b> · 종합전형을 차별화해 운영해도 고교 현장에 전달되는 메시지가 약했고, 교과·종합·면접형 간 내신대가 겹쳐 지원자 구분이 어려웠다. 진로를 늦게(2학년 2학기쯤) 정하는 경기 지역 학생에게 기회가 되는 전형 구조로 재설계한 것.</div>
+
+              <h3><span class="n">2</span>모집 구조: 6개 단과대학 + 자유전공학부</h3>
+              <p>복지융합·경영관리·글로벌문화콘텐츠·공과·예체능·사범 6개 단과대학과 자유전공학부로 구성된다.</p>
+              <figure><img src="images/g02_단과대학.jpg" alt="6개 단과대학과 자유전공학부"></figure>
+
+              <h3><span class="n">3</span>전형별 지원 전략 (그물망 설계)</h3>
+              <p>대학이 전형을 설계할 때 노리는 성적대가 다르다. 학생 상황에 맞춰 안내하면 좋다.</p>
+              <ul>
+                <li><b>교과전형</b> — 상위 20개 과목 반영. 수능·교과 모두 관리된 <span class="key">2등급 중후반~3등급</span> 학생이 안정적으로 합격하는 자리.</li>
+                <li><b>학생부종합(학교생활우수자)</b> — <span class="key">3~5등급</span>대에서 교과로 가기 애매하고 면접·논술 준비가 안 된 학생. 학교생활 충실도를 가장 많이 본다.</li>
+                <li><b>논술전형</b> — <span class="key">5~7등급</span> 학생도 논술 한 문제로 내신 격차를 뒤집을 수 있는 역전형. 강남대에서 평소 볼 수 없는 성적대가 들어온다.</li>
+              </ul>
+              <div class="twocol">
+                <figure><img src="images/g03_논술전형.jpg" alt="논술전형 입시결과"></figure>
+                <figure><img src="images/g04_교과지역균형.jpg" alt="학생부교과 지역균형전형"></figure>
+              </div>
+              <div class="twocol">
+                <figure><img src="images/g05_종합학교생활1.jpg" alt="학교생활우수자전형1"></figure>
+                <figure><img src="images/g06_종합학교생활2.jpg" alt="학교생활우수자전형2"></figure>
+              </div>
+
+              <h3><span class="n">4</span>등록충실도 — 강남대가 중시하는 핵심 지표</h3>
+              <ul>
+                <li>합격자를 발표했을 때 실제 등록으로 이어지는 비율. <span class="key">논술전형이 73%로 가장 높다</span> (다른 전형은 45~47% 수준).</li>
+                <li>논술은 수능 이후 시험을 보고 들어오는 구조라 합격자가 잘 빠지지 않는다. 학교생활우수자(면접 없음)는 그보다 예비번호가 더 빠진다.</li>
+                <li>지원 전략: 6장 중 안정·하향은 교과, 상향이지만 논술 준비가 안 됐다면 종합, 그 외엔 논술.</li>
+              </ul>
+              <figure><img src="images/g07_등록률.jpg" alt="등록률의 두 지표"></figure>
+
+              <h3><span class="n">5</span>지역균형 수능최저 &amp; 경기 지역 비중</h3>
+              <ul>
+                <li>교과(지역균형)전형 수능최저 충족비율은 <span class="key">주간 평균 약 45%</span>. 야간은 수능최저 없음 → 합격 예측성이 가장 높은 안정형.</li>
+                <li>수시 등록자의 <span class="key">69.9%가 경기 지역</span> 학생(특히 용인시). 경기 학생에게 강한 전형.</li>
+              </ul>
+              <div class="twocol">
+                <figure><img src="images/g08_지역균형최저.jpg" alt="지역균형 수능최저 충족비율"></figure>
+                <figure><img src="images/g09_경기69.jpg" alt="수시 등록자 경기 비중"></figure>
+              </div>
+
+              <h3><span class="n">6</span>진로선택 성취도(A·B·C) 반영 &amp; 자유전공</h3>
+              <ul>
+                <li>진로선택 성취도는 교과(지역균형)에서 A·B·C를 2·3·5등급으로 환산, <span class="key">논술전형은 99·98·96점</span>으로 차이를 거의 두지 않아 내신 영향력이 작다.</li>
+                <li>자유전공학부 입학생의 실제 전공 선택은 입학 직후 선호와 달랐다 — <span class="key">문화콘텐츠 선호가 반도체로 이동</span>(17.9%→30.7%).</li>
+              </ul>
+              <div class="twocol">
+                <figure><img src="images/g10_진로선택성취도.jpg" alt="진로선택 성취도 반영"></figure>
+                <figure><img src="images/g11_자유전공선택.jpg" alt="자유전공 실제 선택"></figure>
+              </div>
+
+              <h3><span class="n">7</span>취업률 &amp; 입학 진단 시스템</h3>
+              <ul>
+                <li>취업률 약 <span class="key">59.8%</span>, 학과별 정착도도 함께 확인 가능.</li>
+                <li>발표 자료·입시결과·내신 계산·정시까지 담은 <b>입학 진단 시스템(앱/QR)</b>을 운영 — 상담 시 활용 권장.</li>
+              </ul>
+              <figure><img src="images/g12_취업률.jpg" alt="취업률 및 학과별 정착도"></figure>
+              <div class="tip"><b>상담 포인트</b> · 강남대 논술은 "시흥(쉬운) 논술 · 많이 뽑는 논술"을 표방한다(논술전형 33명대 모집). 경기·용인 지역 학생이 성적 대비 역전할 수 있는 카드이므로, 논술 자료집(홈페이지 공개)을 함께 안내하면 좋다.</div>
+
+              <div style="text-align:center;margin:28px 0 8px">
+                <a href="#timetable" style="display:inline-flex;align-items:center;gap:8px;padding:10px 22px;background:var(--accent);color:#fff;border-radius:50px;font-size:14px;font-weight:600;text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,.15);">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                  타임테이블로 돌아가기
+                </a>
+              </div>
+              <p class="disclaimer">※ 정확한 내용은 대학 홈페이지를 확인하시기 바랍니다.</p>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ 우송대학교 ============ -->
+      <div class="acc" id="wsu">
+        <div class="acc-head" onclick="toggleAcc(this)">
+          <div class="acc-logo">W</div>
+          <div class="ti">
+            <div class="nm">우송대학교</div>
+            <div class="sub">6/6(토) 10:50 · 입학사정관 발표 · 특성화·취업 중심 전형 안내</div>
+          </div>
+          <div class="chev">⌄</div>
+        </div>
+        <div class="acc-body">
+          <div class="acc-body-inner">
+
+            <!-- 링크 버튼 -->
+            <div class="links">
+              <a class="link-btn" href="https://ent.wsu.ac.kr/main/index.jsp" target="_blank" rel="noopener">
+                <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M3 8.5h18"/><circle cx="6" cy="6.25" r=".6" fill="currentColor" stroke="none"/><circle cx="8.2" cy="6.25" r=".6" fill="currentColor" stroke="none"/><circle cx="10.4" cy="6.25" r=".6" fill="currentColor" stroke="none"/></svg></span>
+                <span class="lb">입학처 홈페이지</span><span class="ds">입학처 바로가기</span>
+              </a>
+              <a class="link-btn" href="https://ent.wsu.ac.kr/site/ent/popup/2027susi.pdf" target="_blank" rel="noopener">
+                <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2.5"/><path d="M9 3.5h6a1 1 0 0 1 1 1V6a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V4.5a1 1 0 0 1 1-1Z"/><path d="m8.5 12 1.2 1.2 2-2.2"/><path d="m8.5 16.5 1.2 1.2 2-2.2"/><path d="M14 12.2h2.5M14 16.7h2.5"/></svg></span>
+                <span class="lb">수시 모집요강</span><span class="ds">2027학년도 수시</span>
+              </a>
+              <a class="link-btn" href="https://ent.wsu.ac.kr/board/index.jsp?code=einfo0701" target="_blank" rel="noopener">
+                <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3.5H7a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8.5Z"/><path d="M14 3.5V8.5h5"/><path d="M12 11.5v5"/><path d="m9.7 14.3 2.3 2.2 2.3-2.2"/></svg></span>
+                <span class="lb">입학 관련 자료</span><span class="ds">입학자료실</span>
+              </a>
+            </div>
+
+            <!-- 강의 정리본 -->
+            <div class="lec">
+
+              <h3><span class="n">1</span>한눈에 보는 우송대</h3>
+              <p>대전에 위치한 <span class="key">취업·실무 특성화</span> 대학. 6개 특성화 단과대학으로 구성되며, 이날 발표는 그중 <b>철도·조리·간호</b> 세 분야에 집중됐다. "가성비(입학 성적 대비 취업 성과)"가 핵심 메시지.</p>
+              <div class="statrow">
+                <div class="stat"><div class="big">450+</div><div class="lbl">최근 4년 철도 공공기관 취업(명)</div></div>
+                <div class="stat"><div class="big">96%+</div><div class="lbl">간호학과 대학병원 취업률</div></div>
+                <div class="stat"><div class="big">63명</div><div class="lbl">누적 미국 간호사 배출</div></div>
+              </div>
+              <div class="infocard">
+                <h4>위치 &amp; 접근성</h4>
+                <p>대전역에서 도보 10분 내. 주요 거점으로 단시간 이동이 가능한 도심형 캠퍼스. 수도권 학생도 KTX로 접근이 쉽다는 점을 강조.</p>
+              </div>
+
+              <h3><span class="n">2</span>철도대학 — "가성비" 특성화의 핵심</h3>
+              <ul>
+                <li><b>4년제 대학 최초</b>로 기관사 운전면허를 발급할 수 있는 기관으로 선정. 철도대학 어느 학과든 입학하면 <span class="key">3학년 2학기에 기관사 면허 교육기관 입교</span> 가능.</li>
+                <li>철도대 정원 약 300명 중 매년 70~80명(약 30%)이 철도 관련 공공기관 취업. 작년 상·하반기 합쳐 <span class="key">약 120명</span> 취업.</li>
+                <li>이과 계열만 있는 게 아니라 <b>철도경영학과</b>(문과) 등도 있어 여학생 지원·취업도 활발(공공기관 연 25~30명).</li>
+              </ul>
+              <div class="tip"><b>상담 포인트</b> · 꿈이 뚜렷하지 않거나 안정적인 직장을 원하는 학생에게 추천. 경기 지역에 철도 노선이 많아 해당 기관 취업과 연결된다. 환산점수로 보면 최대 1.5등급가량 유리해질 수 있어, "성적이 안 될 것 같다"는 학생도 산출해보면 지원 가능한 경우가 많다.</div>
+
+              <h3><span class="n">3</span>조리대학 — 실습·창업·해외 연계</h3>
+              <ul>
+                <li>현장 중심 교육: 교내 <span class="key">실습실 35곳 이상</span>, 학생 운영 레스토랑 8곳.</li>
+                <li><b>CJ 연계 정규직 채용</b>(연 60명), 해외 인턴십·교환학생, 프랑스 조리대학과 공동교육과정(3년 이수 시 <span class="key">두 개의 졸업장</span>).</li>
+                <li>'쏠바' 창업 프로그램 — 15주 준비 + 8주 학생 운영(비용 100% 교비 지원). "실패를 미리 경험"시키는 게 목표.</li>
+                <li>성적 스펙트럼이 넓어 전과목 기준 2등급대도, 5등급대도 합격. 자격증 가산점은 없음(뷰티과 제외).</li>
+              </ul>
+
+              <h3><span class="n">4</span>간호학과 — 국제 간호 교육</h3>
+              <ul>
+                <li>국가고시 합격률 100%, 대학병원 취업률 매년 <span class="key">96% 이상</span>.</li>
+                <li><b>미국 간호 면허</b> 취득 가능한 국제 간호 교육과정 4년 의무 운영(영어 원서 강의 + 제2외국어 택1).</li>
+                <li>자체 병원 대신 교내 <b>솔 메디컬센터</b>(모의 병원)에서 임상 실습 사전 경험 제공.</li>
+              </ul>
+
+              <h3><span class="n">5</span>전형 안내 — 교과 중심, 수능최저 없음</h3>
+              <p>매년 <span class="key">교과 100% 전형을 확대</span> 운영하며, 복수 지원 가능, <b>수능최저 없음</b>. 교과·종합 모두 운영하나 이날은 교과전형 중심 설명.</p>
+              <table class="simple">
+                <tr><th>전형</th><th>반영 방식</th><th>특징</th></tr>
+                <tr><td class="em">교과면접</td><td>교과 80 + 면접 20</td><td>6과목 반영(국어1·영수1·사과1·자유3). 실질 면접 영향력 약 40%</td></tr>
+                <tr><td class="em">교과 100%</td><td>교과 100 (10과목)</td><td>국어2·영수2·사과2·자유4 반영. 수학 약점 학생도 유리</td></tr>
+              </table>
+              <div class="infocard">
+                <h4>면접 준비<span class="badge">예상문제 공개</span></h4>
+                <p>교과면접 전형 면접 예상문제가 입학처에 공개되어 있어 그것만 잘 봐도 대비 가능. 입학사정관이 강조한 핵심은 <b>지원 동기</b> — 첫인상(지원 동기)이 면접 전체 흐름을 좌우하므로 탄탄하게 준비시킬 것.</p>
+              </div>
+              <ul>
+                <li><b>정시</b> — 국·수·탐 중 2개 반영(탐구는 1과목). 영어+탐구 한 과목만 잘해도 지원 가능.</li>
+                <li>한국사는 국어 등 대체 반영 가능, 영어 면접 별도 없음.</li>
+              </ul>
+
+              <h3><span class="n">6</span>자율전공학부 — 전과로 돌아가는 길</h3>
+              <ul>
+                <li>성적이 부족해 인기 학과(조리 등)에 바로 가기 어려운 학생에게 권하는 우회로.</li>
+                <li>1학년 1학기 교양 수업 후 1학년 2학기에 <span class="key">조리대학 등 타 학과로 전과</span>. 1~3순위로 신청하면 사실상 대부분 전과 가능(학사경고 등 예외 제외).</li>
+                <li>철도대학으로도 전과 가능. "억지로 조리과를 쓰기보다 돌아가더라도 자율전공으로"가 입학사정관의 조언.</li>
+              </ul>
+              <div class="tip"><b>경기 지역 지원 동향</b> · AI 분석 기준 최근 5년 경기 남부·북부에서 우송대 지원이 꾸준히 증가(누적 약 2만 명, 특히 경기 남동권). 컴퓨터·게임·펫·동물 관련 학과는 수시 미달이 났던 만큼, 7~8등급대 학생에게 기회가 될 수 있다(입학 후 조리·철도대학으로 전과 가능).</div>
+
+              <div style="text-align:center;margin:28px 0 8px">
+                <a href="#timetable" style="display:inline-flex;align-items:center;gap:8px;padding:10px 22px;background:var(--accent);color:#fff;border-radius:50px;font-size:14px;font-weight:600;text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,.15);">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                  타임테이블로 돌아가기
+                </a>
+              </div>
+              <p class="disclaimer">※ 정확한 내용은 대학 홈페이지를 확인하시기 바랍니다.</p>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ 평택대학교 ============ -->
+      <div class="acc" id="ptu">
+        <div class="acc-head" onclick="toggleAcc(this)">
+          <div class="acc-logo">P</div>
+          <div class="ti">
+            <div class="nm">평택대학교</div>
+            <div class="sub">6/6(토) 11:10 · 입학사정관 발표 · 2027학년도 전형 안내</div>
+          </div>
+          <div class="chev">⌄</div>
+        </div>
+        <div class="acc-body">
+          <div class="acc-body-inner">
+
+            <!-- 링크 버튼 -->
+            <div class="links">
+              <a class="link-btn" href="https://entrance.ptu.ac.kr/entrance/index.do" target="_blank" rel="noopener">
+                <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M3 8.5h18"/><circle cx="6" cy="6.25" r=".6" fill="currentColor" stroke="none"/><circle cx="8.2" cy="6.25" r=".6" fill="currentColor" stroke="none"/><circle cx="10.4" cy="6.25" r=".6" fill="currentColor" stroke="none"/></svg></span>
+                <span class="lb">입학처 홈페이지</span><span class="ds">입학처 바로가기</span>
+              </a>
+              <a class="link-btn" href="https://entrance.ptu.ac.kr/entrance/3661/subview.do" target="_blank" rel="noopener">
+                <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2.5"/><path d="M9 3.5h6a1 1 0 0 1 1 1V6a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V4.5a1 1 0 0 1 1-1Z"/><path d="m8.5 12 1.2 1.2 2-2.2"/><path d="m8.5 16.5 1.2 1.2 2-2.2"/><path d="M14 12.2h2.5M14 16.7h2.5"/></svg></span>
+                <span class="lb">수시 모집요강</span><span class="ds">2027학년도 수시</span>
+              </a>
+              <a class="link-btn" href="https://entrance.ptu.ac.kr/entrance/3676/subview.do" target="_blank" rel="noopener">
+                <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3.5H7a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8.5Z"/><path d="M14 3.5V8.5h5"/><path d="M12 11.5v5"/><path d="m9.7 14.3 2.3 2.2 2.3-2.2"/></svg></span>
+                <span class="lb">입학 관련 자료</span><span class="ds">입시결과</span>
+              </a>
+            </div>
+
+            <!-- 강의 정리본 -->
+            <div class="lec">
+
+              <h3><span class="n">1</span>경기 남부 거점 — 경기 지역 비중이 높은 대학</h3>
+              <p>평택대는 <span class="key">경기 남부</span>에 위치해, 지원·합격·등록 모두 경기 지역 비중이 매우 높다. 안성·안산·안양·오산·화성 등 인근 지역에서 지원이 많고, 집중 지역에는 셔틀버스도 운행한다.</p>
+              <div class="statrow">
+                <div class="stat"><div class="big">62%</div><div class="lbl">전체 지원자 중 경기도</div></div>
+                <div class="stat"><div class="big">65.6%</div><div class="lbl">전체 합격자 중 경기도</div></div>
+                <div class="stat"><div class="big">69.25%</div><div class="lbl">전체 등록자 중 경기도</div></div>
+              </div>
+              <div class="twocol">
+                <figure><img src="images/t01_경기현황.jpg" alt="2026 경기도 현황"></figure>
+                <figure><img src="images/t02_지역별.jpg" alt="경기도 지역별 현황"></figure>
+              </div>
+
+              <h3><span class="n">2</span>모집 구조 — 4개 단과대학 + 5개 자율전공</h3>
+              <ul>
+                <li><b>4개 단과대학</b>: AI공과대학 · 글로벌비즈니스대학 · 사회서비스대학 · 문화예술대학.</li>
+                <li><b>5개 자율전공 모집단위</b>: 완전 자율(글로벌자율전공학부·동아시아융합자율전공학부)과 계열 자율(AI융합·인문사회·국제지역및신학)로 구분.</li>
+                <li>교육부 지정 <span class="key">첨단학과</span>: AI콘텐츠학과 · 스마트모빌리티학과 · 지능형반도체학과.</li>
+              </ul>
+              <div class="twocol">
+                <figure><img src="images/t03_모집단위변경.jpg" alt="2027 모집단위명 변경"></figure>
+                <figure><img src="images/t04_학과소개.jpg" alt="학과소개"></figure>
+              </div>
+              <figure><img src="images/t05_자율전공.jpg" alt="자율전공학부 모집"></figure>
+              <div class="tip"><b>자율전공 차이 안내</b> · 완전 자율(글로벌·동아시아)은 학과를 정하지 않고 입학해 1학년 1학기 후 학과 선택, <b>100% 원하는 학과 배정</b>. '학과선택형'은 모든 학과 대상 선택, '독립학과형'은 모집단위 내 개설 트랙의 차이로 이해하면 된다.</div>
+
+              <h3><span class="n">3</span>대학의 강점</h3>
+              <ul>
+                <li><b>생활관(기숙사)</b> — 신입생 40% 우선 선발.</li>
+                <li><b>젊은 도시 평택</b> — 삼성·LG전자 등 투자로 평균 연령이 전국 평균보다 낮음(약 33세). 첨단학과는 삼성·LG전자와 발맞춰 운영.</li>
+                <li>부트캠프(Boot Camp), RISE 사업, 해외 교육 프로그램(16개국 48개 대학), WEST 인턴십 등 취업·글로벌 프로그램 운영.</li>
+              </ul>
+              <div class="twocol">
+                <figure><img src="images/t06_생활관.jpg" alt="생활관"></figure>
+                <figure><img src="images/t07_젊은도시.jpg" alt="젊은 도시 평택"></figure>
+              </div>
+              <figure><img src="images/t08_첨단학과.jpg" alt="교육부 첨단학과 지정"></figure>
+
+              <h3><span class="n">4</span>2027학년도 주요 변경사항</h3>
+              <ul>
+                <li><b>PTU추천전형</b> — 상위 3과목 반영에 <span class="key">진로선택 1과목 포함 가능</span>(전년도 N수생 가능 → 올해 현역 고3만, 학교장 추천·학폭 시 부적격).</li>
+                <li><b>PTU종합전형</b> — 서류 100%, 올해 평가영역이 진로·공동체·학업 역량으로 조정.</li>
+                <li>글로벌자율·AI융합자율·인문사회자율 등 신규 모집단위 배정, 실기 세부전공 통합.</li>
+              </ul>
+              <figure><img src="images/t09_변경사항.jpg" alt="2027 주요 변경사항"></figure>
+
+              <h3><span class="n">5</span>전형 방법 — 모든 전형 수능최저 없음</h3>
+              <table class="simple">
+                <tr><th>전형</th><th>반영 방식</th></tr>
+                <tr><td class="em">PTU교과 / 자율전공 / 추천 / 기회균형</td><td>학생부교과 100%</td></tr>
+                <tr><td class="em">PTU종합</td><td>서류 100%</td></tr>
+                <tr><td class="em">PTU실기</td><td>실기 100%</td></tr>
+                <tr><td class="em">장애인 특별(정원 외)</td><td>교과 60% + 서류 40%</td></tr>
+              </table>
+              <div class="twocol">
+                <figure><img src="images/t10_전형방법.jpg" alt="전형방법 안내"></figure>
+                <figure><img src="images/t11_고교유형별.jpg" alt="고교유형별 지원 가능 여부"></figure>
+              </div>
+              <div class="tip"><b>복수지원 팁</b> · 농어촌·특성화고졸·기초생활수급자·차상위·한부모가정에 해당하면 <b>PTU기회균형전형과 정원 외 전형 복수지원 가능</b>. 지원자격이 되면 복수지원을 권장.</div>
+
+              <h3><span class="n">6</span>교과 성적 산출 방법 (핵심)</h3>
+              <ul>
+                <li>PTU추천전형 제외 교과전형은 국·수·영·사·과·한국사 교과만 확인. <span class="key">학년·학기 구분 없이 상위 9과목</span> 석차등급 평균 반영(진로선택 3과목 포함 가능).</li>
+                <li>진로선택 환산: <span class="key">A=1등급, B=2등급, C=4등급</span>.</li>
+                <li>PTU추천전형은 <span class="key">상위 3과목</span>(진로선택 1과목 포함 가능) 평균.</li>
+              </ul>
+              <div class="twocol">
+                <figure><img src="images/t12b_교과예시학기.jpg" alt="교과성적 산출 예시 - 특정 학기"></figure>
+                <figure><img src="images/t13_교과예시.jpg" alt="교과성적 산출 예시 - 특정 교과"></figure>
+              </div>
+              <div class="tip"><b>산출의 강점</b> · 과목명이 같아도(1학년 1·2학기 국어 등) 각각의 과목으로 산출 가능. 한 과목만 잘해도 최대 4과목까지 반영돼, 전교과 5.79등급 학생이 잘하는 과목 기준 3.00등급까지 향상되는 사례도 있다.</div>
+
+              <h3><span class="n">7</span>전형별 특징</h3>
+              <ul>
+                <li><b>PTU교과전형</b> — 전년 경쟁률 8.15:1. 진로선택 3과목 포함 가능, 수능최저 없음.</li>
+                <li><b>PTU자율전공전형</b> — 동아시아융합·국제지역및신학 자율전공 선발. 완전 자율은 문화예술 포함 전 모집단위 선택 가능.</li>
+                <li><b>PTU추천전형</b> — 전년 8.28:1. 현역 고3·학교장 추천 필요.</li>
+                <li><b>PTU종합전형</b> — 전년 9.71:1. 서류 100%, 내신 낮아도 학교생활 성실·전공 관심 학생에게 기회.</li>
+                <li><b>PTU실기전형</b> — 전년 12.73:1. 문화예술대학, 실기 100%.</li>
+              </ul>
+              <div class="twocol">
+                <figure><img src="images/t14_교과특징.jpg" alt="PTU교과전형 주요 특징"></figure>
+                <figure><img src="images/t15_자율전공특징.jpg" alt="PTU자율전공전형 특징"></figure>
+              </div>
+              <div class="twocol">
+                <figure><img src="images/t16_종합전형방법.jpg" alt="PTU종합전형 전형방법"></figure>
+                <figure><img src="images/t17_서류평가.jpg" alt="서류평가 영역 및 반영비율"></figure>
+              </div>
+
+              <div style="text-align:center;margin:28px 0 8px">
+                <a href="#timetable" style="display:inline-flex;align-items:center;gap:8px;padding:10px 22px;background:var(--accent);color:#fff;border-radius:50px;font-size:14px;font-weight:600;text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,.15);">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                  타임테이블로 돌아가기
+                </a>
+              </div>
+              <p class="disclaimer">※ 정확한 내용은 대학 홈페이지를 확인하시기 바랍니다.</p>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ 가톨릭대학교 ============ -->
+      <div class="acc" id="cuk">
+        <div class="acc-head" onclick="toggleAcc(this)">
+          <div class="acc-logo">C</div>
+          <div class="ti">
+            <div class="nm">가톨릭대학교</div>
+            <div class="sub">6/6(토) 11:50 · 입학사정관 발표 · 2027학년도 전형 안내</div>
+          </div>
+          <div class="chev">⌄</div>
+        </div>
+        <div class="acc-body">
+          <div class="acc-body-inner">
+
+            <!-- 링크 버튼 -->
+            <div class="links">
+              <a class="link-btn" href="https://ipsi.catholic.ac.kr/main.do" target="_blank" rel="noopener">
+                <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M3 8.5h18"/><circle cx="6" cy="6.25" r=".6" fill="currentColor" stroke="none"/><circle cx="8.2" cy="6.25" r=".6" fill="currentColor" stroke="none"/><circle cx="10.4" cy="6.25" r=".6" fill="currentColor" stroke="none"/></svg></span>
+                <span class="lb">입학처 홈페이지</span><span class="ds">입학처 바로가기</span>
+              </a>
+              <a class="link-btn" href="https://ipsi.catholic.ac.kr/submenu.do?menuurl=k%2BqZC0HTrql005wmLhNoXA%3D%3D&categoryid=1" target="_blank" rel="noopener">
+                <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2.5"/><path d="M9 3.5h6a1 1 0 0 1 1 1V6a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V4.5a1 1 0 0 1 1-1Z"/><path d="m8.5 12 1.2 1.2 2-2.2"/><path d="m8.5 16.5 1.2 1.2 2-2.2"/><path d="M14 12.2h2.5M14 16.7h2.5"/></svg></span>
+                <span class="lb">수시 모집요강</span><span class="ds">2027학년도 수시</span>
+              </a>
+              <a class="link-btn" href="https://ipsi.catholic.ac.kr/submenu.do?menuurl=vQ5Um0/Kclp6EAegmwbvhQ%3D%3D" target="_blank" rel="noopener">
+                <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3.5H7a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8.5Z"/><path d="M14 3.5V8.5h5"/><path d="M12 11.5v5"/><path d="m9.7 14.3 2.3 2.2 2.3-2.2"/></svg></span>
+                <span class="lb">입학 관련 자료</span><span class="ds">전년도 입시결과</span>
+              </a>
+            </div>
+
+            <!-- 강의 정리본 -->
+            <div class="lec">
+
+              <h3><span class="n">1</span>2027학년도 주요 변경사항</h3>
+              <p>학생부 중심 선발을 강화하는 방향이다. 종합 모집인원을 늘리고 교과를 줄였으며, 논술은 100% 논술로 바뀌었다.</p>
+              <ul>
+                <li><b>학생부종합 확대</b> — 811명 → 846명(+35). 첨단학과 신설(바이오로직스공학부·AI의공학과)로 면접형까지 선발.</li>
+                <li><b>교과전형 소폭 감소</b> — 386명 → 352명(−34).</li>
+                <li><b>논술 변화</b> — 논술 80% + 면접 20% → <span class="key">논술 100%</span>로 변경. (성심교정 언어·수리논술은 올해가 마지막, 2028부터 약술논술)</li>
+                <li>지역균형(학교장추천)은 <span class="key">지역 제한</span>이 강화되어 일부 지원 불가.</li>
+              </ul>
+              <figure><img src="images/c01_변경사항.jpg" alt="2027 입시 주요 변경사항"></figure>
+
+              <h3><span class="n">2</span>학생부교과 — 지역균형전형</h3>
+              <ul>
+                <li>261명 선발, 교과 100%, <span class="key">수능최저 있음</span>(모집단위별 2개 영역 등급 합 6~7 이내, 의·약학은 더 높음).</li>
+                <li>반영교과: 국·수·영·사(역사/도덕 포함)·과 — 석차등급·성취도·이수단위 반영. 진로선택 환산 시 올해부터 <span class="key">B를 2등급</span>으로 상향(전년 3등급).</li>
+              </ul>
+              <div class="twocol">
+                <figure><img src="images/c02_지역균형.jpg" alt="학생부교과 지역균형전형"></figure>
+                <figure><img src="images/c03_교과반영.jpg" alt="교과 성적 반영방법"></figure>
+              </div>
+              <figure><img src="images/c11_지역균형결과.jpg" alt="지역균형 입시결과"></figure>
+              <div class="tip"><b>지원 지도 팁</b> · 자연계열에서 합격선이 매년 크게 출렁인다. 학생들이 예측 프로그램만 보고 지원하다 보니, 한 해 합격선이 높아지면 다음 해 펑크가 나는 패턴. 최소 3~5년 치 결과를 보고 지원하도록 지도. 국·영·수·사 평균에서 0.3~0.4 빼면 진로선택 환산 점수대로 보면 된다.</div>
+
+              <h3><span class="n">3</span>학생부종합 — 잠재능력우수자(서류형 / 면접형)</h3>
+              <p>가톨릭대의 대표 종합전형. 서류 100%인 서류형과, 1단계 서류 후 면접을 보는 면접형이 있다.</p>
+              <ul>
+                <li><b>서류평가 요소</b> — 학업역량 40% · 진로역량 35% · 공동체역량 25%(전년 대비 공동체 5% 상향). 정량(성취도·전공교과성취)은 합쳐도 배점의 절반이 안 되며, 나머지는 정성평가.</li>
+                <li><b>면접</b> — 학생부 기반. 지원동기·마지막 한마디 없이 바로 학생부 내용으로 질문, 꼬리질문 위주. 학생부에 없는 내용은 묻지 않음.</li>
+              </ul>
+              <div class="twocol">
+                <figure><img src="images/c04_서류평가요소.jpg" alt="서류종합평가요소 반영비율"></figure>
+                <figure><img src="images/c05_면접가이드.jpg" alt="면접평가 가이드"></figure>
+              </div>
+              <div class="twocol">
+                <figure><img src="images/c07_서류경쟁률.jpg" alt="잠재능력 서류전형 경쟁률"></figure>
+                <figure><img src="images/c08_서류성적분포.jpg" alt="서류전형 성적분포"></figure>
+              </div>
+              <figure><img src="images/c09_면접영향력.jpg" alt="면접의 영향력"></figure>
+              <div class="tip"><b>면접의 힘</b> · 서류 4배수 안에서 점수가 촘촘해, 면접(진로영역 50%)에서 한 단계만 높게 받으면 등수가 크게 오른다. 4배수로 들어와 면접 잘 보고 최종 합격한 사례가 많으니, 면접형은 적극 권장.</div>
+
+              <h3><span class="n">4</span>학교장추천전형 &amp; 논술전형</h3>
+              <ul>
+                <li><b>학교장추천</b> — 의예·간호·약학 3개 모집단위. 1단계 합격자 일반고 출신 비율이 <span class="key">86%</span>로 높음(약·의예만 자사고 일부).</li>
+                <li><b>논술전형</b> — 올해 언어·수리논술이 마지막. 같은 논술을 보는데 상위권이 영어영문학과 등 특정 학과에 몰려, 경쟁률 낮은 학과를 쓰면 같은 점수로 합격 가능. 경쟁률 낮은 곳으로 지도 권장.</li>
+              </ul>
+              <div class="twocol">
+                <figure><img src="images/c10_추천교과분포.jpg" alt="학교장추천 교과성적 분포"></figure>
+                <figure><img src="images/c12_논술성적분포.jpg" alt="논술 성적분포"></figure>
+              </div>
+
+              <h3><span class="n">5</span>경기 지역 &amp; 입시결과 경향</h3>
+              <ul>
+                <li>경기·서울·인천 합쳐 <span class="key">약 75%</span> 지원. 경기 등록자 비율이 28.7% → 36.9%로 크게 상승.</li>
+                <li>수시 졸업예정자 77.2%, 재수생 포함 약 89%가 수시로 입학.</li>
+                <li>전반적으로 지원자는 줄었으나 충원·내신은 유지 또는 상승 — 예측 프로그램 영향으로 분석.</li>
+                <li>일반고 마지막 컷(진로 환산 내신): 인문 약 4.6, 자연 약 5.2 수준.</li>
+              </ul>
+              <figure><img src="images/c06_지역별등록.jpg" alt="지역별 지원자/등록자 현황"></figure>
+
+              <div style="text-align:center;margin:28px 0 8px">
+                <a href="#timetable" style="display:inline-flex;align-items:center;gap:8px;padding:10px 22px;background:var(--accent);color:#fff;border-radius:50px;font-size:14px;font-weight:600;text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,.15);">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                  타임테이블로 돌아가기
+                </a>
+              </div>
+              <p class="disclaimer">※ 정확한 내용은 대학 홈페이지를 확인하시기 바랍니다.</p>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ 계명대학교 ============ -->
+      <div class="acc" id="kmu">
+        <div class="acc-head" onclick="toggleAcc(this)">
+          <div class="acc-logo" style="font-size:15px">KMU</div>
+          <div class="ti">
+            <div class="nm">계명대학교</div>
+            <div class="sub">6/6(토) 12:10 · 입학사정관 발표 · 대구 · 2027학년도 전형 안내</div>
+          </div>
+          <div class="chev">⌄</div>
+        </div>
+        <div class="acc-body">
+          <div class="acc-body-inner">
+
+            <!-- 링크 버튼 -->
+            <div class="links">
+              <a class="link-btn" href="https://www.gokmu.ac.kr/" target="_blank" rel="noopener">
+                <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M3 8.5h18"/><circle cx="6" cy="6.25" r=".6" fill="currentColor" stroke="none"/><circle cx="8.2" cy="6.25" r=".6" fill="currentColor" stroke="none"/><circle cx="10.4" cy="6.25" r=".6" fill="currentColor" stroke="none"/></svg></span>
+                <span class="lb">입학처 홈페이지</span><span class="ds">입학처 바로가기</span>
+              </a>
+              <a class="link-btn" href="https://www.gokmu.ac.kr/guide/paper.htm?ctg_cd=susi" target="_blank" rel="noopener">
+                <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2.5"/><path d="M9 3.5h6a1 1 0 0 1 1 1V6a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V4.5a1 1 0 0 1 1-1Z"/><path d="m8.5 12 1.2 1.2 2-2.2"/><path d="m8.5 16.5 1.2 1.2 2-2.2"/><path d="M14 12.2h2.5M14 16.7h2.5"/></svg></span>
+                <span class="lb">수시 모집요강</span><span class="ds">2027학년도 수시</span>
+              </a>
+              <span class="link-btn disabled">
+                <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3.5H7a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8.5Z"/><path d="M14 3.5V8.5h5"/><path d="M12 11.5v5"/><path d="m9.7 14.3 2.3 2.2 2.3-2.2"/></svg></span>
+                <span class="lb">입학 관련 자료</span><span class="ds">준비 중</span>
+              </span>
+            </div>
+
+            <!-- 강의 정리본 -->
+            <div class="lec">
+
+              <h3><span class="n">1</span>한눈에 보는 계명대</h3>
+              <p>1899년 개교, <span class="key">대구광역시 내 유일한 도심 사립대</span>(타 대학은 경산 등 외곽). 5개 캠퍼스, 14개 단과대학 90개 학과. 경기 지역 지원이 3년 연속 증가 중.</p>
+              <div class="statrow">
+                <div class="stat"><div class="big">90개</div><div class="lbl">학과 (14개 단과대학)</div></div>
+                <div class="stat"><div class="big">5,028명</div><div class="lbl">2027 모집 (수시 89.4%)</div></div>
+                <div class="stat"><div class="big">20분</div><div class="lbl">지하철로 동대구역 → SRT/KTX</div></div>
+              </div>
+              <div class="twocol">
+                <figure><img src="images/k01_통학환경.jpg" alt="편리한 통학환경"></figure>
+                <figure><img src="images/k02_단과대학.jpg" alt="14개 단과대학 90개 학과"></figure>
+              </div>
+
+              <h3><span class="n">2</span>특성화 학과 &amp; 글로벌 프로그램</h3>
+              <ul>
+                <li><b>의·약·간호대학</b> — 바로 옆 <span class="key">동산의료원</span>(뉴스위크 선정 세계 최고 전문병원)에서 실습.</li>
+                <li><b>기계공학과</b> — 미국 오번대 <span class="key">3+2 복수학위</span>(학사+석사). 애플·현대모비스 등 취업 사례.</li>
+                <li><b>게임공학</b> — 닌텐도 설립 미국 디지펜공대와 2.5+2 복수학위. MS·아마존·틱톡 취업.</li>
+                <li>한문교육과(임용 합격률 1위), 경찰행정학과(경찰 간부후보 합격 등) 강세.</li>
+                <li>ISEP 정식 회원으로 해외 교환학생·파견 기회 다수.</li>
+              </ul>
+              <div class="twocol">
+                <figure><img src="images/k03_동산의료원.jpg" alt="계명대학교 동산의료원"></figure>
+                <figure><img src="images/k04_기계공학.jpg" alt="기계공학과 3+2 프로그램"></figure>
+              </div>
+              <figure><img src="images/k05_게임.jpg" alt="게임공학 디지펜"></figure>
+
+              <h3><span class="n">3</span>전과제도 — 횟수 제한 없음 (유치 전략)</h3>
+              <ul>
+                <li>전과 가능 인원이 입학정원의 <span class="key">20%</span>, <span class="key">횟수 제한 없음</span>. 1학년 1학기 신청 → 2학기부터 원하는 학과 수학.</li>
+                <li>대부분 학과는 전과 경쟁률 1:1 미만이라 사실상 원하는 학과로 이동 가능(졸업까지).</li>
+                <li>심리·경찰행정·언론영상 등 일부 인기 학과만 경쟁률이 있어 학기 성적·면접으로 선발. 떨어져도 다음 학기 재신청 가능.</li>
+              </ul>
+              <figure><img src="images/k06_전과제도.jpg" alt="전과제도"></figure>
+              <div class="tip"><b>유치 전략</b> · 성적에 맞춰 일단 입학한 뒤 원하는 학과로 전과하는 경로로 활용 가능. 수능최저가 부담되면 컷이 없는 학과(디비클철학·사진영상미디어 등)로 합격 후 전과를 권장.</div>
+
+              <h3><span class="n">4</span>2027 전형 — 교과 일반/면접, 종합</h3>
+              <p>총 5,028명 모집, <span class="key">수시 89.4%</span>. 면접 전형을 29개 → <span class="key">56개 학과로 확대</span>, 면접 비중 20→30%로 상향.</p>
+              <table class="simple">
+                <tr><th>전형</th><th>반영 방식</th><th>수능최저</th></tr>
+                <tr><td class="em">교과 일반전형</td><td>학생부 100% (의예 1단계 100% → 2단계 면접 30%)</td><td>있음 (2개 합 10 이내)</td></tr>
+                <tr><td class="em">교과 면접전형</td><td>1단계 학생부 100%(20배수) → 2단계 면접 30%</td><td>있음 (2개 합 12 이내, 완화)</td></tr>
+                <tr><td class="em">종합 일반/농어촌</td><td>서류 100% (의예 면접 30%)</td><td>의·약 외 없음</td></tr>
+              </table>
+              <ul>
+                <li>교과 성적 반영: 계열별 상위 교과 전 과목 + <span class="key">진로선택 상위 3과목</span>. 못하는 한 과목(예: 수학)은 통째로 제외 가능.</li>
+                <li>면접 20배수라, 경쟁률이 20:1 미만이면 사실상 전원 면접 기회.</li>
+              </ul>
+              <div class="twocol">
+                <figure><img src="images/k07_입학상담.jpg" alt="2027 입학상담 안내"></figure>
+                <figure><img src="images/k08_전형요소.jpg" alt="전형요소 및 반영비 조정"></figure>
+              </div>
+              <figure><img src="images/k09_수능최저.jpg" alt="수능최저 학력기준"></figure>
+
+              <h3><span class="n">5</span>학생부종합 — 정량 요소 제외</h3>
+              <ul>
+                <li>2027학년도부터 <span class="key">일반전형에서 성적(등급·원점수)을 드러내는 정량 요소를 빼고</span> 평가. "성적이 아닌, 학업을 대하는 태도와 과정"을 평가.</li>
+                <li>배점 조정: 학업역량 20 · 진로역량 40 · 공동체역량 40. (농어촌은 전년과 동일)</li>
+                <li>예체능도 실기 없이 <span class="key">서류 100%</span>로 지원 가능(음악·미술·체육). 실기 준비 못 한 학생에게 대안.</li>
+              </ul>
+              <figure><img src="images/k10_종합평가.jpg" alt="학생부종합 일반전형 평가"></figure>
+
+              <h3><span class="n">6</span>입시결과 &amp; 경기 지역</h3>
+              <ul>
+                <li>경기 학생은 교과·종합 모두 <span class="key">의예과·약학부</span>를 가장 많이 지원.</li>
+                <li>교과 일반 의예 수능최저 충족률 59.3%, 종합 의예 64.1%.</li>
+                <li>종합 의예과 최종 등록자는 <span class="key">대부분 일반고</span> 출신(3개년 기준).</li>
+              </ul>
+              <div class="twocol">
+                <figure><img src="images/k11_입시결과.jpg" alt="주요학과 입시결과"></figure>
+                <figure><img src="images/k12_의예과고교유형.jpg" alt="종합 의예과 고교유형별"></figure>
+              </div>
+
+              <div style="text-align:center;margin:28px 0 8px">
+                <a href="#timetable" style="display:inline-flex;align-items:center;gap:8px;padding:10px 22px;background:var(--accent);color:#fff;border-radius:50px;font-size:14px;font-weight:600;text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,.15);">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                  타임테이블로 돌아가기
+                </a>
+              </div>
+              <p class="disclaimer">※ 정확한 내용은 대학 홈페이지를 확인하시기 바랍니다.</p>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ 가천대학교 ============ -->
+      <div class="acc" id="gcu">
+        <div class="acc-head" onclick="toggleAcc(this)">
+          <div class="acc-logo">G</div>
+          <div class="ti">
+            <div class="nm">가천대학교</div>
+            <div class="sub">6/6(토) 12:30 · 입학사정관 발표 · 2027학년도 전형 안내</div>
+          </div>
+          <div class="chev">⌄</div>
+        </div>
+        <div class="acc-body">
+          <div class="acc-body-inner">
+
+            <!-- 링크 버튼 -->
+            <div class="links">
+              <a class="link-btn" href="https://admission.gachon.ac.kr/admission/html/main/main.asp" target="_blank" rel="noopener">
+                <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M3 8.5h18"/><circle cx="6" cy="6.25" r=".6" fill="currentColor" stroke="none"/><circle cx="8.2" cy="6.25" r=".6" fill="currentColor" stroke="none"/><circle cx="10.4" cy="6.25" r=".6" fill="currentColor" stroke="none"/></svg></span>
+                <span class="lb">입학처 홈페이지</span><span class="ds">입학처 바로가기</span>
+              </a>
+              <a class="link-btn" href="https://admission.gachon.ac.kr/admission/html/rolling/guide.asp" target="_blank" rel="noopener">
+                <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2.5"/><path d="M9 3.5h6a1 1 0 0 1 1 1V6a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V4.5a1 1 0 0 1 1-1Z"/><path d="m8.5 12 1.2 1.2 2-2.2"/><path d="m8.5 16.5 1.2 1.2 2-2.2"/><path d="M14 12.2h2.5M14 16.7h2.5"/></svg></span>
+                <span class="lb">수시 모집요강</span><span class="ds">2027학년도 수시</span>
+              </a>
+              <a class="link-btn" href="https://admission.gachon.ac.kr/admission/html/counsel/notice.asp" target="_blank" rel="noopener">
+                <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3.5H7a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8.5Z"/><path d="M14 3.5V8.5h5"/><path d="M12 11.5v5"/><path d="m9.7 14.3 2.3 2.2 2.3-2.2"/></svg></span>
+                <span class="lb">입학 관련 자료</span><span class="ds">입학정보 공지사항</span>
+              </a>
+            </div>
+
+            <!-- 강의 정리본 -->
+            <div class="lec">
+
+              <h3><span class="n">1</span>한눈에 보는 가천대</h3>
+              <p>2년 연속 <span class="key">수시 지원 전국 1위</span>(약 8.4만 건). 빠른 성장세와 잠재력이 강점. 의학·IT·반도체 특성화에 강하다.</p>
+              <div class="statrow">
+                <div class="stat"><div class="big">1위</div><div class="lbl">수시 지원 건수 (2년 연속)</div></div>
+                <div class="stat"><div class="big">370억</div><div class="lbl">반도체 특화 인력양성 지원금</div></div>
+                <div class="stat"><div class="big">지하 3층</div><div class="lbl">가천대역 직결(역세권 그 자체)</div></div>
+              </div>
+              <ul>
+                <li><b>의학계열</b> — 가천대 길병원 기반, 의·약·간호·한의학. 기초과학 연구 인프라도 강점.</li>
+                <li><b>IT</b> — 국내 최초 AI학과 신설, 사립대 최다 규모 첨단학과 운영. 공대 모집 규모가 큼.</li>
+                <li><b>반도체</b> — 그룹 지원으로 특화단지·교육 운영. 창업대학(연 매출 20억+ 기업 배출), '하와이 기숙사'(해외 연수) 등 인프라.</li>
+              </ul>
+              <div class="tip"><b>종합 지원 팁</b> · 첨단학과는 기존 학문이 융합된 새 학과라 학생의 "생각의 모습"이 중요. 종합전형 지원자는 학과 탐색을 선행하도록 안내. 수능을 포기하지 않도록 지도(논술·정시까지 같이).</div>
+
+              <h3><span class="n">2</span>논술전형 — 내신 미반영, EBS 연계</h3>
+              <ul>
+                <li><span class="key">논술 100%</span>, 내신 미반영. 수능최저 있음(의약 외 한 개 3 이내). EBS 수능특강·완성에서 연계, 객관식을 주관식으로 푸는 형태.</li>
+                <li>올해 의예·약학도 논술 선발 시작. 일반 논술 13문제(작년 15문제), 의약 논술은 더 어려움.</li>
+                <li>합격자를 내신으로 줄 세우면 <span class="key">5~6등급</span>대가 다수 — 역전 가능성 강조. 단, 결시율 약 55%(수능 직후라 미응시·최저 미충족).</li>
+              </ul>
+              <figure><img src="images/gc01_논술분포.jpg" alt="논술전형 등록자 분포"></figure>
+
+              <h3><span class="n">3</span>교과전형 — 학생부우수자 / 지역균형 / 특성화고</h3>
+              <ul>
+                <li><b>학생부우수자(교과 100%)</b> — 일반·자연 수능최저 없음(의약은 약한 최저). 최저 없어 합격선 높음, 주로 <span class="key">2등급 초반~3등급 초반</span>.</li>
+                <li><b>지역균형(교과 60% + 면접)</b> — 올해 5등급까지 만점(작년 4등급). 올 A 구간 권장. 면접이 매우 중요(올해 1단계 컷이 올 A 예상 → 대기실 옆자리 모두 동점).</li>
+                <li><b>특성화고교</b> — 1단계 교과 5배수 → 2단계 면접 50%.</li>
+              </ul>
+              <div class="twocol">
+                <figure><img src="images/gc02_교과우수자.jpg" alt="학생부우수자전형"></figure>
+                <figure><img src="images/gc06_지역균형.jpg" alt="지역균형전형"></figure>
+              </div>
+
+              <h3><span class="n">4</span>교과 성적 산출 — 유형1 / 유형2 (우수한 것 자동 반영)</h3>
+              <ul>
+                <li>두 방법으로 산출 후 <span class="key">우수한 성적 자동 반영</span>(선택 불필요). 인문은 과학 미반영, 자연은 사회 미반영.</li>
+                <li><b>유형1</b> — 반영교과 전 과목 평균(9구간→5구간 환산). 평균등급과 함께 <span class="key">6등급 이하 과목 유무</span>도 확인 필요(2.8이 3.0에 밀리는 현상 방지).</li>
+                <li><b>유형2</b> — 우수한 10개 과목 평균. 1·2등급이 많이 섞여야 유리. 실제 95% 이상이 유형1로 반영됨.</li>
+              </ul>
+              <div class="twocol">
+                <figure><img src="images/gc04_반영비율.jpg" alt="교과 반영비율"></figure>
+                <figure><img src="images/gc05_반영방법.jpg" alt="유형1 유형2 환산"></figure>
+              </div>
+
+              <h3><span class="n">5</span>학생부종합 — 활동 위주, 면접이 핵심</h3>
+              <ul>
+                <li>내신 비중이 낮고 <span class="key">활동 위주</span>로 선발(평균 3점 중반이나 폭이 매우 넓음). 인성·전공·학업 역량을 생기부 전체에서 평가.</li>
+                <li><b>지역균형 면접</b>은 방향성보다 <span class="key">기초 교과 개념</span>(미적분·삼각함수·몰 등) 위주 질문. 종합 면접은 학과 관련 사실확인 질문.</li>
+                <li>1단계 3배수 이하 통과자가 약 50% — <span class="key">면접의 중요성</span>이 매우 큼.</li>
+              </ul>
+              <div class="twocol">
+                <figure><img src="images/gc07_종합표지.jpg" alt="학생부종합전형 평가요소"></figure>
+                <figure><img src="images/gc08_종합지역차이.jpg" alt="종합전형과 지역균형 차이"></figure>
+              </div>
+              <div class="twocol">
+                <figure><img src="images/gc09_종합내신분포.jpg" alt="종합 1단계 내신분포"></figure>
+                <figure><img src="images/gc11_종합최종합격.jpg" alt="종합 최종합격 현황"></figure>
+              </div>
+              <div class="tip"><b>면접 준비</b> · 예상 질문을 모아 답변을 준비하되 <b>정형화된 답변을 외우지 않도록</b> 지도. 당일 질문은 변형되어 나오므로, 변형 질문에 대응하는 연습이 필요. 분포표는 평균 구간을 기준으로 안내(낮은 내신 합격자는 활동·면접이 우수했던 것).</div>
+
+              <h3><span class="n">6</span>의학계열 &amp; 정시</h3>
+              <ul>
+                <li>의약학 종합도 활동이 중요(수능최저로 학력 검증). 내신은 3점 중반대까지 분포.</li>
+                <li>지역의사선발전형(교과 100%), 조기취업형 계약학과(3·4학년 일학습병행) 등도 운영.</li>
+                <li><b>정시</b> — 일반전형1(백분위)·일반전형2(등급, 신설). 백분위 평균 약 85점 이상 목표.</li>
+              </ul>
+              <div class="twocol">
+                <figure><img src="images/gc10_종합의예분포.jpg" alt="종합 의예 내신분포"></figure>
+                <figure><img src="images/gc12_지역의사.jpg" alt="지역의사선발전형"></figure>
+              </div>
+
+              <div style="text-align:center;margin:28px 0 8px">
+                <a href="#timetable" style="display:inline-flex;align-items:center;gap:8px;padding:10px 22px;background:var(--accent);color:#fff;border-radius:50px;font-size:14px;font-weight:600;text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,.15);">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                  타임테이블로 돌아가기
+                </a>
+              </div>
+              <p class="disclaimer">※ 정확한 내용은 대학 홈페이지를 확인하시기 바랍니다.</p>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ 경기대학교 ============ -->
+      <div class="acc" id="kgu">
+        <div class="acc-head" onclick="toggleAcc(this)">
+          <div class="acc-logo">KGU</div>
+          <div class="ti">
+            <div class="nm">경기대학교</div>
+            <div class="sub">6/6(토) 12:50 · 입학사정관 발표 · 수원·서울 캠퍼스 · 2027학년도 전형 안내</div>
+          </div>
+          <div class="chev">⌄</div>
+        </div>
+        <div class="acc-body">
+          <div class="acc-body-inner">
+
+            <!-- 링크 버튼 -->
+            <div class="links">
+              <a class="link-btn" href="https://enter.kyonggi.ac.kr/index.do" target="_blank" rel="noopener">
+                <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M3 8.5h18"/><circle cx="6" cy="6.25" r=".6" fill="currentColor" stroke="none"/><circle cx="8.2" cy="6.25" r=".6" fill="currentColor" stroke="none"/><circle cx="10.4" cy="6.25" r=".6" fill="currentColor" stroke="none"/></svg></span>
+                <span class="lb">입학처 홈페이지</span><span class="ds">입학처 바로가기</span>
+              </a>
+              <a class="link-btn" href="https://enter.kyonggi.ac.kr/cms/FR_CON/index.do?MENU_ID=120" target="_blank" rel="noopener">
+                <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2.5"/><path d="M9 3.5h6a1 1 0 0 1 1 1V6a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V4.5a1 1 0 0 1 1-1Z"/><path d="m8.5 12 1.2 1.2 2-2.2"/><path d="m8.5 16.5 1.2 1.2 2-2.2"/><path d="M14 12.2h2.5M14 16.7h2.5"/></svg></span>
+                <span class="lb">수시 모집요강</span><span class="ds">2027학년도 수시</span>
+              </a>
+              <a class="link-btn" href="https://enter.kyonggi.ac.kr/cms/FR_CON/index.do?MENU_ID=650" target="_blank" rel="noopener">
+                <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3.5H7a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8.5Z"/><path d="M14 3.5V8.5h5"/><path d="M12 11.5v5"/><path d="m9.7 14.3 2.3 2.2 2.3-2.2"/></svg></span>
+                <span class="lb">입학 관련 자료</span><span class="ds">자료실·가이드북</span>
+              </a>
+            </div>
+
+            <!-- 강의 정리본 -->
+            <div class="lec">
+
+              <h3><span class="n">1</span>한눈에 보는 경기대</h3>
+              <p><span class="key">광교(수원)·서울</span> 이원화 캠퍼스. 본교·분교 개념이 아니며, 관광문화대학만 서울, 나머지 학과는 모두 수원캠퍼스. 전체 약 3,000명 모집(수시 70% / 정시 30%).</p>
+              <div class="statrow">
+                <div class="stat"><div class="big">2~3등급</div><div class="lbl">교과전형 합격선</div></div>
+                <div class="stat"><div class="big">3~4등급</div><div class="lbl">종합전형 합격선</div></div>
+                <div class="stat"><div class="big">4~6등급</div><div class="lbl">논술전형 합격선</div></div>
+              </div>
+              <ul>
+                <li>입학 후 BARUN 시스템·연 250여 개 비교과 프로그램·1:1 취업 컨설팅·국제교류(35개교) 운영.</li>
+                <li>유연한 학사제도(복수·부전공·융합전공·전과), 14개 전공+유아교육과 교직이수 가능.</li>
+              </ul>
+              <div class="twocol">
+                <figure><img src="images/kg01_수원학과.jpg" alt="수원캠퍼스 모집학과"></figure>
+                <figure><img src="images/kg12_비교과.jpg" alt="비교과 프로그램"></figure>
+              </div>
+              <div class="tip"><b>지원 지도 핵심</b> · 교과 2~3등급, 종합 3~4등급, 논술 4~6등급까지 합격 가능해 <b>한 반 대부분의 학생이 경기대에 지원할 수 있다</b>. 학급 전체에 폭넓게 안내 가능.</div>
+
+              <h3><span class="n">2</span>교과전형 — 교과 90% + 출결 10%</h3>
+              <ul>
+                <li>교과성적우수자(수능최저 있음·유일), 학교장추천(전교과·재수생까지), 농어촌·기초생활수급자 등.</li>
+                <li><span class="key">석차등급 환산점수</span> 반영: 1+4등급 합(195) &lt; 2+3등급 합(196) → <b>성적 편차가 작은 학생이 유리</b>.</li>
+                <li>출결 10%: 미인정 결석·조퇴·지각·결과 모두 반영(4일 이하 무감점, 5일부터 감점).</li>
+                <li>수능최저(교과성적우수자만): 상위 2개 영역 합 7 이내, 한국사 6 이내. <span class="key">영어 1·2등급 모두 1등급 처리</span>. 전년 충족률 60.5%.</li>
+              </ul>
+              <div class="twocol">
+                <figure><img src="images/kg03_교과반영.jpg" alt="교과 90% 반영"></figure>
+                <figure><img src="images/kg04_수능최저.jpg" alt="수능최저 학력기준"></figure>
+              </div>
+              <figure><img src="images/kg05_교과성적분포.jpg" alt="교과 성적분포"></figure>
+              <div class="tip"><b>입시결과 해석</b> · 특정 학과에 4.3등급대 학생이 '문 닫고' 들어온 경우(화학과 등), 다음 해 합격선·경쟁률이 오를 수 있어 그 결과만 보고 지원하면 위험. 대부분 학과는 2.5~3.6등급대에서 합격.</div>
+
+              <h3><span class="n">3</span>논술전형 — 서술형 논술(약술 아님)</h3>
+              <ul>
+                <li>자유전공학부(수원·서울)로 선발. 논술 90% + 교과 10%, <span class="key">수능최저 없음</span>.</li>
+                <li>언어·사회 논술 / 수리 논술 <span class="key">선택 가능</span>(캠퍼스·계열 무관, 1학년 말 전공 선택). 단 사범·AI컴퓨터·예체능은 선택 불가.</li>
+                <li><b>서술형 논술</b> 유지(2028까지) — 약술형 아님. 고교 교육과정 내 출제로 평이. 평균 5등급, 최저 7등급대도 합격.</li>
+                <li>온라인 모의논술(7/14~24)·논술 가이드·문제풀이 영상(6월) 제공. 논술고사 11/19(수능 다음 주 금).</li>
+              </ul>
+              <div class="twocol">
+                <figure><img src="images/kg06_논술개요.jpg" alt="논술우수자전형 개요"></figure>
+                <figure><img src="images/kg07_논술반영교과.jpg" alt="논술 반영교과"></figure>
+              </div>
+
+              <h3><span class="n">4</span>학생부종합 — 경기대 고유 평가요소</h3>
+              <p>가장 많은 인원을 선발. KGU학생부종합·SW우수자(다단계, 면접), 기회균형·사회배려(서류 100%). 종합전형 간 중복지원 불가(교과·종합 함께는 가능).</p>
+              <ul>
+                <li>다른 대학의 '학업·진로·공동체'와 달리, 경기대는 <span class="key">학업탐구역량·자기계발역량·공익역량</span>으로 평가(학업탐구 안에 학업성취수준+계열적합성).</li>
+                <li>반영비율: 학업성취 30 · 계열적합성 30 · 공동체의식 20 · 자기주도 20. (SW우수자는 계열적합성 35·학업성취 25)</li>
+                <li><span class="key">출결을 자기주도성에서 평가</span> — 질병 결석도 소명 없으면 반영(누적 15회 이상 등). 학교생활 충실도 기반 전형.</li>
+              </ul>
+              <div class="twocol">
+                <figure><img src="images/kg08_평가요소.jpg" alt="경기대 평가요소 및 평가항목"></figure>
+                <figure><img src="images/kg09_평가항목.jpg" alt="평가요소 평가항목 표"></figure>
+              </div>
+
+              <h3><span class="n">5</span>면접 — 서류평가 근거에서 질문 개발</h3>
+              <ul>
+                <li>1단계 서류 70% + 면접 30%(순위 변경 약 23%, 합불 영향 약 10%).</li>
+                <li>면접 비율: 잠재역량 15 · 사회역량 10 · 소통역량 5. <span class="key">서류평가 근거에서 면접 문항 개발</span>(학업성취·계열적합·자기주도 → 잠재, 공동체의식 → 사회).</li>
+                <li>생기부 기반 사실확인 면접. "질문+답변이 모두 있는 경우"와 "질문은 있으나 답이 없는 경우(실제 활동 확인)"로 나눠 대비 권장.</li>
+                <li>블라인드 면접(교복 불가), 학과당 약 10분, 첫 질문은 모든 학과 공통 <span class="key">지원 동기</span>.</li>
+              </ul>
+              <figure><img src="images/kg10_평가비율.jpg" alt="면접 평가 비율"></figure>
+              <figure><img src="images/kg11_면접질문.jpg" alt="면접 평가 질문 예시"></figure>
+              <div class="tip"><b>2027 평가 방향</b> · 학교생활 충실도 기반 전형으로 <b>출결을 가장 중요하게</b> 본다. 1학년의 잦은 진로 변경보다 2학년 이후 구체화·심화되는 모습을 긍정 평가. 과목 이수 자체보다 "왜 이수했고 어떤 역량이 향상됐는지"가 핵심. 성실히 노력한 3등급대 학생을 종합전형으로 적극 추천.</div>
+
+              <div style="text-align:center;margin:28px 0 8px">
+                <a href="#timetable" style="display:inline-flex;align-items:center;gap:8px;padding:10px 22px;background:var(--accent);color:#fff;border-radius:50px;font-size:14px;font-weight:600;text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,.15);">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                  타임테이블로 돌아가기
+                </a>
+              </div>
+              <p class="disclaimer">※ 정확한 내용은 대학 홈페이지를 확인하시기 바랍니다.</p>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+
+      <!-- ============ 한국공학대학교 ============ -->
+      <div class="acc" id="tku">
+        <div class="acc-head" onclick="toggleAcc(this)">
+          <div class="acc-logo">TUK</div>
+          <div class="ti">
+            <div class="nm">한국공학대학교</div>
+            <div class="sub">6/6(토) 14:20 · 입학사정관 발표 · 시흥(정왕) 캠퍼스 · 2027학년도 전형 안내</div>
+          </div>
+          <div class="chev">⌄</div>
+        </div>
+        <div class="acc-body">
+          <div class="acc-body-inner">
+
+            <!-- 링크 버튼 -->
+            <div class="links">
+              <a class="link-btn" href="https://iphak.tukorea.ac.kr" target="_blank" rel="noopener">
+                <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M3 8.5h18"/><circle cx="6" cy="6.25" r=".6" fill="currentColor" stroke="none"/><circle cx="8.2" cy="6.25" r=".6" fill="currentColor" stroke="none"/><circle cx="10.4" cy="6.25" r=".6" fill="currentColor" stroke="none"/></svg></span>
+                <span class="lb">입학처 홈페이지</span><span class="ds">입학처 바로가기</span>
+              </a>
+              <a class="link-btn" href="https://iphak.tukorea.ac.kr/susi/guide.htm" target="_blank" rel="noopener">
+                <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2.5"/><path d="M9 3.5h6a1 1 0 0 1 1 1V6a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V4.5a1 1 0 0 1 1-1Z"/><path d="m8.5 12 1.2 1.2 2-2.2"/><path d="m8.5 16.5 1.2 1.2 2-2.2"/><path d="M14 12.2h2.5M14 16.7h2.5"/></svg></span>
+                <span class="lb">수시 모집요강</span><span class="ds">2027학년도 수시</span>
+              </a>
+              <a class="link-btn" href="https://iphak.tukorea.ac.kr/guide/pds.htm" target="_blank" rel="noopener">
+                <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3.5H7a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8.5Z"/><path d="M14 3.5V8.5h5"/><path d="M12 11.5v5"/><path d="m9.7 14.3 2.3 2.2 2.3-2.2"/></svg></span>
+                <span class="lb">입학 관련 자료</span><span class="ds">자료실·가이드북</span>
+              </a>
+            </div>
+
+            <!-- 강의 정리본 -->
+            <div class="lec">
+
+              <h3><span class="n">1</span>한눈에 보는 한국공학대</h3>
+              <p>산업통상자원부가 설립한 <span class="key">수도권 유일 공학 특성화 국립법인대학</span>. 경기도 시흥 정왕동(4호선·수인분당선 정왕역 도보 15분·셔틀 5분). 경기 남부권 통학 최적 입지.</p>
+              <div class="statrow">
+                <div class="stat"><div class="big">70%</div><div class="lbl">9년 평균 취업률</div></div>
+                <div class="stat"><div class="big">34%</div><div class="lbl">대기업·중견기업 취업률</div></div>
+                <div class="stat"><div class="big">87%</div><div class="lbl">전공 일치 취업률</div></div>
+              </div>
+              <ul>
+                <li>수도권 49개 대학 중 <span class="key">건강보험 가입자 취업비율 1위</span>(1,000명 이상 배출 대학 기준).</li>
+                <li>정부 3대 반도체 사업 전체 선정, IT·SW중심대학·반도체 분야 정부 예산 지원.</li>
+                <li>산학협력 특화: 이지제도(교내 기업 연구소)·가족회사제도(교외 연구 수행). 4학년 졸업작품 전시회(한국공학대전)에서 장관상·도지사상 시상.</li>
+                <li>전과 제도: 1학년 1학기 수료 후 전과 가능(2학기부터). 유사 공학 전공 간 전략 지원 활용 권장.</li>
+                <li>기숙사 수용률 약 35%(수도권 평균 대비 2배), 약 2,300명 수용. 1학기는 거리순·2학기는 성적순 선발.</li>
+              </ul>
+              <div class="tip"><b>전공 선택 3가지 경로</b> · ① 해당 전공 직접 지원 ② 단과대별 자율전공으로 지원 후 2학년에 전공 선택(정원 150% 배정) ③ 자율전공학부(교양자율전공)로 진입 후 전체 전공 선택(100% 배정). 우리 대학에 없는 전공을 희망하더라도, 수학 역량이 우수한 공학 계열 관심 학생이라면 긍정 평가.</div>
+
+              <h3><span class="n">2</span>논술전형 — 수학만, 수능 이후 시험</h3>
+              <ul>
+                <li><b>2027 변경:</b> 논술을 개별 전공이 아닌 <span class="key">단과대별 자율전공·자율전공학부</span>로만 선발(80명 감소, 280명→200명). 나머지 80명은 교과·종합으로 이동.</li>
+                <li>논술 반영: 교과 20% + 논술 80%. <span class="key">수학만 출제</span>(9문제, 수Ⅰ·수Ⅱ·확통·미적·기하).</li>
+                <li><span class="key">논술고사일이 수능 이후</span>: 수능 결과 보고 논술 응시 여부 결정 가능. 정시 준비 학생도 수능 후 지원 전략 수립 가능.</li>
+                <li>최종합격자 60%가 내신 4.5등급 이하. 논술 점수(9문제 중 2개 이내 오답 = 80점 수준)가 당락 결정.</li>
+                <li>경영 계열 점수대가 공학 계열보다 낮아, 전략적 선택 가능.</li>
+              </ul>
+              <div class="tip"><b>논술 팁</b> · 9문제 중 8번·9번이 15점짜리. 2개 이내 오답이면 합격권. 경영도 공학과 문제 동일하나 점수가 낮아 전략 지원 가능.</div>
+
+              <h3><span class="n">3</span>교과전형 — 교과우수자 vs 지역균형</h3>
+              <ul>
+                <li><b>교과우수자:</b> 수능최저 있음(충족률 65~70%). 공학 계열 영어 7등급 이내, 경영 8등급 이내. 미적기하 선택 시 3등급 상향.</li>
+                <li><b>지역균형:</b> 학교장 추천, 고교별 추천 인원 제한 없음, 수능최저 없음. 내신은 교과우수자보다 다소 높게 형성.</li>
+                <li>반영 방법: 공학 계열 — 국·수·영·과 각 4과목(16과목) + 진로선택 영역당 2과목(8과목) = 총 24과목 반영.</li>
+                <li>입시결과: 교과우수자 평균 3.0등급(전년보다 소폭 상승), 합격자 편차 0.1등급 수준으로 매우 좁음. 지역균형 평균 3등급 초반~2등급 후반.</li>
+              </ul>
+              <div class="tip"><b>지도 전략</b> · 최저 부담되는 학생 → 지역균형 추천. 교과 우수자는 평균 점수 기준으로 지도 권장(편차가 좁아 평균이 중요).</div>
+
+              <h3><span class="n">4</span>학생부종합 — 창의인재(면접), 기회균형, 융합인재</h3>
+              <ul>
+                <li><b>기회균형(농어촌 등):</b> 점수가 교과전형보다 낮음. 지원 자격 되면 적극 추천. 평균 4.4등급.</li>
+                <li><b>창의인재전형(면접):</b> <span class="key">2027 56명 증가</span>. 서류 60% + 2단계 면접 40%. 평균 4등급대. 학종·면접 자신 있으면 추천.</li>
+                <li><b>융합인재전형(자율전공학부 전용):</b> 평균 3.8등급(최저 4.6등급, 약 1등급 편차). 4등급 중반 학생까지 추천 가능.</li>
+                <li>평가요소: 개별전공 지원 — 진로역량 55% · 학업역량 30% · 공동체역량 15%. 면접에서는 공동체역량이 30%로 상승(대면 인성·태도 확인).</li>
+                <li>게임공학과·디자인공학과는 특기생도 일부 합격해 점수 다소 높게 형성. 생명과학공학과는 여학생 선호로 높은 편.</li>
+              </ul>
+
+              <h3><span class="n">5</span>정시</h3>
+              <ul>
+                <li><b>일반학생Ⅰ:</b> 국·영·수·탐 4과목 반영(공학·경영 비율 차이 있음). 평균 400~420점(500점 만점).</li>
+                <li><b>일반학생Ⅱ:</b> 수학 필수 포함 3과목 반영. 최우수 45%·차순 35%·나머지 20%. 약 450점 수준.</li>
+                <li><b>농어촌학생:</b> 300점 후반대. 지원 자격 되면 적극 추천.</li>
+              </ul>
+
+              <div style="text-align:center;margin:28px 0 8px">
+                <a href="#timetable" style="display:inline-flex;align-items:center;gap:8px;padding:10px 22px;background:var(--accent);color:#fff;border-radius:50px;font-size:14px;font-weight:600;text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,.15);">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                  타임테이블로 돌아가기
+                </a>
+              </div>
+              <p class="disclaimer">※ 정확한 내용은 대학 홈페이지를 확인하시기 바랍니다.</p>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ 단국대학교 ============ -->
+      <div class="acc" id="dku">
+        <div class="acc-head" onclick="toggleAcc(this)">
+          <div class="acc-logo">DKU</div>
+          <div class="ti">
+            <div class="nm">단국대학교</div>
+            <div class="sub">6/6(토) 14:40 · 입학사정관 발표 · 죽전·천안 캠퍼스 · 2027학년도 전형 안내</div>
+          </div>
+          <div class="chev">⌄</div>
+        </div>
+        <div class="acc-body">
+          <div class="acc-body-inner">
+
+            <!-- 링크 버튼 -->
+            <div class="links">
+              <a class="link-btn" href="https://ipsi.dankook.ac.kr" target="_blank" rel="noopener">
+                <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M3 8.5h18"/><circle cx="6" cy="6.25" r=".6" fill="currentColor" stroke="none"/><circle cx="8.2" cy="6.25" r=".6" fill="currentColor" stroke="none"/><circle cx="10.4" cy="6.25" r=".6" fill="currentColor" stroke="none"/></svg></span>
+                <span class="lb">입학처 홈페이지</span><span class="ds">입학처 바로가기</span>
+              </a>
+              <a class="link-btn" href="http://ipsi.dankook.ac.kr/jukjeon/doumi/mojip.html?bbsid=juk_paper&ctg_cd=01" target="_blank" rel="noopener">
+                <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2.5"/><path d="M9 3.5h6a1 1 0 0 1 1 1V6a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V4.5a1 1 0 0 1 1-1Z"/><path d="m8.5 12 1.2 1.2 2-2.2"/><path d="m8.5 16.5 1.2 1.2 2-2.2"/><path d="M14 12.2h2.5M14 16.7h2.5"/></svg></span>
+                <span class="lb">수시 모집요강</span><span class="ds">2027학년도 수시</span>
+              </a>
+              <a class="link-btn" href="https://ipsi.dankook.ac.kr/jukjeon/notice/list.html?bbsid=juk_info&ctg_cd=" target="_blank" rel="noopener">
+                <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3.5H7a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8.5Z"/><path d="M14 3.5V8.5h5"/><path d="M12 11.5v5"/><path d="m9.7 14.3 2.3 2.2 2.3-2.2"/></svg></span>
+                <span class="lb">입학 관련 자료</span><span class="ds">자료실·가이드북</span>
+              </a>
+            </div>
+
+            <!-- 강의 정리본 -->
+            <div class="lec">
+
+              <h3><span class="n">1</span>한눈에 보는 단국대</h3>
+              <p>1947년 설립, 김구 선생 독립운동 자금으로 건립. <span class="key">죽전(IT·시티 특성화)·천안(외국어·BT 특성화)</span> 일대학 이캠퍼스 체제. 의·치·약학과 모두 설치. 죽전에 프리우스국제대학(전 과목 영어 수업) 신설(2026~). 수시 70% 선발.</p>
+              <div class="statrow">
+                <div class="stat"><div class="big">죽전</div><div class="lbl">IT·공학·사회과학·경영</div></div>
+                <div class="stat"><div class="big">천안</div><div class="lbl">외국어·BT·의치약·예체능</div></div>
+                <div class="stat"><div class="big">66개국</div><div class="lbl">474교 국제협약·디즈니 인턴십</div></div>
+              </div>
+              <ul>
+                <li>광역선발: 죽전 퇴계혁신칼리지(무전공 유형1) + 인문·사회·공학·SW융합 계열 광역. 천안 율곡혁신칼리지.</li>
+                <li>SW인재전형: 계열 광역 선발, 100% 일반계고 학생. 고양·성남시 등에서 많이 지원.</li>
+                <li>국제역량: 디즈니 인턴십, 국제 여름·겨울학교(외국 교수·학생 초청), 전교생 SWAI 융합 교양 필수.</li>
+              </ul>
+
+              <h3><span class="n">2</span>2027 주요 변경사항</h3>
+              <ul>
+                <li><span class="key">정시 수능 정성평가 10% 도입</span>(2028 예정 → 2027부터 적용). 9등급제·5등급제 각각 환산식 적용(졸업자도 지원 가능).</li>
+                <li><b>면접형 반영 비율 확대:</b> 1단계 성적 70·면접 30 → <span class="key">1단계 성적 60·면접 40</span>(2028부터). 학생 어필 기회 확대.</li>
+                <li><b>창업인재전형 폐지</b>(2028~): 2027년이 마지막. 경영·전자전기융합반도체 3개 학과만 해당. 창업 관련 활동 있는 학생 올해 지원 고려.</li>
+                <li>천안캠퍼스 지역균형 선발 교과전형 신설.</li>
+                <li>비교과 출결 5%(교과·종합 전형에 반영). 무단 결석만 포함(미인정 조퇴·지각 불포함, 향후 강화 예정).</li>
+                <li>논술: 2028에도 유지. 교과 반영 12→10%로 감소 → <span class="key">1등급~6등급 차이 0.5점</span>. 논술 점수로 당락 결정.</li>
+                <li>영어 반영 비율 증가(종합 계열). 수능: 통합사회·통합과학 반영(계열별 비율 차등).</li>
+              </ul>
+              <div class="twocol">
+                <figure><img src="images/d19.jpg" alt="단국대 변경사항1"></figure>
+                <figure><img src="images/d20.jpg" alt="단국대 변경사항2"></figure>
+              </div>
+
+              <h3><span class="n">3</span>학생부교과 전형</h3>
+              <ul>
+                <li>죽전 수능최저: 2개 합 7. 천안 수능최저: 2개 합 8.</li>
+                <li>비교과 출결 5% 반영(2027부터). 논술 전형은 출결 미반영(유일).</li>
+                <li>입시결과: 죽전 교과 2등급 중반, 천안 3~4등급 중반.</li>
+              </ul>
+
+
+              <h3><span class="n">4</span>학생부종합 — DK인재 서류형·면접형</h3>
+              <ul>
+                <li><b>서류형:</b> 서류 100%, 수능최저 없음. 학업역량 45% 가장 높음(기초학습 가능성 중심).</li>
+                <li><b>면접형:</b> 1단계 서류(2~3배수) → 2단계 면접(30%). 진로역량 45% 가장 높음(계열 관심·적합성 중심).</li>
+                <li>복수지원: DK인재 서류형 + 면접형 동시 지원 가능(단, 동일 전형명 동일 캠퍼스 중복 불가).</li>
+                <li>평가 3요소: 학업역량(학업성취도+탐구력)·진로역량(관련 이수·선택과목·발전정도)·공동체역량(협업·소통).</li>
+                <li><span class="key">전 과목 평가</span>(주요·비주요 구분 없음), 세부특기사항(세특) 중요. 모든 영역을 진로와 관련되게 작성하는 것은 신뢰도가 떨어짐.</li>
+                <li>광역·계열 강형: '성장역량'으로 명칭 변경. 특정 전공 미확정 학생 위주로 탐색 과정 전반 평가.</li>
+                <li>면접 역전률: 20% 이상(하위 배수 합격 사례 다수). 개인 학생부 기반 질문, 10분 이내 개인 면접.</li>
+              </ul>
+              <div class="twocol">
+                <figure><img src="images/d26.jpg" alt="종합 평가요소"></figure>
+                <figure><img src="images/d28.jpg" alt="면접 평가"></figure>
+              </div>
+              <div class="tip"><b>면접 대비 팁</b> · 공동체역량 면접 질문이 늘어난다는 뜻이 아니라, 대면 인성·태도·소통을 추가 확인한다는 의미. 자소서 폐지 이후 어필 기회 부족 → 면접 비율 확대로 보완. 역전 20% 이상으로, 중하위 배수도 면접 준비 철저히.</div>
+
+              <h3><span class="n">5</span>논술전형 — 계열 광역으로도 지원 가능</h3>
+              <ul>
+                <li>310명 선발, 수능최저 없음. <span class="key">2027 처음으로 계열 광역·무전공 광역에서도 논술 선발</span>.</li>
+                <li>인문 시험 보고 들어오면 자연 전공도 선택 가능(시험 종류로 인문·자연 구분, 전공은 입학 후 선택).</li>
+                <li>교과 반영 10%(1~6등급 차이 0.5점) → 논술 점수가 사실상 전부.</li>
+              </ul>
+
+              <h3><span class="n">6</span>경기 지역 지원 분포</h3>
+              <ul>
+                <li>전체 신입생 5% 이상이 일반계고 경기 학생. 고양·안산·용인·안양·화성 등에서 주요 지원.</li>
+                <li>고양·성남: SW인재 지원 多. 용인: DKU 서류. 안양: SW. 화성: 농어촌·교과.</li>
+                <li>약학과·의과: 등록자 100% 일반계고. SW인재는 100% 일반계고, 계열 광역.</li>
+              </ul>
+              <div class="twocol">
+                <figure><img src="images/d46.jpg" alt="지역별 분포"></figure>
+                <figure><img src="images/d47.jpg" alt="입시결과 분포"></figure>
+              </div>
+
+              <div style="text-align:center;margin:28px 0 8px">
+                <a href="#timetable" style="display:inline-flex;align-items:center;gap:8px;padding:10px 22px;background:var(--accent);color:#fff;border-radius:50px;font-size:14px;font-weight:600;text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,.15);">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                  타임테이블로 돌아가기
+                </a>
+              </div>
+              <p class="disclaimer">※ 정확한 내용은 대학 홈페이지를 확인하시기 바랍니다.</p>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ 인천대학교 ============ -->
+      <div class="acc" id="inu">
+        <div class="acc-head" onclick="toggleAcc(this)">
+          <div class="acc-logo">INU</div>
+          <div class="ti">
+            <div class="nm">인천대학교</div>
+            <div class="sub">6/6(토) 15:00 · 입학사정관 발표 · 인천 송도 캠퍼스 · 2027학년도 전형 안내</div>
+          </div>
+          <div class="chev">⌄</div>
+        </div>
+        <div class="acc-body">
+          <div class="acc-body-inner">
+
+            <!-- 링크 버튼 -->
+            <div class="links">
+              <a class="link-btn" href="https://admission.inu.ac.kr" target="_blank" rel="noopener">
+                <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M3 8.5h18"/><circle cx="6" cy="6.25" r=".6" fill="currentColor" stroke="none"/><circle cx="8.2" cy="6.25" r=".6" fill="currentColor" stroke="none"/><circle cx="10.4" cy="6.25" r=".6" fill="currentColor" stroke="none"/></svg></span>
+                <span class="lb">입학처 홈페이지</span><span class="ds">입학처 바로가기</span>
+              </a>
+              <a class="link-btn" href="https://admission.inu.ac.kr/submenu.do?menuurl=7dcKmGI5ZvQB9F1mAEBAGg%3d%3d&" target="_blank" rel="noopener">
+                <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2.5"/><path d="M9 3.5h6a1 1 0 0 1 1 1V6a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V4.5a1 1 0 0 1 1-1Z"/><path d="m8.5 12 1.2 1.2 2-2.2"/><path d="m8.5 16.5 1.2 1.2 2-2.2"/><path d="M14 12.2h2.5M14 16.7h2.5"/></svg></span>
+                <span class="lb">수시 모집요강</span><span class="ds">2027학년도 수시</span>
+              </a>
+              <a class="link-btn" href="https://admission.inu.ac.kr/submenu.do?menuurl=KHw0IM8v%2bcgQ4zs30Ih%2b4w%3d%3d&" target="_blank" rel="noopener">
+                <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3.5H7a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8.5Z"/><path d="M14 3.5V8.5h5"/><path d="M12 11.5v5"/><path d="m9.7 14.3 2.3 2.2 2.3-2.2"/></svg></span>
+                <span class="lb">입학 관련 자료</span><span class="ds">자료실·가이드북</span>
+              </a>
+            </div>
+
+            <!-- 강의 정리본 -->
+            <div class="lec">
+
+              <h3><span class="n">1</span>한눈에 보는 인천대</h3>
+              <p><span class="key">국립대학교</span>(인천광역시립). 인천 송도국제도시 위치. 수시 7:정시 3 비율. 총 약 2,700명 선발(정원 내·외 포함). 수능최저 있는 전형은 <span class="key">교과성적우수자 단 하나</span>.</p>
+              <div class="statrow">
+                <div class="stat"><div class="big">456명</div><div class="lbl">교과성적우수자 선발</div></div>
+                <div class="stat"><div class="big">694명</div><div class="lbl">학종 자기추천 선발</div></div>
+                <div class="stat"><div class="big">60%↑</div><div class="lbl">교과 수능최저 충족률</div></div>
+              </div>
+              <ul>
+                <li>동북아통상학부: 4년 전액 장학금 + 기숙사 1순위 + 미국 대학 1년 이수 가능(국립대 등록금으로). GPA 2.5 이상 조건.</li>
+                <li>국립대 등록금으로 미국 대학 1년 이수 → 학비 단위 하나 절약 효과.</li>
+                <li>복수지원: 1~7 그룹별 하나씩 지원 가능. 교과+종합, 교과 내 두 전형 동시 지원 활용 多.</li>
+                <li>신입생 95%가 일반고. 자사고·특목고 연연하지 않아도 됨. 경기 지역 신입생 약 30%.</li>
+                <li><b>2027 주요 변경:</b> 스포츠과학부 실기우수자전형 — 단계제 폐지, 내신 의미 감소·실기 중요성 대폭 상향. 단과대명 '전문기술대학→인공지능대학', 정보통신공학과→AI정보통신공학부, 임베디드시스템공학과→AI시스템공학과. 지역균형 2028학년도 폐지 예정.</li>
+              </ul>
+
+              <h3><span class="n">2</span>교과성적우수자전형 — 수능최저 有</h3>
+              <ul>
+                <li>교과 100%, 수능최저: <span class="key">2개 합 7이내</span>. 동북아통상학부 2개 합 5.</li>
+                <li>반영 방법: <span class="key">석차등급 환산점수표</span> 적용, 해당 교과군 전체 과목 모두 반영(상위 N개 방식 아님).</li>
+                <li>진로선택 가산점: 일반 선택 대비 가산비율 0.05배(사실상 무력화, 지원자 이수단위 비슷). 자유전공학부는 0.25배(무려 4배 가산) → 인문·자연 분리 선발(교차 지원 방지 목적).</li>
+                <li>충족률 약 60% 중반(전년 약 50% 중반 → 소폭 상승). 경쟁률 6.6대 1(명목)이지만 최저 미충족 감안 시 실질 경쟁률 더 낮음.</li>
+                <li>입시결과: 등록자 평균 2점대 중후반. 전년 대비 소폭 상승. 학과별 자료는 책자 참고.</li>
+              </ul>
+              <div class="tip"><b>입결 해석 주의</b> · 25학년도 인류과가 4.24등급 → 다음해 성적이 급등. "이 결과 보고 지원하면 위험"을 강조. 지역균형도 25학년도 10대1 경쟁률 후 26학년도 6대1로 하락하며 성적 하락. 반드시 최근 3개년 흐름 보고 지원.</div>
+
+              <h3><span class="n">3</span>지역균형전형 — 2028 폐지 예정</h3>
+              <ul>
+                <li>교과 100%, 수능최저 없음. 고교별 추천 인원 제한 없음(일반적인 지역균형과 동일 구조).</li>
+                <li>25학년도 10대 1 → 26학년도 6대 1 급락. 성적도 하락(2.90·2.78 수준). 2028에 폐지 예정이라 변수 큼.</li>
+                <li>교과성적우수자 전형과 성적 차이가 좁혀져 사실상 구분 의미가 희미해짐.</li>
+              </ul>
+
+              <h3><span class="n">4</span>자기추천(학종) — 면접 포함</h3>
+              <ul>
+                <li>1단계 서류 100%(학생부종합 평가) → 2단계 면접 30%. 수능최저 없음. 694명 대규모 선발.</li>
+                <li>면접: 교수 2명 · 10분 · 개인 학생부 기반 질문. 서류 역전 약 26%(4분의 1 자리 바뀜).</li>
+                <li>평가요소: <span class="key">학업역량·진로역량</span>(편차 발생 두 요소)·발전역량·공동체역량(편차 작음).</li>
+                <li>5~6등급 합격자는 자사고 일부. 95%가 일반고.</li>
+                <li><b>면접 준비 팁:</b> 담당 교수 연구실적 키워드 파악 → 관련 활동과 연결해 심도 있는 대화 가능. 자기소개·마무리 발언 시간은 주도권 있는 시간 → 모호한 열정 표현 대신 전공 적합성 근거 구체 제시.</li>
+              </ul>
+
+              <h3><span class="n">5</span>정시 및 전체 등록 현황</h3>
+              <ul>
+                <li>지역균형 등록률이 가장 높음(최저 없어 타 대학과 중복 합격 후 이탈 적음), 수능 일반학생 등록률 91% 수준.</li>
+                <li>교과 충족률 작년 약 60% 초반(전년 50% 중후반 → 상승 추세).</li>
+                <li>학종 적색(불합격) 중 1등급대도 적지 않음 — 일반고 학생이지만 진로·학과 연관 활동 전혀 없는 경우 탈락 사례.</li>
+              </ul>
+
+              <div style="text-align:center;margin:28px 0 8px">
+                <a href="#timetable" style="display:inline-flex;align-items:center;gap:8px;padding:10px 22px;background:var(--accent);color:#fff;border-radius:50px;font-size:14px;font-weight:600;text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,.15);">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                  타임테이블로 돌아가기
+                </a>
+              </div>
+              <p class="disclaimer">※ 정확한 내용은 대학 홈페이지를 확인하시기 바랍니다.</p>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ 인하대학교 ============ -->
+      <div class="acc" id="ihu">
+        <div class="acc-head" onclick="toggleAcc(this)">
+          <div class="acc-logo">IHU</div>
+          <div class="ti">
+            <div class="nm">인하대학교</div>
+            <div class="sub">6/6(토) 15:20 · 입학처 발표 · 인천 미추홀구 · 2027학년도 전형 안내</div>
+          </div>
+          <div class="chev">⌄</div>
+        </div>
+        <div class="acc-body">
+          <div class="acc-body-inner">
+
+            <!-- 링크 버튼 -->
+            <div class="links">
+              <a class="link-btn" href="https://admission.inha.ac.kr" target="_blank" rel="noopener">
+                <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M3 8.5h18"/><circle cx="6" cy="6.25" r=".6" fill="currentColor" stroke="none"/><circle cx="8.2" cy="6.25" r=".6" fill="currentColor" stroke="none"/><circle cx="10.4" cy="6.25" r=".6" fill="currentColor" stroke="none"/></svg></span>
+                <span class="lb">입학처 홈페이지</span><span class="ds">입학처 바로가기</span>
+              </a>
+              <a class="link-btn" href="https://admission.inha.ac.kr/cms/FR_CON/index.do?MENU_ID=110" target="_blank" rel="noopener">
+                <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3.5H7a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8.5Z"/><path d="M14 3.5V8.5h5"/><path d="M12 11.5v5"/><path d="m9.7 14.3 2.3 2.2 2.3-2.2"/></svg></span>
+                <span class="lb">수시 자료실</span><span class="ds">자료실·가이드북</span>
+              </a>
+              <a class="link-btn" href="https://admission.inha.ac.kr/cms/FR_CON/index.do?MENU_ID=80" target="_blank" rel="noopener">
+                <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2.5"/><path d="M9 3.5h6a1 1 0 0 1 1 1V6a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V4.5a1 1 0 0 1 1-1Z"/><path d="m8.5 12 1.2 1.2 2-2.2"/><path d="m8.5 16.5 1.2 1.2 2-2.2"/><path d="M14 12.2h2.5M14 16.7h2.5"/></svg></span>
+                <span class="lb">2027 수시 모집요강</span><span class="ds">수시모집요강</span>
+              </a>
+            </div>
+
+            <!-- 강의 정리본 -->
+            <div class="lec">
+
+              <h3><span class="n">1</span>한눈에 보는 인하대</h3>
+              <p>인천 미추홀구 위치(인천 1·2호선 접근). 수시 70% 선발. 공과·자연과학·경영·의과·소프트웨어융합 등 12개 단과대학 64개 전공. 경기 지역 출신 신입생 다수.</p>
+              <div class="statrow">
+                <div class="stat"><div class="big">70%</div><div class="lbl">수시 선발 비율</div></div>
+                <div class="stat"><div class="big">64개</div><div class="lbl">전공 학과 수</div></div>
+                <div class="stat"><div class="big">수능 후</div><div class="lbl">논술고사 일정</div></div>
+              </div>
+              <ul>
+                <li>학생부교과·학생부종합·논술·실기/실적 전형 운영. 2027 수시 모집요강 홈페이지에서 확인 가능.</li>
+                <li><b>2027 특이사항:</b> 실기/실적(체육특기자) 전형 테니스 종목 신설(2026.06 변경). 2027 수시 모집요강 PDF·HWP 다운로드 가능.</li>
+                <li>인하미래인재(면접형)·인하미래인재(서류형) 등 전형명 확인 필요. 지역의사선발과 인하미래인재 의예과 중복지원 불가.</li>
+              </ul>
+
+              <h3><span class="n">2</span>전형 구조 요약</h3>
+              <ul>
+                <li><b>학생부교과:</b> 교과 성적 반영, 전형별 수능최저 상이. 비교과 출결 포함 여부 요강 확인.</li>
+                <li><b>학생부종합:</b> 인하미래인재(서류형) — 서류 100%. 인하미래인재(면접형) — 1단계 서류→2단계 면접. 수능최저 없음(의예과 제외).</li>
+                <li><b>논술:</b> 수능최저 없음(일부 전형 확인 필요). 수능 이후 논술 실시 — 수능 결과 보고 지원 여부 결정 가능.</li>
+                <li><b>지역의사선발:</b> 의예과 대상 별도 전형. 인하미래인재(면접형) 의예과와 중복지원 불가.</li>
+              </ul>
+              <div class="tip"><b>인하대 지원 시 핵심 확인사항</b> · 수시 6장 중 인하대에 2장까지 사용 가능(전형별 중복지원 가능, 단 동일 모집단위 중복 불가). 2028 주요사항(정시 정성평가 10%, 비교과 출결 확대)도 함께 확인.</div>
+
+              <h3><span class="n">3</span>2028 예고사항 (참고)</h3>
+              <ul>
+                <li>정시 수능 정성평가 10% 도입(2027 수능 반영).</li>
+                <li>비교과 출결 5% — 정시 실기에도 확대 반영(기존 전형에서만 적용 → 전체 확대).</li>
+                <li>공과 계열 영어 반영비율 상승 예정.</li>
+                <li>2027 대학입학전형 시행계획 내 세부 반영비율 등은 홈페이지 PDF로 확인.</li>
+              </ul>
+
+              <div style="text-align:center;margin:28px 0 8px">
+                <a href="#timetable" style="display:inline-flex;align-items:center;gap:8px;padding:10px 22px;background:var(--accent);color:#fff;border-radius:50px;font-size:14px;font-weight:600;text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,.15);">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                  타임테이블로 돌아가기
+                </a>
+              </div>
+              <p class="disclaimer">※ 정확한 내용은 대학 홈페이지를 확인하시기 바랍니다.</p>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+
+      <!-- ============ 성신여자대학교 ============ -->
+      <div class="acc" id="ssu">
+        <div class="acc-head" onclick="toggleAcc(this)">
+          <div class="acc-logo">SSU</div>
+          <div class="ti">
+            <div class="nm">성신여자대학교</div>
+            <div class="sub">6/7(일) 10:10 · 입학관리실 발표 · 서울 2개 캠퍼스 · 2027학년도 전형 안내</div>
+          </div>
+          <div class="chev">⌄</div>
+        </div>
+        <div class="acc-body">
+          <div class="acc-body-inner">
+
+            <div class="links">
+              <a class="link-btn" href="https://ipsi.sungshin.ac.kr" target="_blank" rel="noopener">
+                <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M3 8.5h18"/><circle cx="6" cy="6.25" r=".6" fill="currentColor" stroke="none"/><circle cx="8.2" cy="6.25" r=".6" fill="currentColor" stroke="none"/><circle cx="10.4" cy="6.25" r=".6" fill="currentColor" stroke="none"/></svg></span>
+                <span class="lb">입학처 홈페이지</span><span class="ds">입학처 바로가기</span>
+              </a>
+              <a class="link-btn" href="https://ipsi.sungshin.ac.kr/guide/recruit.htm?ctg_cd=susi" target="_blank" rel="noopener">
+                <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2.5"/><path d="M9 3.5h6a1 1 0 0 1 1 1V6a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V4.5a1 1 0 0 1 1-1Z"/><path d="m8.5 12 1.2 1.2 2-2.2"/><path d="m8.5 16.5 1.2 1.2 2-2.2"/><path d="M14 12.2h2.5M14 16.7h2.5"/></svg></span>
+                <span class="lb">수시 모집요강</span><span class="ds">2027학년도 수시</span>
+              </a>
+              <a class="link-btn" href="https://ipsi.sungshin.ac.kr/highschool_ties/guidebook.php?bbsid=guidebook" target="_blank" rel="noopener">
+                <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3.5H7a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8.5Z"/><path d="M14 3.5V8.5h5"/><path d="M12 11.5v5"/><path d="m9.7 14.3 2.3 2.2 2.3-2.2"/></svg></span>
+                <span class="lb">입학 관련 자료</span><span class="ds">자료실·가이드북</span>
+              </a>
+            </div>
+
+            <div class="lec">
+
+              <h3><span class="n">1</span>한눈에 보는 성신여대</h3>
+              <p>서울 2개 캠퍼스(돈암·운정). 정원 내 <span class="key">2,063명</span> 모집. 수시 65% · 정시 35%. 논술은 전국에서 가장 이른 <span class="key">10월 3~4일</span> 실시(수능 전). 수능최저는 교과·논술 공통 <span class="key">2개 합 7</span>(학종 자기주도 최저 없음).</p>
+              <div class="statrow">
+                <div class="stat"><div class="big">533명</div><div class="lbl">자기주도인재 선발</div></div>
+                <div class="stat"><div class="big">159명</div><div class="lbl">논술우수자 선발</div></div>
+                <div class="stat"><div class="big">2개합7</div><div class="lbl">교과·논술 수능최저</div></div>
+              </div>
+              <figure><img src="images/ss04.jpg" alt="성신여대 모집인원"></figure>
+
+              <h3><span class="n">2</span>2027 주요 변경사항</h3>
+              <ul>
+                <li><span class="key">융합AI반도체학과 신설</span>(41명 선발). 첨단 융합학부 계열로 편성.</li>
+                <li>교과 전형 진로선택 과목 반영 확대: 상위 3개 → <span class="key">상위 4개 과목</span>.</li>
+                <li>무전공(지역균형): 작년 무전공 단일 선발 → 올해 <span class="key">전공 선발 185명 + 무전공 127명</span>으로 분리. 예체능 무전공 폐지.</li>
+                <li>무전공 트랙: ① 자유전공(간호·사범·예체능 제외 전체 학과 선택 가능) ② 첨단분야 전공(지정 첨단학과 중 선택, 2학년 진급 시 전공 확정).</li>
+              </ul>
+              <figure><img src="images/ss10.jpg" alt="성신여대 변경사항"></figure>
+
+              <h3><span class="n">3</span>학생부종합 — 자기주도인재전형 (면접 40%)</h3>
+              <ul>
+                <li>가장 많은 인원 선발, 수능최저 없음. <span class="key">면접 40%</span> 반영(전년도부터 유지).</li>
+                <li>면접 실시 전형: 자기주도인재·특수교육대상자. 서류만 평가: 기회균형·재직자 전형.</li>
+                <li>평가요소: <span class="key">진로역량 50%</span>(서류·면접 공통). 학업역량 30% · 공동체역량 20%. 사범대만 공동체 대신 교직적성인성 20% 반영.</li>
+                <li>블라인드 면접: 부모 직업 언급 시 감점(감점 받으면 3배수 내 경쟁에서 치명적). 면접 지도 시 반드시 주의.</li>
+                <li>경쟁률 7.67:1(전년). 지원 등급대: 3등급 초반 ~ 4등급 중반.</li>
+              </ul>
+              <figure><img src="images/ss12.jpg" alt="자기주도 전형 구조"></figure>
+              <div class="twocol">
+                <figure><img src="images/ss14.jpg" alt="서류평가 항목"></figure>
+                <figure><img src="images/ss15.jpg" alt="면접 평가 항목"></figure>
+              </div>
+              <div class="tip"><b>자기주도인재 면접 지도 핵심</b> · 진로역량 50%가 서류·면접 모두 가장 높음 → 진로와 연결된 활동이 충실한 학생에게 유리. 3배수 안 경쟁이라 블라인드 위반(부모 직업 언급)으로 받는 감점이 치명적. 반드시 사전 지도 필요.</div>
+              <div class="twocol">
+                <figure><img src="images/ss_jido_result.jpg" alt="자기주도 입시결과 요약"></figure>
+                <figure><img src="images/ss_jido_table.jpg" alt="자기주도 전학과 입시결과 표"></figure>
+              </div>
+              <div class="twocol">
+                <figure><img src="images/ss_jido_in.jpg" alt="자기주도 인문계열 경쟁률·충원율"></figure>
+                <figure><img src="images/ss_jido_nat.jpg" alt="자기주도 자연계열 경쟁률·충원율"></figure>
+              </div>
+
+              <h3><span class="n">4</span>기회균형전형 — 서류만 평가</h3>
+              <ul>
+                <li>서류 100%만으로 선발(면접 없음). 인문 계열 기준 경쟁률 높은 학과: BIT산업학과(충원율 0%), 미디어커뮤니케이션학과, 심리학과.</li>
+                <li>자연 계열: 통계학과 충원율이 타 학과 대비 다소 높음(다른 데 합격 후 이탈).</li>
+                <li>합격 등급대: 2등급 초반이 최고, 대부분 3등급 이내. 5등급 이하 합격자는 특목고 학생.</li>
+              </ul>
+
+
+              <h3><span class="n">5</span>교과전형 — 지역균형 (수능최저 2합 7)</h3>
+              <ul>
+                <li>312명 선발(전공 185명 + 무전공 127명). 수능최저 2개 합 7(이암7). 충원율이 다소 높은 편(수능최저 충족 후 타대 이탈 경향).</li>
+                <li>성적대: 1등급 초반 ~ 3등급 이내. 무전공 선발과 개별전공 선발 두 가지 이력으로 참고(책자 확인).</li>
+                <li>진로선택 과목 상위 4개 과목까지 반영(전년 3개에서 확대). 진로선택 A 많은 학생 유리.</li>
+              </ul>
+              <div class="twocol">
+                <figure><img src="images/ss20.jpg" alt="교과 전형 성적분포"></figure>
+                <figure><img src="images/ss21.jpg" alt="교과 자연계열"></figure>
+              <figure><img src="images/ss_gyeong_result.jpg" alt="지역균형전형 입시결과"></figure>
+              </div>
+
+              <h3><span class="n">6</span>논술전형 — 수능 전 실시, 실질 경쟁률 낮음</h3>
+              <ul>
+                <li>159명 선발, 논술 100%, 수능최저 2개 합 7. <span class="key">10월 3~4일 수능 전 실시</span>.</li>
+                <li>실질 경쟁률(수능최저 충족 기준): 자연계열 12.3:1. 대형 대학 대비 낮아 논술 준비 학생에게 해볼 만한 학교.</li>
+                <li>합격 평균 논술 점수: 약 80점대. 소문항 부분점수 취득으로도 합격 가능(특히 자연계열).</li>
+                <li>충원율 낮은 편(논술 전형의 특징). 경쟁률 높은 학과: 인문 BIT산업, 자연 생명과학·화학 계열.</li>
+              </ul>
+              <div class="tip"><b>논술 전략</b> · 수능 전에 논술을 먼저 실시하므로, 논술 준비 부담이 있지만 역으로 수능 전 도전 기회. 실질 경쟁률이 낮고 평균 80점이면 합격권 → 수학 잘하는 자연계 학생, 논술 준비된 인문계 학생 모두 추천 가능.</div>
+
+              <h3><span class="n">7</span>경기 지역 지원 현황</h3>
+              <ul>
+                <li>경기도 지원자 비율: 교과·논술 전형에서 약 40% 가까이 경기 학생이 지원.</li>
+                <li>지원자 많은 시·군: 전체 31개 시·군 중 수원·성남·고양·용인 등 주요 도시 순. 정시에서 성남시 지원자 비율이 상대적으로 높음.</li>
+                <li>학종에서도 경기 학생 합격·등록 비율 상당. 지역균형·논술 전형 경기 학생 적극 추천 가능.</li>
+              </ul>
+              <figure><img src="images/ss30.jpg" alt="경기 지역 지원 현황"></figure>
+
+              <div style="text-align:center;margin:28px 0 8px">
+                <a href="#timetable" style="display:inline-flex;align-items:center;gap:8px;padding:10px 22px;background:var(--accent);color:#fff;border-radius:50px;font-size:14px;font-weight:600;text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,.15);">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                  타임테이블로 돌아가기
+                </a>
+              </div>
+              <p class="disclaimer">※ 정확한 내용은 대학 홈페이지를 확인하시기 바랍니다.</p>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ 대진대학교 ============ -->
+      <div class="acc" id="dju">
+        <div class="acc-head" onclick="toggleAcc(this)">
+          <div class="acc-logo">DJU</div>
+          <div class="ti">
+            <div class="nm">대진대학교</div>
+            <div class="sub">6/7(일) 10:30 · 입학사정관 발표 · 경기도 포천 · 2027학년도 전형 안내</div>
+          </div>
+          <div class="chev">⌄</div>
+        </div>
+        <div class="acc-body">
+          <div class="acc-body-inner">
+
+            <div class="links">
+              <a class="link-btn" href="https://admission.daejin.ac.kr" target="_blank" rel="noopener">
+                <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M3 8.5h18"/><circle cx="6" cy="6.25" r=".6" fill="currentColor" stroke="none"/><circle cx="8.2" cy="6.25" r=".6" fill="currentColor" stroke="none"/><circle cx="10.4" cy="6.25" r=".6" fill="currentColor" stroke="none"/></svg></span>
+                <span class="lb">입학처 홈페이지</span><span class="ds">입학처 바로가기</span>
+              </a>
+              <a class="link-btn" href="https://admission.daejin.ac.kr/submenu.do?menuurl=cJ2LZrh7LYx7Botxu019rg%3d%3d&" target="_blank" rel="noopener">
+                <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2.5"/><path d="M9 3.5h6a1 1 0 0 1 1 1V6a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V4.5a1 1 0 0 1 1-1Z"/><path d="m8.5 12 1.2 1.2 2-2.2"/><path d="m8.5 16.5 1.2 1.2 2-2.2"/><path d="M14 12.2h2.5M14 16.7h2.5"/></svg></span>
+                <span class="lb">수시 모집요강</span><span class="ds">2027학년도 수시</span>
+              </a>
+              <a class="link-btn" href="https://admission.daejin.ac.kr/submenu.do?menuurl=OJkiNqAYISALJPgAW%2b1t7A%3d%3d&" target="_blank" rel="noopener">
+                <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3.5H7a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8.5Z"/><path d="M14 3.5V8.5h5"/><path d="M12 11.5v5"/><path d="m9.7 14.3 2.3 2.2 2.3-2.2"/></svg></span>
+                <span class="lb">입학 관련 자료</span><span class="ds">자료실·가이드북</span>
+              </a>
+            </div>
+
+            <div class="lec">
+
+              <h3><span class="n">1</span>한눈에 보는 대진대</h3>
+              <p>경기도 포천 위치(낙엽산 인접). 전체 모집 <span class="key">1,853명</span>. 수시 66.8% · 정시 33.1%. <span class="key">전 수시 전형 수능최저 없음</span>. 남양주·의정부 등 경기 북부권 학생 비율 높음(수도권 입학자 95%). 신축 기숙사·통학버스 완비.</p>
+              <div class="statrow">
+                <div class="stat"><div class="big">95%</div><div class="lbl">수도권 출신 입학자</div></div>
+                <div class="stat"><div class="big">46.5%</div><div class="lbl">경기도 출신 입학자(836명)</div></div>
+                <div class="stat"><div class="big">수능최저 없음</div><div class="lbl">전 수시 전형 공통</div></div>
+              </div>
+              <div class="tip"><b>포천 캠퍼스 접근성</b> · 남양주·의정부·포천·양주 등 경기 북부권에서 접근성 우수. 광역 통학버스 운영. 기숙사 신축으로 거리가 멀어도 생활 가능. 기숙사 선호 학생에게 적극 안내.</div>
+
+              <h3><span class="n">2</span>2027 주요 변경사항</h3>
+              <ul>
+                <li><b>교과 성적 반영 과목 확대:</b> 상위 15개 → <span class="key">상위 18개 과목</span>. 국·영·수·사·과·한국사 중심.</li>
+                <li><b>진로선택 과목 확대:</b> 최대 5개 → <span class="key">최대 8개 과목</span> 반영(A=1등급, B=2등급, C=4등급). 진로선택 A가 많은 학생 유리.</li>
+                <li><b>학과 개편:</b> 스마트건설환경공학과 → AI건설융합공학과 + 스마트시티환경공학과로 분리. 시공공학학과 폐지.</li>
+                <li><b>밝은사회전형 신설:</b> 사회 기여자·다자녀·다문화 가정 대상.</li>
+                <li><b>평가 표준화:</b> 기초학습능력·성장잠재력·인성 → <span class="key">학업역량·진로역량·공동체역량</span>으로 변경(5개 대학 공동 연구 기반).</li>
+                <li>자율전공학부 + 공학자율학부 운영(AI공과대학 내 선택). 진로 미결정 학생에게 추천.</li>
+              </ul>
+
+              <h3><span class="n">3</span>학생부교과 전형 — 수능최저 없음</h3>
+              <ul>
+                <li><b>학생부우수자:</b> 교과 70% + <span class="key">면접 30%</span>. 면접 문항 사전 공개(모집요강에 2문항 공지), 5분 내외. 응시율 60% 미만(실질 경쟁률 명목의 절반 수준).</li>
+                <li><b>학교장추천·고른기회·밝은사회:</b> 교과 100%. 고교별 추천 인원 제한 없음.</li>
+                <li>반영 방법: 상위 18과목 + 진로선택 최대 8과목. A=1등급, B=2등급, C=4등급.</li>
+                <li>입시결과: 학생부우수자 전년 성적(15개 기준)보다 올해 18개 기준 시뮬레이션 시 <span class="key">약 0.122등급 하락</span> 예상. 실제 합격선 더 낮아질 수 있음.</li>
+                <li>진로선택 A 8개 확보한 학생 많지 않아 성적 하락 요인. 진로선택 A 많은 학생 교과전형 추천.</li>
+              </ul>
+
+              <h3><span class="n">4</span>학생부종합 — 윈윈대진전형</h3>
+              <ul>
+                <li>종합전형 1개만 운영. 1단계 서류 100%(3배수) → 2단계 교과 70% + 면접 30%.</li>
+                <li>평가요소: <span class="key">서류 — 학업역량 최우선. 면접 — 공동체역량 최우선.</span></li>
+                <li>진로 탐색 노력이 서류에 잘 드러난 학생, 1단계 합격 가능성 높음. 전공 적합성도 중요하나 진로 탐색 과정 자체를 긍정 평가.</li>
+                <li>면접은 학생부 사실 확인 중심, 10분 내외. 면접 응시율 높음(종합전형 특성).</li>
+                <li>입시결과: 전과목 평균으로 제공(교과 반영 방식 아니므로 참고용). 간호학과 성적 높음.</li>
+              </ul>
+
+              <h3><span class="n">5</span>정시 — 2과목만 반영 (가·나·다군 전부)</h3>
+              <ul>
+                <li>정시 33.1%, 614명 선발. 가·나·다 <span class="key">3개 군 모두 모집</span> → 중복 지원 가능.</li>
+                <li><span class="key">2개 영역만 반영:</span> 국·영·수 중 최상위 1개(60%) + 나머지 국·영·수·탐·한국사 중 최상위 1개(40%). 수능 전 과목 못 봐도 2개만 잘 보면 됨.</li>
+                <li>영어·한국사 등급별 환산: 3등급도 80점 인정. 이공계열 지원 시 수학 기하·이분 10%, 과탐 7% 가산점.</li>
+                <li>실기우수자: 실기 80% + 수능 20%(수시·정시 공통).</li>
+              </ul>
+              <div class="tip"><b>정시 핵심 전략</b> · 수능 2과목만 반영하므로, 수능을 일부만 잘 본 학생도 유리. 한국사·영어만으로도 반영 가능. 3개 군 모두 모집해 최대 3번 지원 가능. 이공계 관심 학생은 기하 선택 시 가산점 활용.</div>
+
+              <h3><span class="n">6</span>2028 예고사항</h3>
+              <ul>
+                <li>교과 성적 반영 과목 15개로 재조정(변별력 확보 목적). 사회과학 융합선택 과목 미반영.</li>
+                <li>학생부 종합 제외 전 전형에 <span class="key">출결 10% 반영</span>.</li>
+                <li>종합전형: 서류형·면접형으로 분리 운영 예정.</li>
+              </ul>
+
+              <div style="text-align:center;margin:28px 0 8px">
+                <a href="#timetable" style="display:inline-flex;align-items:center;gap:8px;padding:10px 22px;background:var(--accent);color:#fff;border-radius:50px;font-size:14px;font-weight:600;text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,.15);">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                  타임테이블로 돌아가기
+                </a>
+              </div>
+              <p class="disclaimer">※ 정확한 내용은 대학 홈페이지를 확인하시기 바랍니다.</p>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+
+      <!-- ============ 차의과학대학교 ============ -->
+      <div class="acc" id="cku">
+        <div class="acc-head" onclick="toggleAcc(this)">
+          <div class="acc-logo">CHA</div>
+          <div class="ti">
+            <div class="nm">차의과학대학교</div>
+            <div class="sub">6/7(일) 10:50 · 입학사정관 발표 · 경기 포천·판교 캠퍼스 · 2027학년도 전형 안내</div>
+          </div>
+          <div class="chev">⌄</div>
+        </div>
+        <div class="acc-body">
+          <div class="acc-body-inner">
+            <div class="links">
+              <a class="link-btn" href="https://admission.cha.ac.kr" target="_blank" rel="noopener"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M3 8.5h18"/><circle cx="6" cy="6.25" r=".6" fill="currentColor" stroke="none"/><circle cx="8.2" cy="6.25" r=".6" fill="currentColor" stroke="none"/><circle cx="10.4" cy="6.25" r=".6" fill="currentColor" stroke="none"/></svg></span><span class="lb">입학처 홈페이지</span><span class="ds">입학처 바로가기</span></a>
+              <a class="link-btn" href="https://admission.cha.ac.kr/%ec%88%98%ec%8b%9c%eb%aa%a8%ec%a7%91/%ec%88%98%ec%8b%9c-%eb%aa%a8%ec%a7%91%ec%9a%94%ea%b0%95/" target="_blank" rel="noopener"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2.5"/><path d="M9 3.5h6a1 1 0 0 1 1 1V6a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V4.5a1 1 0 0 1 1-1Z"/><path d="m8.5 12 1.2 1.2 2-2.2"/><path d="m8.5 16.5 1.2 1.2 2-2.2"/><path d="M14 12.2h2.5M14 16.7h2.5"/></svg></span><span class="lb">수시 모집요강</span><span class="ds">2027학년도 수시</span></a>
+              <a class="link-btn" href="https://admission.cha.ac.kr/%ec%9e%85%ec%8b%9c%eb%8f%84%ec%9a%b0%eb%af%b8/%ed%86%b5%ed%95%a9-%ec%9e%90%eb%a3%8c%ec%8b%a4/" target="_blank" rel="noopener"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3.5H7a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8.5Z"/><path d="M14 3.5V8.5h5"/><path d="M12 11.5v5"/><path d="m9.7 14.3 2.3 2.2 2.3-2.2"/></svg></span><span class="lb">입학 관련 자료</span><span class="ds">자료실·가이드북</span></a>
+            </div>
+            <div class="lec">
+              <h3><span class="n">1</span>한눈에 보는 차의과학대</h3>
+              <p>의학·한의학·약학·간호 등 보건의료 특성화 대학. <span class="key">포천(의과·한의·간호)·판교(의과학·약학·생명과학)</span> 이원 캠퍼스. 수시 605명 · 정시 420명 내외 선발. CMC(가톨릭중앙의료원)와 유사한 CHA 계열 병원군(분당차병원·강남차병원 등) 연계 실습 환경.</p>
+              <div class="statrow">
+                <div class="stat"><div class="big">보건의료</div><div class="lbl">의·한의·약·간호 특성화</div></div>
+                <div class="stat"><div class="big">605명</div><div class="lbl">수시 모집</div></div>
+                <div class="stat"><div class="big">CHA병원군</div><div class="lbl">계열 병원 임상실습 연계</div></div>
+              </div>
+              <ul>
+                <li>LH·기업 맞춤형 인재 양성 협약 등 산학 협력. 재활의학·스포츠의학 계열 학과 운영.</li>
+                <li>전공 선택: 입학 후 2년간 전공 탐색 → 3학년 진급 시 세부 전공 선택. 단, 2학년부터 본격 전공 수업 일부 개시.</li>
+                <li>외국 대학 파트너십(유럽·미국) 기반 교환학생, 복수학위 프로그램 운영. 재활·스포츠계열 약 26% 경기권 등록.</li>
+              </ul>
+              <div class="tip"><b>CHA 계열 병원 이해</b> · 가톨릭중앙의료원(CMC)과 다른 별도 법인. 분당차병원·강남차병원·구미차병원 등이 CHA 계열. 의예과 지망 학생에게 차병원 임상실습 환경을 강점으로 안내 가능.</div>
+
+              <h3><span class="n">2</span>학생부교과 전형 — 수능최저 필수</h3>
+              <ul>
+                <li>수능최저학력기준 있음(전형별 상이). 국·수·영·탐 중 일정 조합 충족 필요(요강 확인).</li>
+                <li>학생부 교과 성적 100% 반영. 석차등급 환산. 진로선택 과목 반영 포함.</li>
+                <li>수능최저 충족률이 당락에 결정적. 전년 충족률 약 52% 수준(전형별 차이 있음).</li>
+                <li>합격 후 100% 등록률을 보이는 학과 존재(최초 합격 후 이탈 거의 없음). 안정 지원 시 등록 가능성 높음.</li>
+              </ul>
+              <div class="tip"><b>교과전형 지도 핵심</b> · 수능최저 충족 가능한지 먼저 확인. 의예·한의예·약학은 최저 수준이 높으므로 수능 준비와 병행 필수. 충족 가능하면 교과로, 불확실하면 종합 검토.</div>
+
+              <h3><span class="n">3</span>학생부종합 전형 — 면접 포함</h3>
+              <ul>
+                <li>1단계 서류 100%(3배수 내외) → 2단계 면접 40%. 수능최저 없음.</li>
+                <li>평가요소: 학업역량·진로역량·공동체역량. 보건의료 계열 특성상 진로 탐색의 구체성과 지원 학과와의 연계성 중요.</li>
+                <li>면접: 개인별 학생부 기반 질문. 약 10분 내외. 의사소통 능력·가치관·전공 이해도 확인.</li>
+                <li>학생부 서류 평가 후 3배수 컷에서 상당한 재배치 발생. 면접 역전 가능성 있음.</li>
+                <li>일반고 학생이 90% 이상(특목고·자사고 경쟁 낮음). 전년 자기소개서 폐지 이후 서류 평가 비중이 세특·진로 활동 중심으로 재편.</li>
+              </ul>
+              <div class="tip"><b>보건의료 계열 종합 지도 팁</b> · 의예·한의예·약학·간호 등 의료 직종 관심 세특(해부학·생리학 관련 탐구, 병원 봉사, 진로 독서 등)이 강력한 차별화 요소. 지원 학과와 탐구 활동의 연계성 강조. 면접에서 "왜 이 학과여야 하는가"에 구체적 근거 제시 필요.</div>
+
+              <h3><span class="n">4</span>논술 전형</h3>
+              <ul>
+                <li>인문·자연 계열별 논술 100% (교과 일부 반영). 수능최저 있음.</li>
+                <li>논술 시험 범위: 고교 교육과정 내. 자연계열 수학 중심. 인문계열 국어·사회 통합.</li>
+                <li>실질 경쟁률은 수능최저 필터링 후 낮아짐. 논술 준비된 학생에게 기회 전형.</li>
+              </ul>
+
+              <h3><span class="n">5</span>정시 — 수능 40점 만점 기준 산출</h3>
+              <ul>
+                <li>수능 성적 반영(탐구 1과목 반영 대학). 국·수·영·탐 구성별 계열별 반영 비율 상이.</li>
+                <li>정시에서 가·나·다군 분산 모집. 의예·한의예는 정시 경쟁률 매우 높음.</li>
+                <li>수능 반영 점수 40점 만점으로 환산 후 학과별 합산. 영어·한국사는 등급별 환산점 적용.</li>
+                <li>이공계 지원 시 수학 미적분·기하 선택 가산점 적용. 과탐 선택 시도 가산점.</li>
+              </ul>
+
+              <div style="text-align:center;margin:28px 0 8px">
+                <a href="#timetable" style="display:inline-flex;align-items:center;gap:8px;padding:10px 22px;background:var(--accent);color:#fff;border-radius:50px;font-size:14px;font-weight:600;text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,.15);">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                  타임테이블로 돌아가기
+                </a>
+              </div>
+              <p class="disclaimer">※ 정확한 내용은 대학 홈페이지를 확인하시기 바랍니다.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ 덕성여자대학교 ============ -->
+      <div class="acc" id="dsu">
+        <div class="acc-head" onclick="toggleAcc(this)">
+          <div class="acc-logo">DSU</div>
+          <div class="ti">
+            <div class="nm">덕성여자대학교</div>
+            <div class="sub">6/7(일) 11:10 · 입학사정관 발표 · 서울 도봉구 · 2027학년도 전형 안내</div>
+          </div>
+          <div class="chev">⌄</div>
+        </div>
+        <div class="acc-body">
+          <div class="acc-body-inner">
+            <div class="links">
+              <a class="link-btn" href="https://enter.duksung.ac.kr" target="_blank" rel="noopener"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M3 8.5h18"/><circle cx="6" cy="6.25" r=".6" fill="currentColor" stroke="none"/><circle cx="8.2" cy="6.25" r=".6" fill="currentColor" stroke="none"/><circle cx="10.4" cy="6.25" r=".6" fill="currentColor" stroke="none"/></svg></span><span class="lb">입학처 홈페이지</span><span class="ds">입학처 바로가기</span></a>
+              <a class="link-btn" href="https://enter.duksung.ac.kr/notice/view.php?bn=6947&m_type=&nPage=1&f=ALL&s=%EC%88%98%EC%8B%9C%EB%AA%A8%EC%A7%91%EC%9A%94%EA%B0%95" target="_blank" rel="noopener"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2.5"/><path d="M9 3.5h6a1 1 0 0 1 1 1V6a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V4.5a1 1 0 0 1 1-1Z"/><path d="m8.5 12 1.2 1.2 2-2.2"/><path d="m8.5 16.5 1.2 1.2 2-2.2"/><path d="M14 12.2h2.5M14 16.7h2.5"/></svg></span><span class="lb">수시 모집요강</span><span class="ds">2027학년도 수시</span></a>
+              <a class="link-btn" href="https://enter.duksung.ac.kr/data/?m_type=SUSI" target="_blank" rel="noopener"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3.5H7a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8.5Z"/><path d="M14 3.5V8.5h5"/><path d="M12 11.5v5"/><path d="m9.7 14.3 2.3 2.2 2.3-2.2"/></svg></span><span class="lb">입학 관련 자료</span><span class="ds">자료실·가이드북</span></a>
+            </div>
+            <div class="lec">
+              <h3><span class="n">1</span>한눈에 보는 덕성여대 — 통합 모집 특화</h3>
+              <figure><img src="images/dk_edu_change.jpg" alt="덕성 교육의 변화"></figure>
+              <p>정원 약 1,250명의 여자대학. <span class="key">37개 전공 중 5개(유아교육·약학·가정·데이터사이언스·AI신한학과)만 단위 전공 모집</span>, 나머지 32개 전공은 모두 계열 통합 모집. 수시 799명(62.4%) · 정시 484명(37.7%) 선발. 통합 선발 6년차, 자유전공학부 추가 신설.</p>
+              <div class="statrow">
+                <div class="stat"><div class="big">37개</div><div class="lbl">전공 (통합모집 위주)</div></div>
+                <div class="stat"><div class="big">2등급대</div><div class="lbl">교과 합격 중심 등급대</div></div>
+                <div class="stat"><div class="big">면접 40%</div><div class="lbl">덕성인재2·종합전형</div></div>
+              </div>
+              <div class="tip"><b>통합모집의 의미</b> · 글로벌융합대학 20개 전공, 과학기술대학 6개, 아티스트대학 6개 전공 등을 계열 단위로 한꺼번에 선발. 입학 후 제1전공(계열 내 선택) + 제2전공(전 학과 자유 선택, 인원 제한 없음) 이중 전공 구조. 진로 탐색 시간 부여 후 2학년 진급 시 전공 확정.</div>
+
+              <h3><span class="n">2</span>2027 주요 변경사항</h3>
+              <ul>
+                <li><b>교과 진로선택 과목 반영 확대:</b> 상위 3개 교과 → <span class="key">전과목 반영</span>(진로선택 10%).</li>
+                <li><b>수능최저 완화:</b> 약학대학 — 기존 바탕(과탐) 고정 → <span class="key">사탐도 반영 가능</span>. 단, 영어와 사탐 동시 반영 불가(영어 반영 시 탐구는 과탐만, 사탐 반영 시 영어 제외).</li>
+                <li><b>논술전형 변경:</b> 유아교육과 논술 추가 선발. 글로벌융합대학 제2외국어·한문 응시자 영어 대체 인정.</li>
+                <li><b>정시 신설:</b> 자유전공학부 전용 수능우수전형Ⅱ — 학생부 10% 반영(스펙트럼 넓게). 수능 반영 비율 변경: 기존 35-35-20-10 → <span class="key">30-25-25-10%</span>(고루 잘하는 학생 유리).</li>
+                <li>탐구 1과목 반영 대학(정시): 탐구 2과목을 모두 잘하기 어렵기 때문에, 잘하는 1과목만 반영되므로 경기권 학생에게 유리.</li>
+              </ul>
+              <div class="twocol">
+                <figure><img src="images/dk07.jpg" alt="덕성여대 변경사항"></figure>
+                <figure><img src="images/dk08.jpg" alt="수능 반영 비율"></figure>
+              </div>
+
+              <h3><span class="n">3</span>학생부교과 — 고교추천전형</h3>
+              <ul>
+                <li>교과 100%, 수능최저 있음. 공통·일반선택 90% + 진로선택 10%(올해부터 전과목 반영).</li>
+                <li>등급 간격: 5등급까지 1점씩, 6등급부터 확대. 진로선택 A=1, B=2, C=4등급 환산.</li>
+                <li>충원율이 다소 높은 편(다른 대학 동시 합격 후 이탈). 합격 등급대: 2등급 중후반 ~ 3등급 중반.</li>
+                <li>2026학년도에 글로벌융합대학 35명→25명, 자유전공 88명→50명으로 모집 인원 감소. 경쟁률 소폭 하락. 올해 반등 예상.</li>
+              </ul>
+
+
+              <h3><span class="n">4</span>학생부종합 — 덕성인재1(서류형)·2(면접형)</h3>
+              <ul>
+                <li><b>덕성인재1(서류형):</b> 서류 100%. 기회균형 대부분. 수능최저 없음.</li>
+                <li><b>덕성인재2(면접형):</b> 1단계 서류(3~4배수) → 2단계 <span class="key">면접 40%</span>. 상위 30대 대학 평균 면접 반영 30% 대비 높은 비중. 1단계 합격 배수를 넓게 잡아 면접 역전 기회 확대.</li>
+                <li>서류 외부 교과 성적 기준 순위에서 3배수 밖에서 → 안으로 진입한 학생 약 38%. 면접 후 최초합격권 외에서 진입 약 46.7%.</li>
+                <li>평가요소: 미래인재역량(기초학업, 국·영·수 중심) + 자기주도성·발전성 + 공동체역량. 계열 일치보다 <span class="key">탐구 과정의 자기주도성·성장성</span> 중시. 통합 모집 특성상 특정 전공 일치 집착 불필요.</li>
+                <li>면접 평가: 서류신뢰성 50% + 종합사고 30% + 공동체역량 20%. 수능 이후 11월 22일 시행.</li>
+              </ul>
+              <div class="twocol">
+                <figure><img src="images/dk_qa.jpg" alt="종합 평가요소 Q&A"></figure>
+                <figure><img src="images/dk_interview.jpg" alt="면접평가 항목 및 팁"></figure>
+              </div>
+              <figure><img src="images/dk14.jpg" alt="교과전형 성적분포"></figure>
+
+              <div class="tip"><b>덕성인재2 면접 핵심</b> · 면접 40%로 역전 가능성이 다른 대학보다 높음. 서류상 내신이 낮아도 면접 잘 보면 합격 가능. 종합적 사고력(가치관·판단) + 공동체 활동의 실질적 역할 강조. 통합 모집 특성상 "어느 계열"에 지원하느냐보다 "어떤 학생"인지를 봄.</div>
+              <figure><img src="images/dk15.jpg" alt="덕성인재전형Ⅱ 평가결과_서류평가 및 면접평가의 영향력"></figure>
+
+              <h3><span class="n">5</span>논술전형 — 논술 90%</h3>
+              <ul>
+                <li>논술 90% + 교과 10%. 수능최저 있음. 인문·자연·약학 계열별 출제.</li>
+                <li>인문·자연 2문항, 약학 3문항 출제. 논술가이드북 홈페이지 공개(6월). 모의논술 7월 15~18일.</li>
+                <li>충원율 낮음(논술 합격자 대부분 등록). 경쟁률 높아도 수능최저 필터링 후 실질 경쟁률 낮아짐.</li>
+              </ul>
+              <figure><img src="images/dk16.jpg" alt="논술전형 입시결과"></figure>
+
+              <h3><span class="n">6</span>정시</h3>
+              <figure><img src="images/dk_jungsi.jpg" alt="2027 학년도 신입학전형 특징 - 정시모집"></figure>
+              <ul>
+                <li>수능우수전형Ⅰ(가·나군) 전형명 변경. 다군 수능우수전형Ⅱ 신설 — 미래인재대학(자유전공학부): 수능 90% + 교과 10%.</li>
+                <li>글로벌융합대학·과학기술대학·미래인재대학: 국·수·영·탐(상위 1과목) 백분위 우수 순 30%·25%·25%·20%. 약학대학: 국 25%·수 30%·영 20%·탐(2과목 평균) 25% + 과학탐구 2과목 시 가산점 20%.</li>
+                <li>미술실기전형 수묵담채화·인체수채화 미선발. 체육실기전형: 수능 40% + 실기 60%.</li>
+              </ul>
+
+              <h3><span class="n">7</span>경기 지역 지원 현황</h3>
+              <ul>
+                <li>경기 학생 수시 지원 비율 35%, 합격률 42.45%(지원 대비 합격률 우수). 정시도 경기 지원자 32.8%, 합격 36%.</li>
+                <li>수시 교과·논술 전형 지원 비율이 학종보다 높음. 논술 전형 경기 학생 합격 성과 상당.</li>
+                <li>안정형 지원 시 합격률이 높아짐. 2~3등급 초반 학생의 안정 지원이 효과적.</li>
+              </ul>
+
+
+              <div style="text-align:center;margin:28px 0 8px">
+                <a href="#timetable" style="display:inline-flex;align-items:center;gap:8px;padding:10px 22px;background:var(--accent);color:#fff;border-radius:50px;font-size:14px;font-weight:600;text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,.15);">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                  타임테이블로 돌아가기
+                </a>
+              </div>
+              <p class="disclaimer">※ 정확한 내용은 대학 홈페이지를 확인하시기 바랍니다.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ 상명대학교 ============ -->
+      <div class="acc" id="smu">
+        <div class="acc-head" onclick="toggleAcc(this)">
+          <div class="acc-logo">SMU</div>
+          <div class="ti">
+            <div class="nm">상명대학교</div>
+            <div class="sub">6/7(일) 11:50 · 입학처 발표 · 서울·천안 캠퍼스 · 2027학년도 전형 안내</div>
+          </div>
+          <div class="chev">⌄</div>
+        </div>
+        <div class="acc-body">
+          <div class="acc-body-inner">
+            <div class="links">
+              <a class="link-btn" href="https://admission.smu.ac.kr/_seoul" target="_blank" rel="noopener"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M3 8.5h18"/><circle cx="6" cy="6.25" r=".6" fill="currentColor" stroke="none"/><circle cx="8.2" cy="6.25" r=".6" fill="currentColor" stroke="none"/><circle cx="10.4" cy="6.25" r=".6" fill="currentColor" stroke="none"/></svg></span><span class="lb">입학처 홈페이지</span><span class="ds">서울캠퍼스 입학처</span></a>
+              <a class="link-btn" href="https://admission.smu.ac.kr/_seoul/board/bbs.html?bbsid=seoul_notice&ctg_cd=susi&page=1&skey=&keyword=&mode=view&bltn_seq=61741" target="_blank" rel="noopener"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2.5"/><path d="M9 3.5h6a1 1 0 0 1 1 1V6a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V4.5a1 1 0 0 1 1-1Z"/><path d="m8.5 12 1.2 1.2 2-2.2"/><path d="m8.5 16.5 1.2 1.2 2-2.2"/><path d="M14 12.2h2.5M14 16.7h2.5"/></svg></span><span class="lb">수시 모집요강</span><span class="ds">2027학년도 수시</span></a>
+              <a class="link-btn" href="https://admission.smu.ac.kr/_seoul/board/bbs.html?bbsid=seoul_dataroom&ctg_cd=susi" target="_blank" rel="noopener"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3.5H7a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8.5Z"/><path d="M14 3.5V8.5h5"/><path d="M12 11.5v5"/><path d="m9.7 14.3 2.3 2.2 2.3-2.2"/></svg></span><span class="lb">입학 관련 자료</span><span class="ds">자료실·가이드북</span></a>
+            </div>
+            <div class="lec">
+              <h3><span class="n">1</span>한눈에 보는 상명대 — 전공 선택 100% 보장</h3>
+              <p><span class="key">서울(종로구)·천안</span> 이원 캠퍼스(동일 이름 학과 없음). 서울 수시 1,323명 선발. 계열(인문·이공·예체능) 통합 선발 후 <span class="key">1학년 1학기 내에 원하는 전공 100% 선택 보장</span>. 재작년 1명, 작년 2명 제외 전원 희망 전공 배정.</p>
+              <div class="statrow">
+                <div class="stat"><div class="big">1323명</div><div class="lbl">서울캠 수시 선발</div></div>
+                <div class="stat"><div class="big">100%</div><div class="lbl">전공 선택 보장</div></div>
+                <div class="stat"><div class="big">49%</div><div class="lbl">경기 학생 교과 합격률</div></div>
+              </div>
+              <ul>
+                <li>2027 변경: 팬테크정보빅데이터융합·스마트생산 → <span class="key">데이터과학전공 통합</span> 선발. 학과명 변경 반드시 안내.</li>
+                <li>사범대 외 문헌정보학·컴퓨터과학·식품영양학 전공 — 비사범계이지만 <span class="key">교직이수 가능</span>.</li>
+                <li>단, 4번 대(일부 학부)·휴먼AI공학·데이터과학·음악학부는 계열 이동 전공 선택 불가.</li>
+                <li>캠퍼스 간 전과 운영: 천안→서울 이동 가능. 26명 모집, 1학년도 신청 가능. 작년 26명 모집에 90명 지원(경쟁률 3.36:1), 1학년 44명 지원 중 14명 합격.</li>
+              </ul>
+
+              <h3><span class="n">2</span>학생부교과 — 고교추천전형 (수능최저 없음)</h3>
+              <ul>
+                <li><span class="key">추천 인원 제한 없음·수능최저 없음</span>(2026학년도부터). 학생부 교과 100%.</li>
+                <li>전과목 반영(석차등급 + 진로선택 ABC). 특정 과목 가중치 없음. 실기·봉사 가산점 없음. <span class="key">전과목 골고루 잘하는 학생 유리.</span></li>
+                <li>추가 합격 인원 많음. 영어교육과 11명 모집→41명까지 추합. 자유전공 인문 경쟁률 9.81:1이지만 추합 161명. <span class="key">최초 합격만 보지 말고 추가 합격까지 포함해 지원 전략 수립.</span></li>
+                <li>경기 지원자 44.48%, 합격자 49.28%, 등록자 49.1%. 경기 지역 학생에게 유리한 구조.</li>
+                <li>경기 학생 평균 등급 2.7(안정권 지원이 많아 전체 평균보다 높음). 모집단위별 편차 크므로 단위별 확인 필요.</li>
+                <li>자연계열에서 낮은 등급대 합격 사례 존재(경쟁률이 낮았던 모집단위). 일반고 학생만 지원(과학고·국제고 미지원, 특성화고 불가).</li>
+              </ul>
+
+              <h3><span class="n">3</span>학생부종합 — 상명인재전형</h3>
+              <ul>
+                <li>155명 선발, 서류 100%, 수능최저 없음. 일부 전공 제외 계열 통합 모집.</li>
+                <li>평가: 학업역량 35% · 진로역량 45% · 공동체역량 20%.</li>
+                <li><span class="key">진로역량 45%로 가장 높음.</span> 진로가 명확히 확정되지 않아도 탐색·경험·성장 과정이 드러나면 긍정 평가.</li>
+                <li>학업역량: 등급뿐 아니라 탐구 과정·과목 간 연계성 등 함께 평가. 동일 등급도 세특 내용에 따라 다른 평가.</li>
+                <li>면접 전형: 스포츠건강관리·조형예술 전공만 면접 실시. 진로역량과 공동체역량 중심 질문.</li>
+                <li>일반고 학생 지원 82.2%, 합격 92.9%. 일반고 학생 충분히 경쟁력 있음.</li>
+                <li>교과-종합 복수 지원 가능(전형명 다를 때). 교과 우수 + 학생부 우수 학생은 두 전형 동시 지원 권장.</li>
+              </ul>
+              <div class="tip"><b>교과 vs 종합 선택 기준</b> · 모집단위에 따라 교과 합격 평균보다 종합 합격 평균이 낮은 경우도 있음 → 내신만 보고 종합 포기하지 말 것. 교과·종합 둘 다 우수하면 동시 지원 가능. 복수 지원 활용이 핵심.</div>
+
+              <h3><span class="n">4</span>논술전형 — 수능최저 없음, 경기 학생 성과 높음</h3>
+              <ul>
+                <li>수능최저 없음. 교과 10% + 논술 90%. 3년째 운영.</li>
+                <li>출제: 인문 국어 8문제·사회 2문제(총 40문제), 자연 수학 8문제·국어 2문제. 평균 합격점: 인문 93점, 자연 69점 내외.</li>
+                <li>내신 5등급 학생도 논술로 합격 사례. 논술·수학·언어 강한 학생에게 적극 추천.</li>
+                <li>경기 학생 합격률 높음. 일반고 합격 비율 압도적(특목·자사고 유리하지 않음).</li>
+                <li>EBS·교과서 수준에서 출제. 과도한 사교육 없이 준비 가능.</li>
+              </ul>
+
+              <h3><span class="n">5</span>정시 — 탐구 1과목 반영</h3>
+              <ul>
+                <li>인문: 국어 35% · 수학 25% · 영어 20% · 탐구 20%.</li>
+                <li>자연: 국어 25% · 수학 35% · 영어 20% · 탐구 20%. 탐구 사탐·과탐 모두 1과목 반영(교차 지원 가능).</li>
+                <li>자연 지원 시 수학 미적분·기하 선택 가산점 10%, 과탐 가산점 5%. 인문 지원 시 가산점 없음.</li>
+                <li>수능 전 고교추천 일부 선발, 이월 인원 정시 반영. 농어촌·특성화고 별도 선발(계열별 통합 선발).</li>
+              </ul>
+
+              <div style="text-align:center;margin:28px 0 8px">
+                <a href="#timetable" style="display:inline-flex;align-items:center;gap:8px;padding:10px 22px;background:var(--accent);color:#fff;border-radius:50px;font-size:14px;font-weight:600;text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,.15);">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                  타임테이블로 돌아가기
+                </a>
+              </div>
+              <p class="disclaimer">※ 정확한 내용은 대학 홈페이지를 확인하시기 바랍니다.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- ============ 대구가톨릭대학교 ============ -->
+      <div class="acc" id="dcu">
+        <div class="acc-head" onclick="toggleAcc(this)">
+          <div class="acc-logo">DCU</div>
+          <div class="ti">
+            <div class="nm">대구가톨릭대학교</div>
+            <div class="sub">6/7(일) 12:10 · 입학사정관 발표 · 경북 경산(효성캠퍼스) · 2027학년도 전형 안내</div>
+          </div>
+          <div class="chev">⌄</div>
+        </div>
+        <div class="acc-body">
+          <div class="acc-body-inner">
+            <div class="links">
+              <a class="link-btn" href="https://ibsi.cu.ac.kr" target="_blank" rel="noopener"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M3 8.5h18"/><circle cx="6" cy="6.25" r=".6" fill="currentColor" stroke="none"/><circle cx="8.2" cy="6.25" r=".6" fill="currentColor" stroke="none"/><circle cx="10.4" cy="6.25" r=".6" fill="currentColor" stroke="none"/></svg></span><span class="lb">입학처 홈페이지</span><span class="ds">입학처 바로가기</span></a>
+              <a class="link-btn" href="https://ibsi.cu.ac.kr/kor/susi/doctrine/view.do" target="_blank" rel="noopener"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2.5"/><path d="M9 3.5h6a1 1 0 0 1 1 1V6a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V4.5a1 1 0 0 1 1-1Z"/><path d="m8.5 12 1.2 1.2 2-2.2"/><path d="m8.5 16.5 1.2 1.2 2-2.2"/><path d="M14 12.2h2.5M14 16.7h2.5"/></svg></span><span class="lb">수시 모집요강</span><span class="ds">2027학년도 수시</span></a>
+              <a class="link-btn" href="https://ibsi.cu.ac.kr/kor/bbs/BBSMSTR_000000000131/lst.do" target="_blank" rel="noopener"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3.5H7a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8.5Z"/><path d="M14 3.5V8.5h5"/><path d="M12 11.5v5"/><path d="m9.7 14.3 2.3 2.2 2.3-2.2"/></svg></span><span class="lb">입학 관련 자료</span><span class="ds">자료실·가이드북</span></a>
+            </div>
+            <div class="lec">
+
+              <h3><span class="n">1</span>한눈에 보는 대구가톨릭대</h3>
+              <p>1914년 뉴스티나 신학교로 출발, 경북 경산시 <span class="key">효성캠퍼스</span>(주캠퍼스) + 대구 남구 루가캠퍼스(의·간호 2학년~) 운영. 재학생 1만 명 규모. 대구 지하철 1호선 '대구가톨릭대학교역' 직결 — KTX 동대구역에서 환승으로 한 번에 접근 가능.</p>
+              <div class="statrow">
+                <div class="stat"><div class="big">취업률 1위</div><div class="lbl">대구·경북 대형 사립대 중</div></div>
+                <div class="stat"><div class="big">2개 병원</div><div class="lbl">세계 최고병원(지방 1위) 연계</div></div>
+                <div class="stat"><div class="big">총 6회</div><div class="lbl">수시 복수지원 가능</div></div>
+              </div>
+              <ul>
+                <li>글로벌비즈니스·바이오헬스·인공지능·의과·간호·약학·공과·사회과학·사범·음악·디자인 등 전 계열 갖춤.</li>
+                <li>병원 혜택: 재학생 대학병원 진료비 20% 할인. 대구가톨릭대학병원(남구) — 2024 세계 최고병원 지방 1위.</li>
+                <li>기숙사: 1·2·4인실. 1학년 우선 배정. 경기권 학생 기숙사 배정 관련 문의는 입학처로 연락 시 해결 지원.</li>
+                <li>장학금: 스마트인재장학금(최초 합격 즉시 등록 시 지급, 인문·이공·예능 계열별). 스텔라장학금(교내 활동 포인트 → 학기말 지급). 해외교류 장학금 등 다양.</li>
+              </ul>
+              <figure><img src="images/cu03.jpg" alt="단과대학 및 학부(과) 구성"></figure>
+              <div class="tip"><b>접근성 팁</b> · 서울역 → KTX → 동대구역 → 지하철 1호선 '대구가톨릭대학교역' 하차. 물리적 거리는 있지만 교통은 단순하고 편리. 기숙사 우선 배정으로 거주 걱정 최소화.</div>
+
+              <h3><span class="n">2</span>교과 성적 산출 — 상위 과목 선택 반영</h3>
+              <ul>
+                <li><span class="key">교과 80% + 출석 20%</span> 반영. 과목 선택 방식: 국·수·영·사·한국사·과 중 <span class="key">등급 높은 상위 8개 과목</span> 자동 선택 → 실제 성적보다 유리하게 산출.</li>
+                <li>진로선택 과목 4개 추가 반영(총 12과목). 의예과·약학부는 전과목 반영 + 진로선택 3개(수단위 반영).</li>
+                <li>생활체육·예능계(음악·디자인): 상위 8개 과목 중 진로선택 최대 2개 포함 가능.</li>
+                <li>진로선택 ABC 환산: 일반학과 A=1등급·B=3등급·C=5등급. 의예과·약학부는 가산점(A=1.0, B=0.9, C=0.8) 적용.</li>
+              </ul>
+              <div class="twocol">
+                <figure><img src="images/cu04.jpg" alt="교과 반영방법"></figure>
+                <figure><img src="images/cu05.jpg" alt="진로선택 반영방법"></figure>
+              </div>
+              <div class="tip"><b>핵심 전략</b> · 상위 8과목 선택 반영 + 진로선택 1등급 환산으로 알려진 등급보다 성적이 많이 올라감. 반드시 DCU 방식으로 성적 재산출 후 지원 판단 권장. 4~5등급대 학생도 일반 학과 충분히 도전 가능.</div>
+
+              <h3><span class="n">3</span>전형 구조 — 교과·종합·실기 (수능최저 4개 학과만)</h3>
+              <ul>
+                <li><b>교과전형(BEST)·지역교과전형:</b> 의예과·신학부 외 면접 없음. 교과로 지원 후 대기하면 결과 확인. 충원이 많이 이루어지는 전형. 중위권 학생 상향 지원 후 충원 기대 전략 유효.</li>
+                <li><b>가톨릭지도자추천전형:</b> 신부님 추천서 필요. 16명 소수 모집이지만 선호 학과 포함.</li>
+                <li><b>종합전형(BEST):</b> 글로벌항공서비스학과 외 면접 없음. 서류 100% 선발. 교과보다 성적 스펙트럼이 넓어 7등급대도 합격 사례 있음(생기부 활동 중요).</li>
+                <li><b>수능최저:</b> <span class="key">의예과·약학부·간호학과·체육교육과 4개만</span> 적용. 나머지 전 학과 수능최저 없음 → 수능 안 봐도 지원 가능.</li>
+                <li><b>복수지원:</b> 전형별 1개 모집단위 × 총 6회 가능. 계열 구분 없음(문·이과 교차 자유). 3회 이상 지원 시 전형료 면제.</li>
+              </ul>
+              <figure><img src="images/cu06.jpg" alt="전형 구조"></figure>
+              <figure><img src="images/cu07.jpg" alt="수능최저 기준"></figure>
+              <figure><img src="images/cu21.jpg" alt="지원 유의사항"></figure>
+
+              <h3><span class="n">4</span>교과전형 입시결과</h3>
+              <ul>
+                <li>일반 학과 합격 등급대: 대부분 <span class="key">4~6등급</span>대. 의·약 계열은 1~2등급대.</li>
+                <li>전년도 100% 충원 완료. 교과전형 등록률 92.7%(전체 91.5% — 충원 포함 기준).</li>
+                <li>경기 지역 합격 비율 약 50%에 육박. 지원하면 많이 합격하는 구조.</li>
+              </ul>
+              <figure><img src="images/cu11.jpg" alt="교과전형 성적 분포"></figure>
+
+              <h3><span class="n">5</span>학생부종합전형 — 서류 100%</h3>
+              <ul>
+                <li>서류 100%, 면접 없음(글로벌항공서비스학과 제외). 평가요소: <span class="key">학업역량 40% · 진로역량 40% · 공동체역량 20%</span>.</li>
+                <li>학업역량 40% 중 학업성취도(등급)는 10%뿐 → 나머지는 탐구력·전공교과·진로탐색 활동. 내신이 낮아도 생기부 활동으로 충분히 보완 가능.</li>
+                <li>진로가 중간에 바뀌어도 괜찮음 — 탐색·노력 과정 자체를 긍정 평가.</li>
+                <li>종합전형 등록률 92.7%, 성적 스펙트럼 교과보다 넓음.</li>
+              </ul>
+              <figure><img src="images/cu12.jpg" alt="종합전형 성적 분포"></figure>
+
+              <h3><span class="n">6</span>경기 지역 지원 현황</h3>
+              <ul>
+                <li>경기 학생 지원 현황: 교과·종합전형으로 가장 많이 지원. 합격 비율 약 50% 육박.</li>
+                <li>시군별 지원 상위: 고양·평택·수원·화성·용인·파주·남양주·안산·시흥 순. 합격 비율은 양주시(61.7%), 고양시(57.1%) 등 높음.</li>
+                <li>경기권 선호 학과: 약학부·보건계열 외에 외식조리제과제빵학과·사범대 계열·심리학과·경영학과 등 일반 학과도 다수.</li>
+              </ul>
+              <div class="twocol">
+                <figure><img src="images/cu17.jpg" alt="경기 지역 전형별 현황"></figure>
+                <figure><img src="images/cu18.jpg" alt="경기 시군별 지원 현황"></figure>
+              </div>
+
+              <h3><span class="n">7</span>의예과·약학부 입시결과</h3>
+              <ul>
+                <li>의예과 교과전형: 평균 1.17등급, 100%컷 1.21등급. 지역교과전형: 평균 1.63, 100%컷 2.38.</li>
+                <li>약학부 교과전형: 평균 1.36, 100%컷 1.42. 지역교과전형: 평균 1.54. 노란색 강조 행은 경기권 학생이 접근 가능한 전형.</li>
+                <li>수단위(이수단위 수)가 높은 과목에서 좋은 등급이 유리 — 고등급·고수단위 과목 조합이 핵심.</li>
+              </ul>
+              <figure><img src="images/cu20.jpg" alt="의예과·약학부 입시결과"></figure>
+              <figure><img src="images/cu16.jpg" alt="전형별 경쟁률·등록률"></figure>
+
+                            <div style="text-align:center;margin:28px 0 8px">
+                <a href="#timetable" style="display:inline-flex;align-items:center;gap:8px;padding:10px 22px;background:var(--accent);color:#fff;border-radius:50px;font-size:14px;font-weight:600;text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,.15);">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                  타임테이블로 돌아가기
+                </a>
+              </div>
+              <p class="disclaimer">※ 정확한 내용은 대학 홈페이지를 확인하시기 바랍니다.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- ============ 한국기술교육대학교 ============ -->
+      <div class="acc" id="ktu">
+        <div class="acc-head" onclick="toggleAcc(this)">
+          <div class="acc-logo">KTU</div>
+          <div class="ti">
+            <div class="nm">한국기술교육대학교</div>
+            <div class="sub">6/7(일) 12:30 · 입학사정관 발표 · 충남 천안 · 2027학년도 전형 안내</div>
+          </div>
+          <div class="chev">⌄</div>
+        </div>
+        <div class="acc-body">
+          <div class="acc-body-inner">
+            <div class="links">
+              <a class="link-btn" href="https://www.koreatech.ac.kr" target="_blank" rel="noopener"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M3 8.5h18"/><circle cx="6" cy="6.25" r=".6" fill="currentColor" stroke="none"/><circle cx="8.2" cy="6.25" r=".6" fill="currentColor" stroke="none"/><circle cx="10.4" cy="6.25" r=".6" fill="currentColor" stroke="none"/></svg></span><span class="lb">입학처 홈페이지</span><span class="ds">입학처 바로가기</span></a>
+              <a class="link-btn" href="https://www.koreatech.ac.kr/menu.es?mid=a40101010100" target="_blank" rel="noopener"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2.5"/><path d="M9 3.5h6a1 1 0 0 1 1 1V6a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V4.5a1 1 0 0 1 1-1Z"/><path d="m8.5 12 1.2 1.2 2-2.2"/><path d="m8.5 16.5 1.2 1.2 2-2.2"/><path d="M14 12.2h2.5M14 16.7h2.5"/></svg></span><span class="lb">수시 모집요강</span><span class="ds">2027학년도 수시</span></a>
+              <a class="link-btn" href="https://www.koreatech.ac.kr/admissionDoc/list.es?mid=a40602010100" target="_blank" rel="noopener"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3.5H7a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8.5Z"/><path d="M14 3.5V8.5h5"/><path d="M12 11.5v5"/><path d="m9.7 14.3 2.3 2.2 2.3-2.2"/></svg></span><span class="lb">입학 관련 자료</span><span class="ds">자료실·가이드북</span></a>
+            </div>
+            <div class="lec">
+
+              <h3><span class="n">1</span>한눈에 보는 한국기술교육대</h3>
+              <p>고용노동부가 1991년 설립한 <span class="key">국립법인대학</span>(법적 사립, 실질 국립). 충남 천안 소재. 정부 출연금 연 1,300억 규모. 공학 실습 커리큘럼 비중 50%로 타대학 대비 월등히 높음. 전국 4년제 취업률 1위(82.8%, 교육부 건강보험 기준).</p>
+              <div class="statrow">
+                <div class="stat"><div class="big">취업률 1위</div><div class="lbl">전국 4년제 대학 (82.8%)</div></div>
+                <div class="stat"><div class="big">33%</div><div class="lbl">대기업·공기업 취업</div></div>
+                <div class="stat"><div class="big">등록금 연 87만원</div><div class="lbl">공대 기준 (장학금 상계 후)</div></div>
+              </div>
+              <ul>
+                <li>모집단위: 공학융합·ICT융합·사회융합 계열 총 14개. 계열별 자율전공 3개 + 미래융합학부(완전 자유전공, 2학년 때 계열 제한 없이 전 전공 선택 가능).</li>
+                <li>등록금: 공학 계열 학기 168만원 / 사회 계열 166만원(국립대 수준). 1인당 평균 장학금 489만원 → 공대 기준 연 실부담 약 87만원.</li>
+                <li>IPP제도: 졸업 필수 과목으로 기업 장기 현장실습(3~6개월). 현재 36개 대학이 동 모델 도입. 신입처럼 일 못한다는 소리 안 들음.</li>
+                <li>전과: 계열·전공 제한 없음. 1학년도 전과 가능(2025년 내규 개정). 전과 승인률 69%. 성적 낮아도 전략적 전과 활용 가능.</li>
+                <li>조기취업형 계약학과(3년제): 입학과 동시에 취업 확정, 2~3학년은 기업 근무+주말 수업, 졸업 즉시 정직원.</li>
+                <li>기숙사 수용률 56%(3,500명 재학 기준). 입지가 도심에서 떨어져 있어 생활 집중 환경.</li>
+              </ul>
+
+              <h3><span class="n">2</span>학생부종합 — 서류형·면접형 (수능최저 없음)</h3>
+              <ul>
+                <li><b>서류형:</b> 학생부 서류만 평가. 교수님이 직접 사정(제자 뽑는 마음). 수학·과학·공동체역량 중시. 내신만으로 합·불 판단 어려움. 전공 관심도, 공동체 적응력 중요.</li>
+                <li><b>면접형:</b> 1단계 서류(4배수) → 2단계 서류 60% + 면접 40%(실질 50% 이상). 교수 2인 각 5분씩 10분 개별 면접. 교복 착용 불가.</li>
+                <li>서류형 평균 3.7등급, 면접형 평균 4.1등급. 메카트로닉스공학부 최저 합격 5.58등급 사례 있음 — 면접 역전 폭 매우 큼.</li>
+                <li>수학·물리 관련 세특, 랩실 공동체 활동이 강점. 학생부 내용 기반 함정 질문 대비 필수.</li>
+              </ul>
+              <div class="tip"><b>면접 준비 핵심</b> · 교수님들이 학생부에서 질문이 나올 수밖에 없는 부분을 집중적으로 파고듦. 생기부의 어떤 내용에서 질문이 나올지 미리 분석하고, 구체적인 답변을 준비하는 것이 합격의 핵심. 전공 관심사 + 공동체 적응력 + 수리적 역량을 동시에 드러낼 것.</div>
+
+              <h3><span class="n">3</span>학생부교과 — 수능최저 있음 (2합8, 국어/수학 필수)</h3>
+              <ul>
+                <li>수능최저: <span class="key">2개 합 8 이내</span>. 공학·ICT는 반드시 수학 포함. 사회계열은 국어 포함 필수.</li>
+                <li>반영 방법: 공학/ICT — 국·수·영·과 석차등급 과목. 사회 — 국·수·영·사 석차등급 과목. 과목별 가중치 없이 단순 평균. 진로선택 상위 3개 과목 성취도 가점 추가.</li>
+                <li>편차 큰 학생 주의: 7등급 이하 과목 혼재 시 불리. 최하등급 6등급 이내 안정적인 학생이 유리.</li>
+                <li>교과 전형 평균 3.5등급(전체 평균). 전공별 편차 있으므로 학과별 확인 필요.</li>
+                <li>인문 자율전공(사회계열)의 입결이 공학 자율전공보다 낮음 → 공학 지망이지만 교과가 부족한 경우 사회계열로 지원 후 전과 전략 가능.</li>
+              </ul>
+
+              <h3><span class="n">4</span>논술전형 — 충남·천안 유일 논술</h3>
+              <ul>
+                <li>충남권 거의 유일 논술 전형 운영. 수능최저 없음. 내신 불리해도 논술로 승부 가능.</li>
+                <li>공학·ICT: 수학(약술형 수리논술). 사회: 언어논술(비문학 서술형). 7월 중 온라인 모의논술 실시 예정.</li>
+                <li>난이도: 전년도 다소 높았으나 2027학년도 하향 예정. EBS·교과서 수준에서 대비 가능.</li>
+              </ul>
+
+              <h3><span class="n">5</span>정시</h3>
+              <ul>
+                <li>자율전공으로만 150명 선발. 수능 100%.</li>
+                <li>공학·ICT 계열: A형·B형 중 유리한 점수 적용. 미적분·기하 선택 시 수학 가산점 10%.</li>
+                <li>인문 자율전공 입결이 낮아 공학 지망 학생의 우회 지원 전략으로 활용 가능(입학 후 동일 커리큘럼).</li>
+              </ul>
+
+                            <div style="text-align:center;margin:28px 0 8px">
+                <a href="#timetable" style="display:inline-flex;align-items:center;gap:8px;padding:10px 22px;background:var(--accent);color:#fff;border-radius:50px;font-size:14px;font-weight:600;text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,.15);">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                  타임테이블로 돌아가기
+                </a>
+              </div>
+              <p class="disclaimer">※ 정확한 내용은 대학 홈페이지를 확인하시기 바랍니다.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ 서울과학기술대학교 ============ -->
+      <div class="acc" id="stu">
+        <div class="acc-head" onclick="toggleAcc(this)">
+          <div class="acc-logo">STU</div>
+          <div class="ti">
+            <div class="nm">서울과학기술대학교</div>
+            <div class="sub">6/7(일) 12:50 · 입학사정관 발표 · 서울 노원구 · 2027학년도 전형 안내</div>
+          </div>
+          <div class="chev">⌄</div>
+        </div>
+        <div class="acc-body">
+          <div class="acc-body-inner">
+            <div class="links">
+              <a class="link-btn" href="https://admission.seoultech.ac.kr" target="_blank" rel="noopener"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M3 8.5h18"/><circle cx="6" cy="6.25" r=".6" fill="currentColor" stroke="none"/><circle cx="8.2" cy="6.25" r=".6" fill="currentColor" stroke="none"/><circle cx="10.4" cy="6.25" r=".6" fill="currentColor" stroke="none"/></svg></span><span class="lb">입학처 홈페이지</span><span class="ds">입학처 바로가기</span></a>
+              <a class="link-btn" href="https://admission.seoultech.ac.kr/cms/FR_CON/index.do?MENU_ID=130" target="_blank" rel="noopener"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2.5"/><path d="M9 3.5h6a1 1 0 0 1 1 1V6a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V4.5a1 1 0 0 1 1-1Z"/><path d="m8.5 12 1.2 1.2 2-2.2"/><path d="m8.5 16.5 1.2 1.2 2-2.2"/><path d="M14 12.2h2.5M14 16.7h2.5"/></svg></span><span class="lb">수시 모집요강</span><span class="ds">2027학년도 수시</span></a>
+              <a class="link-btn" href="https://admission.seoultech.ac.kr/cms/FR_CON/index.do?MENU_ID=840" target="_blank" rel="noopener"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3.5H7a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8.5Z"/><path d="M14 3.5V8.5h5"/><path d="M12 11.5v5"/><path d="m9.7 14.3 2.3 2.2 2.3-2.2"/></svg></span><span class="lb">종합전형 가이드북</span><span class="ds">학생부종합전형 가이드</span></a>
+            </div>
+            <div class="lec">
+
+              <h3><span class="n">1</span>한눈에 보는 서울과기대</h3>
+              <p>서울 노원구 소재 <span class="key">국립대학교</span>. 8개 단과대학 33개 학과. 2027 신설: <span class="key">양자융합물리학과</span>(수시 13명·정시 4명). 수시 약 70% · 정시 약 30% 선발.</p>
+              <div class="statrow">
+                <div class="stat"><div class="big">국립대</div><div class="lbl">서울 소재 국립 공과계열</div></div>
+                <div class="stat"><div class="big">종합 3.29</div><div class="lbl">학생부종합 평균 등급</div></div>
+                <div class="stat"><div class="big">교과 2.02</div><div class="lbl">고교추천 평균 등급</div></div>
+              </div>
+              <ul>
+                <li>ST 자유전공학부: 대학 내 모든 학과 계열 구분 없이 선택 가능(수시 학종 18명·논술 162명·정시 다군 26명 선발, 2027 신설).</li>
+                <li>단과대학별 자유전공학부 유형Ⅱ: 단과대학 내 원하는 학과 선택(정시 가·나군 159명, 일부 수시 교과·종합 선발).</li>
+                <li>수시 전형 구성: 교과 20% · 종합 48% · 논술 13% · 실기 19%.</li>
+              </ul>
+              <div class="twocol">
+                <figure><img src="images/st04.jpg" alt="ST 자유전공학부"></figure>
+                <figure><img src="images/st05.jpg" alt="자유전공학부 유형 구성"></figure>
+              </div>
+
+              <h3><span class="n">2</span>학생부교과 — 고교추천전형</h3>
+              <ul>
+                <li>내신 100%, 수능최저 <span class="key">2합 7</span>(수도권 최저 수준). 자연: 국·수·영·과. 인문: 국·수·영·사. 건축학부: 국·수·영·사·과·한국사 전 반영.</li>
+                <li>이수단위 기준 완화: 80단위(전년 90단위). 학생 수상 부담 감소.</li>
+                <li>평균 등급 2.02. 최고 1.63(MSD학과), 최저 2.31(영어영문학과). 경쟁률 5:1, 충원율 156%, 최저충족률 92.9%.</li>
+                <li>경기 지역 합격률 48.77%(전국 50.1% 대비 소폭 낮음). 추가합격 많아 적극 지원 전략 유효.</li>
+              </ul>
+              <figure><img src="images/st26.jpg" alt="경기 지역 전형별 합격률"></figure>
+              <figure><img src="images/st27.jpg" alt="고교추천전형 지역별 입시결과"></figure>
+              <figure><img src="images/st29.jpg" alt="교과전형 학과별 등급 분포"></figure>
+
+              <h3><span class="n">3</span>학생부종합 — 학교생활우수자·창의융합인재·기회균등</h3>
+              <ul>
+                <li>1단계 서류(3배수) → 2단계 면접 30% 추가. 수능최저 없음.</li>
+                <li>평가요소: 학업역량 25% · 진로역량 45% · 공동체역량 30%. <span class="key">진로역량 45%로 가장 높음.</span> 면접도 동일 비율 적용.</li>
+                <li>기회균등 86명 선발(타 대학 대비 높은 비율). 해당 학생 적극 추천.</li>
+                <li>경쟁률 17.9:1, 충원율 54%, 면접 응시율 90%. 실질 경쟁률 1단계 1.7:1. 1단계 합격 시 면접 역전 충분히 가능.</li>
+                <li>합격 등급대: 2.5~3.5등급 구간에 가장 조밀하게 분포. 최저 합격자 포함 시 스펙트럼 넓음.</li>
+              </ul>
+              <figure><img src="images/st30.jpg" alt="학생부종합 지역별 입시결과"></figure>
+              <figure><img src="images/st32.jpg" alt="학생부종합 학과별 등급 분포"></figure>
+              <figure><img src="images/st33.jpg" alt="학생부종합 단과대학별 성적분포 산점도"></figure>
+
+              <h3><span class="n">4</span>논술전형 — 수능최저 없음, 수학 논술</h3>
+              <ul>
+                <li>교과 30% + 논술 70%. 수능최저 없음. 수Ⅰ·수Ⅱ·미적분 범위. 100분 3문항.</li>
+                <li>경쟁률 46.6:1, 충원율 22.6%. 합격 평균 논술점수 91.02/100점 — 높은 수준이지만 수학 자신 있으면 도전 가치.</li>
+                <li>합격자 교과 평균 3.85등급, 최저 합격 6.77등급 — 내신 낮아도 논술 역전 사례 다수.</li>
+              </ul>
+
+              <div class="tip"><b>논술 전략</b> · 수능최저 없어 수능 준비 부담 없음. 수학 강점 학생에게 강력 추천. 내신 3~5등급대도 논술로 합격한 사례 다수. EBS·교과서 수준 수학 수리논술 집중 준비.</div>
+
+              <h3><span class="n">5</span>정시</h3>
+              <ul>
+                <li>가·나·다군 분산 선발. 표준점수 반영. 자연 계열 수학 35% 가장 높은 비중.</li>
+                <li>자연 계열 미적분·기하 선택 시 표준점수 7% 가산. 사탐 런 학생도 자연계 지원 시 약 30% 합격 사례.</li>
+                <li>영어 등급점수 환산, 한국사 4등급부터 감점. 수능 백분위 86%대(전년 기준).</li>
+              </ul>
+              <figure><img src="images/st38.jpg" alt="정시 입시결과"></figure>
+
+                            <div style="text-align:center;margin:28px 0 8px">
+                <a href="#timetable" style="display:inline-flex;align-items:center;gap:8px;padding:10px 22px;background:var(--accent);color:#fff;border-radius:50px;font-size:14px;font-weight:600;text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,.15);">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                  타임테이블로 돌아가기
+                </a>
+              </div>
+              <p class="disclaimer">※ 정확한 내용은 대학 홈페이지를 확인하시기 바랍니다.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- ============ 명지대학교 ============ -->
+      <div class="acc" id="mju">
+        <div class="acc-head" onclick="toggleAcc(this)">
+          <div class="acc-logo">MJU</div>
+          <div class="ti">
+            <div class="nm">명지대학교</div>
+            <div class="sub">6/7(일) 14:18 · 입학처 발표 · 인문캠퍼스(서울 서대문구) · 자연캠퍼스(용인) · 2027학년도 전형 안내</div>
+          </div>
+          <div class="chev">⌄</div>
+        </div>
+        <div class="acc-body">
+          <div class="acc-body-inner">
+            <div class="links">
+              <a class="link-btn" href="https://iphak.mju.ac.kr" target="_blank" rel="noopener"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M3 8.5h18"/><circle cx="6" cy="6.25" r=".6" fill="currentColor" stroke="none"/><circle cx="8.2" cy="6.25" r=".6" fill="currentColor" stroke="none"/><circle cx="10.4" cy="6.25" r=".6" fill="currentColor" stroke="none"/></svg></span><span class="lb">입학처 홈페이지</span><span class="ds">입학처 바로가기</span></a>
+              <a class="link-btn" href="https://iphak.mju.ac.kr/pages/?p=10&mj=01" target="_blank" rel="noopener"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2.5"/><path d="M9 3.5h6a1 1 0 0 1 1 1V6a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V4.5a1 1 0 0 1 1-1Z"/><path d="m8.5 12 1.2 1.2 2-2.2"/><path d="m8.5 16.5 1.2 1.2 2-2.2"/><path d="M14 12.2h2.5M14 16.7h2.5"/></svg></span><span class="lb">수시 모집요강</span><span class="ds">2027학년도 수시</span></a>
+              <a class="link-btn" href="https://iphak.mju.ac.kr/pages/?p=55&mj=07" target="_blank" rel="noopener"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3.5H7a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8.5Z"/><path d="M14 3.5V8.5h5"/><path d="M12 11.5v5"/><path d="m9.7 14.3 2.3 2.2 2.3-2.2"/></svg></span><span class="lb">학생부종합 가이드북</span><span class="ds">전형 안내 자료</span></a>
+            </div>
+            <div class="lec">
+
+              <h3><span class="n">1</span>한눈에 보는 명지대</h3>
+              <p><span class="key">이원화 캠퍼스</span>: 인문캠퍼스(서울 서대문구) — 인문·사회·경영·소프트웨어융합대학. 자연캠퍼스(용인) — 공과·화학생명과학·건축·스포츠예술대학. 수시 약 70% 선발. <span class="key">2027 수시 전 전형 수능최저 없음</span>(2028부터 생김).</p>
+              <ul>
+                <li>소프트웨어융합대학(4개 전공)은 공학사 학위이지만 인문캠퍼스 위치 → 입결이 자연캠 공대보다 높게 형성.</li>
+                <li>자율전공학부: 2학년 때 캠퍼스 교차 전공 선택 가능(정원 제한 없음). 미래융합대학·스포츠예술대학 제외 모든 전공 선택 가능. 작년 자연 자율전공 입학생의 34%가 인문계 전공 선택.</li>
+                <li>전과 승인률 96%. 융합전공(사회복지·심리체육 등 메인 전공 없는 분야), 복수전공 모두 운영.</li>
+                <li>미래융합대학(재직자·성인학습자 전용) → 고교 졸업 예정자 지원 불가.</li>
+                <li>아랍지역학과·청소년지도학과 등 서울권 희소 학과 보유. 문헌정보학과 올해 처음 학종에서도 선발.</li>
+                <li>논술 전형 없음. 학폭: 학생부종합 서류평가 100점 감점(합격권 탈락 수준).</li>
+              </ul>
+
+              <h3><span class="n">2</span>교과 성적 산출</h3>
+              <ul>
+                <li>학년별 가중치 없음(1·2·3학년 동일). 인문·사회 — 국·수·영·사. 자연·공학 — 국·수·영·과. 석차등급 + 진로선택 성취도 모두 반영.</li>
+                <li>진로선택 환산: <span class="key">A=1등급, B=2등급, C=4등급</span>. 공개 등급보다 최소 0.3 이상 상승. 자연계 많이 차이 나면 최대 0.89 상승 사례.</li>
+                <li>환산 점수 필수 확인 — 5등급 이하 과목 있으면 환산 점수 대폭 하락. 특성화고 전형은 전교과 반영(전문교과 A=3등급).</li>
+              </ul>
+
+              <h3><span class="n">3</span>학생부교과 — 학교장추천·교과면접</h3>
+              <ul>
+                <li><b>학교장추천:</b> 교과 100%, 면접 없음. 고교별 추천 20명 한도(실질 제한 거의 없음). 전년 경쟁률 낮음 → 경기권에서 적극 활용 권장.</li>
+                <li><b>교과면접전형:</b> 1단계 교과(5배수) → 2단계 교과 70% + 면접 30%. 실질 면접 영향력 70% 이상. 면접위원에게 학생부 미제공, 기초자료(5분 작성) 후 5분 면접.</li>
+                <li>면접 목적: 해당 학과에 대한 관심·적합성 확인. 기출 질문 홈페이지 공개 — 반드시 확인.</li>
+                <li>면접 일정: 10월 마지막 주 토요일(수능 전). 종합 면접은 수능 후(2027: 토=자연, 일=인문 — 전년과 반대).</li>
+              </ul>
+
+              <h3><span class="n">4</span>학생부종합 — 명지인재서류·명지인재면접·크리스천리더</h3>
+              <ul>
+                <li><b>명지인재서류:</b> 서류 100%, 면접 없음. 학업역량 비중 높음. 충원율 높은 편.</li>
+                <li><b>명지인재면접:</b> 면접 있음. 공동체역량·리더십 우수자 선호. 종합전형 경쟁률 매년 상승(2000명씩 증가). 경기·서울·인천 지원자 가장 많음.</li>
+                <li><b>크리스천리더:</b> 세례 받은 기독교인 → 목회자 확인서 제출. 평가 기준은 명지인재면접과 동일(신앙심 평가 없음).</li>
+                <li>평가요소: 진로역량이 핵심(서류·면접 공통). 자연·공학 — 물리I 필수 이수(물리II는 권장).</li>
+              </ul>
+
+                            <div style="text-align:center;margin:28px 0 8px">
+                <a href="#timetable" style="display:inline-flex;align-items:center;gap:8px;padding:10px 22px;background:var(--accent);color:#fff;border-radius:50px;font-size:14px;font-weight:600;text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,.15);">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                  타임테이블로 돌아가기
+                </a>
+              </div>
+              <p class="disclaimer">※ 정확한 내용은 대학 홈페이지를 확인하시기 바랍니다.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- ============ 서울여자대학교 ============ -->
+      <div class="acc" id="swu">
+        <div class="acc-head" onclick="toggleAcc(this)">
+          <div class="acc-logo">SWU</div>
+          <div class="ti">
+            <div class="nm">서울여자대학교</div>
+            <div class="sub">6/7(일) 14:42 · 입학처 발표 · 서울 노원구 · 2027학년도 전형 안내</div>
+          </div>
+          <div class="chev">⌄</div>
+        </div>
+        <div class="acc-body">
+          <div class="acc-body-inner">
+            <div class="links">
+              <a class="link-btn" href="https://admission.swu.ac.kr" target="_blank" rel="noopener"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M3 8.5h18"/><circle cx="6" cy="6.25" r=".6" fill="currentColor" stroke="none"/><circle cx="8.2" cy="6.25" r=".6" fill="currentColor" stroke="none"/><circle cx="10.4" cy="6.25" r=".6" fill="currentColor" stroke="none"/></svg></span><span class="lb">입학처 홈페이지</span><span class="ds">입학처 바로가기</span></a>
+              <a class="link-btn" href="https://admission.swu.ac.kr/bbs/board.php?bo_table=flashpaper&sca=%EC%88%98%EC%8B%9C&sub_ck=1" target="_blank" rel="noopener"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2.5"/><path d="M9 3.5h6a1 1 0 0 1 1 1V6a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V4.5a1 1 0 0 1 1-1Z"/><path d="m8.5 12 1.2 1.2 2-2.2"/><path d="m8.5 16.5 1.2 1.2 2-2.2"/><path d="M14 12.2h2.5M14 16.7h2.5"/></svg></span><span class="lb">수시 모집요강</span><span class="ds">2027학년도 수시</span></a>
+              <a class="link-btn" href="https://admission.swu.ac.kr/bbs/board.php?bo_table=enterinfo" target="_blank" rel="noopener"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3.5H7a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8.5Z"/><path d="M14 3.5V8.5h5"/><path d="M12 11.5v5"/><path d="m9.7 14.3 2.3 2.2 2.3-2.2"/></svg></span><span class="lb">입시 자료</span><span class="ds">입시자료 열람</span></a>
+            </div>
+            <div class="lec">
+
+              <h3><span class="n">1</span>한눈에 보는 서울여대</h3>
+              <p>서울 노원구 소재 여자대학교. 2027학년도 총 1,808명 모집 — 수시 60%(1,080명) · 정시 40%(728명). 수도권 합격자 비율 77.7%(수시 72.3%, 정시 85.4%). <span class="key">경기 지역이 수시 합격자의 40.1%</span>로 가장 많음.</p>
+              <div class="statrow">
+                <div class="stat"><div class="big">경기 40.1%</div><div class="lbl">수시 합격자 중 최다 비율</div></div>
+                <div class="stat"><div class="big">바름인재서류</div><div class="lbl">학업역량 40% 최중시</div></div>
+                <div class="stat"><div class="big">정시 86.8</div><div class="lbl">수능 백분위 전체 평균</div></div>
+              </div>
+              <div class="twocol">
+                <figure><img src="images/sw02.jpg" alt="2027 모집인원"></figure>
+                <figure><img src="images/sw03.jpg" alt="지역별 합격자 비율"></figure>
+              </div>
+              <figure><img src="images/sw06.jpg" alt="경기도 남북부 지원·합격 현황"></figure>
+
+              <h3><span class="n">2</span>전형 구조</h3>
+              <ul>
+                <li>학생부종합: 바름인재서류형(183명) · 바름인재면접형(202명) · SW융합인재전형(33명) · 기독교지도자전형(23명) · 기회균형전형(147명 포함).</li>
+                <li>학생부교과: 교과우수자전형(185명, 학교장추천) · 체육(10명).</li>
+                <li>논술위주: 논술우수자전형(120명, 자유전공학부 광역). 교과 20% 반영. 수능최저 없음.</li>
+                <li>수능최저: <span class="key">바름인재면접형·SW융합·기독교지도자 = 없음</span>. 교과우수자 = 2합8. 교과체육 = 없음.</li>
+              </ul>
+              <figure><img src="images/sw10.jpg" alt="전형 구조 및 방법"></figure>
+
+              <h3><span class="n">3</span>학생부종합 — 바름인재서류·면접·SW융합</h3>
+              <ul>
+                <li><b>바름인재서류:</b> 서류 100%, 면접 없음. 학업역량 <span class="key">40%</span> · 진로역량 35% · 공동체역량 25%. 경쟁률 12.6:1, 평균 등급 3.2(전년 3.3에서 소폭 상승).</li>
+                <li><b>바름인재면접:</b> 1단계 서류(5배수) → 2단계 서류 50% + 면접 50%. 면접 이후 합격자 40%가 바뀜(역전율 높음). 수능 후 면접. 진로역량 40% · 학업역량 35% · 공동체역량 25%. 평균 등급 3.5. 경쟁률 18.1:1.</li>
+                <li><b>SW융합인재:</b> 컴퓨터 관련 역량·AI 활용 관심 강조. 면접형과 동일 방식. 일수 수업 이력 있으면 강점.</li>
+              </ul>
+              <figure><img src="images/sw11.jpg" alt="종합전형 인재상 및 평가요소"></figure>
+              <figure><img src="images/sw12.jpg" alt="바름인재서류 입시결과"></figure>
+              <p style="font-size:13px;color:var(--txt-sub);text-align:center;margin:-8px 0 12px;font-weight:600;">▲ 바름인재서류전형 — 경쟁률 최고 26.3:1(일어일문), 최저 6.8:1(소프트웨어전공), 평균 등급 3.2</p>
+              <figure><img src="images/sw13.jpg" alt="바름인재면접 입시결과"></figure>
+
+              <h3><span class="n">4</span>학생부교과 — 교과우수자(학교장추천)</h3>
+              <ul>
+                <li>교과 100%, 수능최저 <span class="key">2합8</span>. 학교장 추천 필요. 최저충족률 89.9% — 수능 보는 학생이라면 거의 충족. 충원율 높음.</li>
+                <li>경쟁률 7.4:1. 교과 평균 3.6등급. 일반고 95%.</li>
+                <li>논술: 논술 80% + 교과 20%, 수능최저 없음. 자유전공학부(광역) 선발. 경쟁률 13.3:1. 논술 잘하면 7등급 이하도 합격 사례 있음.</li>
+              </ul>
+
+              <h3><span class="n">5</span>정시</h3>
+              <ul>
+                <li>수능 백분위 전체 평균 86.8점. 가군 6.3:1, 나군 6.0:1, 다군 10.9:1.</li>
+                <li>반영: 국·수·영·탐(상위 1과목) 중 성적 우수 순 35%·30%·20%·15%. 일부 학과(디자인 계열 등) 상위 3개 영역 40%·40%·20%.</li>
+                <li>영어 등급 환산: 1등급=100점, 2등급=97점, 3등급=93점, 4등급=85점, 5등급=70점 — 4등급부터 급격히 하락.</li>
+              </ul>
+              <div class="twocol">
+                <figure><img src="images/sw22.jpg" alt="정시 수능 반영방법"></figure>
+                <figure><img src="images/sw23.jpg" alt="정시 입시결과"></figure>
+              </div>
+
+              <h3><span class="n">6</span>경기 지역 현황</h3>
+              <ul>
+                <li>수시 경기 지원 5,890명 중 합격 889명(합격률 15.1%). 경기 수시 합격자 40.1%로 전체 1위.</li>
+                <li>경기 남부 61.8% 지원 vs 합격 55.1%. <span class="key">경기 북부는 38.2% 지원 대비 합격 44.9%</span> — 북부 학생 합격률 상대적으로 높음.</li>
+              </ul>
+              <figure><img src="images/sw04.jpg" alt="수시·정시 지역별 합격 비율"></figure>
+
+                            <div style="text-align:center;margin:28px 0 8px">
+                <a href="#timetable" style="display:inline-flex;align-items:center;gap:8px;padding:10px 22px;background:var(--accent);color:#fff;border-radius:50px;font-size:14px;font-weight:600;text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,.15);">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                  타임테이블로 돌아가기
+                </a>
+              </div>
+              <p class="disclaimer">※ 정확한 내용은 대학 홈페이지를 확인하시기 바랍니다.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- ============ 한국항공대학교 ============ -->
+      <div class="acc" id="kau">
+        <div class="acc-head" onclick="toggleAcc(this)">
+          <div class="acc-logo">KAU</div>
+          <div class="ti">
+            <div class="nm">한국항공대학교</div>
+            <div class="sub">6/7(일) 15:19 · 입학처 발표 · 경기 고양시 · 2027학년도 전형 안내</div>
+          </div>
+          <div class="chev">⌄</div>
+        </div>
+        <div class="acc-body">
+          <div class="acc-body-inner">
+            <div class="links">
+              <a class="link-btn" href="https://ibhak.kau.ac.kr" target="_blank" rel="noopener"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M3 8.5h18"/><circle cx="6" cy="6.25" r=".6" fill="currentColor" stroke="none"/><circle cx="8.2" cy="6.25" r=".6" fill="currentColor" stroke="none"/><circle cx="10.4" cy="6.25" r=".6" fill="currentColor" stroke="none"/></svg></span><span class="lb">입학처 홈페이지</span><span class="ds">입학처 바로가기</span></a>
+              <a class="link-btn" href="https://ibhak.kau.ac.kr/admission/html/rolling/guide.asp" target="_blank" rel="noopener"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2.5"/><path d="M9 3.5h6a1 1 0 0 1 1 1V6a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V4.5a1 1 0 0 1 1-1Z"/><path d="m8.5 12 1.2 1.2 2-2.2"/><path d="m8.5 16.5 1.2 1.2 2-2.2"/><path d="M14 12.2h2.5M14 16.7h2.5"/></svg></span><span class="lb">수시 모집요강</span><span class="ds">2027학년도 수시</span></a>
+              <a class="link-btn" href="https://ibhak.kau.ac.kr/admission/html/guide/notice.asp" target="_blank" rel="noopener"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3.5H7a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8.5Z"/><path d="M14 3.5V8.5h5"/><path d="M12 11.5v5"/><path d="m9.7 14.3 2.3 2.2 2.3-2.2"/></svg></span><span class="lb">입시 자료</span><span class="ds">입시 공지·자료</span></a>
+            </div>
+            <div class="lec">
+
+              <h3><span class="n">1</span>한눈에 보는 한국항공대</h3>
+              <p>1952년 국립 창설, 1979년 한진(대한항공) 사립법인 전환. 경기 고양시 소재. <span class="key">경의중앙선 한국항공대역 직결</span> — 신촌·홍대까지 10분. 생활권 사실상 서울. 활주로(고도제한)로 주변 녹지 풍부.</p>
+              <div class="statrow">
+                <div class="stat"><div class="big">대기업·공기업</div><div class="lbl">취업률 57.4% (유지취업 최상위)</div></div>
+                <div class="stat"><div class="big">교수 1인당</div><div class="lbl">연구비 전국 상위권</div></div>
+                <div class="stat"><div class="big">1학년 전공자유</div><div class="lbl">2학년 올라갈 때 전공 선택</div></div>
+              </div>
+              <ul>
+                <li><b>모집단위 구조:</b> 입학 시 <span class="key">공과대학 / AI융합대학 / 경상대학 / 자유전공학과</span>로 입학 → 1학년 공통 이수 후 2학년 때 자유롭게 전공 선택(항공정비학과 선택 불가). 자유전공학과 입학 시 운항학과(조종사)도 선택 가능 — 단 자유전공 내 경쟁률 10%만 성공.</li>
+                <li><b>운항학과(파일럿):</b> 대한항공 기준 비행 200시간 이상 → 미국 비행훈련(약 3년, 3억 이상 비용). LCC는 300시간 기준으로 국내 훈련 가능. 졸업 후 빠른 비용 회수.</li>
+                <li><b>항공교통학과(관제사):</b> 국가 공무원. 두 번째로 선호하는 학과.</li>
+                <li><b>항공경영학과:</b> 해외 복수학위(호주 명문대 연계) 가능. NASA·보잉 탐방 프로젝트, 미국·프랑스 인턴 프로그램 운영.</li>
+                <li>서울·경기·인천 학생 약 80% 차지. 취업 후 지방 근무 부담이 항공 관련 취업(16.4%)이 낮은 이유.</li>
+              </ul>
+
+              <h3><span class="n">2</span>논술전형 — 수학 논술, 학생부 미반영</h3>
+              <ul>
+                <li>논술 100%, 학생부 미반영(수능최저 있음). 계열별 분리: 공대·AI — 수Ⅰ·수Ⅱ·미적분+확통 포함. 항공운항·이함 — 수Ⅰ·수Ⅱ(미적분 제외). 경상·사회 — 언어 논술.</li>
+                <li>공대 논술 합격점 60점대(100점 만점). 결시율·수능최저 미충족 제외 실질 경쟁률 공대 5:1 수준 — 도전 가치 충분.</li>
+                <li>논술 고사: 수능 후 토요일. 7월 온라인 모의논술 실시 예정.</li>
+              </ul>
+
+              <h3><span class="n">3</span>학생부교과 — 수능최저 있음 / 순수교과(고교추천)</h3>
+              <ul>
+                <li><b>교과전형(수능최저):</b> 교과 100%. 평균 2등급대 중반. 실질 경쟁률은 수능최저 미충족자 제거 후 훨씬 낮아짐.</li>
+                <li><b>순수교과(고교추천, 수능최저 없음):</b> 추천 인원 제한 없음. 수능최저 없으므로 교과전형보다 약 0.12등급 높게 입결 형성. 운항학과는 두 전형 모두 입결 차이 거의 없음.</li>
+                <li>반영 교과: 공대·AI — 국·수·영·과. 경상 — 국·수·영·사. 진로선택 성취도 추가 반영.</li>
+              </ul>
+
+              <h3><span class="n">4</span>학생부종합 — 3배수, 학업·진로·공동체 3:5:2</h3>
+              <ul>
+                <li>1단계 서류 100%(3배수) → 2단계 면접. 학업 30% · 진로 50% · 공동체 20% 평가.</li>
+                <li><span class="key">전공 적합성 아닌 계열 적합성</span> 위주 평가 — 기계 vs 전자 구분 중요치 않음. 공학적·과학적 성향이 드러나는지가 핵심. 운항학과만 예외(항공 관심도 필수).</li>
+                <li>합격 등급대: 4등급대가 가장 많음(4등급 초·중반까지). 1단계 통과 가능성 기준으로 4등급대까지 지원 권장.</li>
+                <li>면접: 학생부 기반 활동 확인 면접. 생기부 내용 충분히 숙지하고 입장. 면접 자체보다 1단계 통과 여부가 핵심.</li>
+                <li>고른기회전형: 사회적배려대상자·국가유공자. 경쟁률 매우 낮음 — 지원 자격 있으면 적극 활용.</li>
+              </ul>
+
+              <h3><span class="n">5</span>정시</h3>
+              <ul>
+                <li>수능 100%, 표준점수 반영. 가·나·다군 분할 선발 — 운항학과·항공교통·자유전공 등 인기 학과 포함. 일부 학생이 세 군 모두 지원하는 사례.</li>
+                <li>공과대학: 2027부터 과학탐구 가산점 신설. 수학 잘하면 수학 반영 비율 높게, 국어 잘하면 국어 비율 높게 — 개인 유불리 반영 구조.</li>
+                <li>전체 평균 등급 약 2등급 중후반. 운항학과는 1등급대. 농어촌·특성화 정원외는 약 3등급대 형성.</li>
+                <li>운항학과: 나군(2027 복귀, 전년 임시 다군 편성). 세 군 동시 지원 가능 학교 특성 활용.</li>
+              </ul>
+
+                            <div style="text-align:center;margin:28px 0 8px">
+                <a href="#timetable" style="display:inline-flex;align-items:center;gap:8px;padding:10px 22px;background:var(--accent);color:#fff;border-radius:50px;font-size:14px;font-weight:600;text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,.15);">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                  타임테이블로 돌아가기
+                </a>
+              </div>
+              <p class="disclaimer">※ 정확한 내용은 대학 홈페이지를 확인하시기 바랍니다.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ 한양대학교 ERICA ============ -->
+      <div class="acc" id="hyu">
+        <div class="acc-head" onclick="toggleAcc(this)">
+          <div class="acc-logo">HYU</div>
+          <div class="ti">
+            <div class="nm">한양대학교 ERICA</div>
+            <div class="sub">6/7(일) 15:19 · 입학처 발표 · 경기 안산시 · 2027학년도 전형 안내</div>
+          </div>
+          <div class="chev">⌄</div>
+        </div>
+        <div class="acc-body">
+          <div class="acc-body-inner">
+            <div class="links">
+              <a class="link-btn" href="https://goerica.hanyang.ac.kr" target="_blank" rel="noopener"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M3 8.5h18"/><circle cx="6" cy="6.25" r=".6" fill="currentColor" stroke="none"/><circle cx="8.2" cy="6.25" r=".6" fill="currentColor" stroke="none"/><circle cx="10.4" cy="6.25" r=".6" fill="currentColor" stroke="none"/></svg></span><span class="lb">입학처 홈페이지</span><span class="ds">입학처 바로가기</span></a>
+              <a class="link-btn" href="https://goerica.hanyang.ac.kr/admission/html/rolling/guide.asp" target="_blank" rel="noopener"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2.5"/><path d="M9 3.5h6a1 1 0 0 1 1 1V6a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V4.5a1 1 0 0 1 1-1Z"/><path d="m8.5 12 1.2 1.2 2-2.2"/><path d="m8.5 16.5 1.2 1.2 2-2.2"/><path d="M14 12.2h2.5M14 16.7h2.5"/></svg></span><span class="lb">수시 모집요강</span><span class="ds">2027학년도 수시</span></a>
+              <a class="link-btn" href="https://goerica.hanyang.ac.kr/admission/html/counsel/brochure_list.asp" target="_blank" rel="noopener"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3.5H7a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8.5Z"/><path d="M14 3.5V8.5h5"/><path d="M12 11.5v5"/><path d="m9.7 14.3 2.3 2.2 2.3-2.2"/></svg></span><span class="lb">입학안내책자</span><span class="ds">입시자료 다운로드</span></a>
+            </div>
+            <div class="lec">
+
+              <h3><span class="n">1</span>한눈에 보는 한양대 ERICA</h3>
+              <p>경기 안산 소재 한양대학교 제2캠퍼스. 정원 약 2,200명. 최근 3년간 첨단융합대학·소프트웨어융합대학 200명 이상 증원 — <span class="key">수도권 최대 증원</span>. 자율전공학부(LIONS) 전체 모집의 약 40~50% 선발. 2027 주요 특징: 학생부종합 서류형에 수능최저 없음(2028부터 신설).</p>
+              <div class="statrow">
+                <div class="stat"><div class="big">LIONS 자율전공</div><div class="lbl">전 모집의 40~50%, 2학년 전공 자유 선택</div></div>
+                <div class="stat"><div class="big">교과 530명</div><div class="lbl">수도권 최대 규모 교과 선발</div></div>
+                <div class="stat"><div class="big">종합 서류형</div><div class="lbl">수능최저 없음 (2027학년도)</div></div>
+              </div>
+              <ul>
+                <li><b>LIONS 자율전공학부:</b> 자연계열·인문사회계열·전계열(디자인 포함)로 분리 선발. 2학년 진급 시 희망학과 100% 선택, 정원 제한 없음. 실제로 430명 입학 중 100명이 전자공학 선택(반도체 인기).</li>
+                <li>2028 변경 예고: 교과전형 현역 제한, 서류형 수능최저(2합7) 신설, 진로역량 50%로 확대, 논술전형 신설(수능최저 없이 논술 100% 200명).</li>
+              </ul>
+
+              <h3><span class="n">2</span>학생부교과 — 교과 100%, 수능최저 2합7</h3>
+              <ul>
+                <li>교과 100%, 수능최저 <span class="key">2합7</span>(약학과 3합5). 국·영·수·사(인문) 또는 국·영·수·과(자연) 전 과목 반영. 진로선택 A=1등급 환산.</li>
+                <li>전년 경쟁률 5:1, 수능최저 충족률 약 80%, 충원율 150%. 실질 경쟁률 4:1 수준. 충족 학생의 55%가 최초 합격.</li>
+                <li>전체 평균 2.5등급. 자연계 2.4~2.8등급, 인문계 2.7등급, 전계열(자율전공) 2.5등급.</li>
+                <li>약학과: 평균 1.15등급. 전년 수능최저 충족률 70%(직전까지는 50% 미달 → 최저 3합5 유지 시 도전 가치 있음).</li>
+                <li>문화콘텐츠학과: 2년 전 3.39등급으로 낮았다가 작년 경쟁률 3배 급등 후 다시 2등급대 복귀 — 3등급대 학생에게 추천.</li>
+                <li>글로벌문화통상학부: 외고·국제고 학생 절반 차지 → 산포도에서 이 부분 감안 필요.</li>
+              </ul>
+
+              <h3><span class="n">3</span>학생부종합 서류형 — 수능최저 없음 (2027)</h3>
+              <ul>
+                <li>서류 100%, 면접 없음. 2027 평가요소 변경: <span class="key">학업역량 40% · 진로역량 40% · 공동체역량 20%</span>(전년 학업 50%, 진로 30%).</li>
+                <li>진로역량: 전공 관련 교과 이수·성취도 + 비교과 활동. 전체 평균이 낮아도 특정 학과 관련 교과에서 강점 보이면 합격 가능(예: 3D 사이언스 학과 — 3등급 중반도 수학 강점으로 합격).</li>
+                <li>자율전공 자연계: 계열 평가(특정학과 활동 불필요) — 진로 중간에 바뀐 학생도 충분히 합격 가능.</li>
+                <li>전체 평균 3등급 초반. 3.5등급 초과 시 합격 어려움. 일반고 기준.</li>
+                <li>지능형시스템공학과(구 양자컴퓨터공학): 자연계 최저 입결. 전자공학부 쓰기 어려운 3등급대 학생에게 추천. 이름 변경으로 지원 거부감 낮아짐.</li>
+              </ul>
+
+              <h3><span class="n">4</span>학생부종합 면접형 — 자율전공 전계열만</h3>
+              <ul>
+                <li>자율전공 전계열(디자인·스포츠과학부 포함)만 면접형으로 선발. 1단계 서류(3배수) → 2단계 면접 30% 추가.</li>
+                <li>면접: 학업역량 70% · 공동체역량 30%. 의사소통역량 30% · 통합적사고역량 70%. 학생부 기반, 1·2학년 활동 위주 질문.</li>
+                <li>결시율 30%, 면접 역전율 30%. 3배수 탈락자 중에서도 추가합격 사례 있음.</li>
+                <li>스포츠과학부: 운동 능력 평가 아님 — 스포츠 마케팅·생리학 활동 강점 학생 지원 권장.</li>
+              </ul>
+
+              <h3><span class="n">5</span>특별전형 / 정시</h3>
+              <ul>
+                <li><b>국방전략기술공학과:</b> 해군 계약학과, 4년 장학금 지원(1학년 100%), 졸업 후 7년 해군 의무복무. 수시 37명(학종 3배수+면접15%+실력검정15%). 합격 평균 3.6~3.7등급.</li>
+                <li><b>조기취업형 계약학과(3년제):</b> 2학년부터 기업 근무+주말 수업. 기업 50% 장학금 지원. 내신 4~5등급도 합격. 빠른 취업 원하는 학생에게 적합.</li>
+                <li><b>정시:</b> 수능 100%, 자연계 백분위 평균 82점, 인문계 80점. 정시에서도 4~5등급 내신으로 합격(수능 성적 우선).</li>
+              </ul>
+
+                            <div style="text-align:center;margin:28px 0 8px">
+                <a href="#timetable" style="display:inline-flex;align-items:center;gap:8px;padding:10px 22px;background:var(--accent);color:#fff;border-radius:50px;font-size:14px;font-weight:600;text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,.15);">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                  타임테이블로 돌아가기
+                </a>
+              </div>
+              <p class="disclaimer">※ 정확한 내용은 대학 홈페이지를 확인하시기 바랍니다.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 이후 대학은 동일 구조로 추가됩니다 -->
+
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="line"></div>
+  2026 경기진협 진학한마당
+  <div style="margin-top:8px;font-size:12px;color:var(--txt-sub);opacity:.7;">제작 : 백운고 박예진</div>
+</footer>
+
+<!-- lightbox -->
+<div class="lb" id="lb" onclick="this.classList.remove('on')"><img id="lbimg" src="" alt=""></div>
+
+<script>
+  function toggleAcc(head){
+    const acc = head.parentElement;
+    const body = acc.querySelector('.acc-body');
+    const open = acc.classList.toggle('open');
+    body.style.maxHeight = open ? body.scrollHeight + 'px' : '0';
+  }
+  // open accordion when arriving via #anchor
+  function openFromHash(){
+    if(location.hash){
+      const t = document.querySelector(location.hash);
+      if(t && t.classList.contains('acc') && !t.classList.contains('open')){
+        const head = t.querySelector('.acc-head');
+        toggleAcc(head);
+        setTimeout(()=>t.scrollIntoView({behavior:'smooth',block:'start'}),300);
+      }
+    }
+  }
+  window.addEventListener('load',openFromHash);
+  window.addEventListener('hashchange',openFromHash);
+  // recalc height after images load (so accordion grows)
+  document.querySelectorAll('.lec img').forEach(img=>{
+    img.addEventListener('load',()=>{
+      const acc=img.closest('.acc');
+      if(acc&&acc.classList.contains('open')){
+        acc.querySelector('.acc-body').style.maxHeight='none';
+      }
+    });
+    img.addEventListener('click',()=>{
+      document.getElementById('lbimg').src=img.src;
+      document.getElementById('lb').classList.add('on');
+    });
+  });
+</script>
+</body>
+</html>

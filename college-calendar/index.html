@@ -3,21 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>대입전형 캘린더</title>
+<title>27학번 예비 새내기의 대입 플래너</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
   :root{
-    --bg:#F3FAF1;
+    --bg:#FBF8F0;
     --surface:#FFFFFF;
-    --ink:#20291F;
-    --ink-soft:#6B7568;
-    --line:#CDEAC7;
-    --accent:#4FA84A;
-    --accent-dark:#3D8A3A;
-    --accent-soft:#E4F6DF;
-    --accent-soft2:#CFF0C6;
+    --ink:#1F3A33;
+    --ink-soft:#5E6B60;
+    --line:#E5E0CC;
+    --accent:#8FC63E;
+    --accent-dark:#6FA82E;
+    --accent-soft:#F1F8E3;
+    --accent-soft2:#DEEFC2;
     --danger:#D64545;
     --c-apply:#3B6FA6;
     --c-document:#2F8F8F;
@@ -46,23 +46,26 @@
   button{font-family:inherit;}
   .wrap{max-width:960px;margin:0 auto;padding:0 16px 64px;}
 
-  header{border-bottom:3px solid var(--accent-soft2); background:linear-gradient(180deg, var(--accent-soft) 0%, var(--surface) 100%);}
-  .header-inner{max-width:960px;margin:0 auto;padding:22px 16px 0;}
+  header{border-bottom:1px solid var(--line); background:var(--accent-soft);}
+  .header-inner{max-width:960px;margin:0 auto;padding:26px 16px 0;}
   .title-row{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:6px 16px;}
-  header h1{font-size:28px;font-weight:900;letter-spacing:-0.01em;color:#111;}
+  header h1{font-size:23px;font-weight:800;letter-spacing:-0.02em;color:#232316;}
   .subtitle{color:var(--ink-soft);font-size:13px;margin-top:2px;}
   .tabs{display:flex;gap:0;margin-top:18px;}
   .role-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:8px;}
   @media(max-width:640px){.role-grid{grid-template-columns:1fr;}}
   .role-card{
-    background:var(--surface);border:1px solid var(--line);border-top:5px solid var(--role-color, var(--accent));border-radius:8px;
-    padding:22px 18px;text-align:left;cursor:pointer;
+    background:color-mix(in srgb, var(--role-color, var(--accent)) 7%, var(--surface));
+    border:1px solid color-mix(in srgb, var(--role-color, var(--accent)) 30%, var(--line));
+    border-radius:12px;
+    padding:24px 20px;text-align:left;cursor:pointer;
     display:flex;flex-direction:column;gap:8px;
-    box-shadow:0 1px 3px rgba(60,120,50,0.06);
+    transition:border-color .15s ease, transform .15s ease, box-shadow .15s ease;
   }
-  .role-card:hover{border-color:var(--role-color, var(--accent));box-shadow:0 4px 14px rgba(60,120,50,0.15);transform:translateY(-1px);}
-  .role-card-title{font-family:'Noto Sans KR', sans-serif;font-size:24px;font-weight:900;color:var(--ink);}
-  .role-card-desc{font-size:13px;color:var(--ink-soft);line-height:1.5;}
+  .role-card:hover{border-color:var(--role-color, var(--accent));transform:translateY(-2px);box-shadow:0 6px 16px rgba(0,0,0,0.07);}
+  .role-card-title{font-family:'Noto Sans KR', sans-serif;font-size:22px;font-weight:800;color:var(--ink);position:relative;padding-left:16px;}
+  .role-card-title::before{content:'';position:absolute;left:0;top:5px;width:9px;height:9px;border-radius:50%;background:var(--role-color, var(--accent));}
+  .role-card-desc{font-size:13px;color:var(--ink-soft);line-height:1.6;}
   .tab-btn{
     flex:1;
     background:none;border:none;
@@ -74,24 +77,25 @@
   }
   .tab-btn.active{color:var(--ink);border-bottom-color:var(--accent);font-weight:700;}
 
-  section.panel{padding-top:24px;}
-  .section-title{font-size:17px;font-weight:700;margin-bottom:2px;padding-left:10px;border-left:4px solid var(--accent);color:var(--ink);}
+  section.panel{padding-top:28px;}
+  .section-title{font-size:16px;font-weight:700;margin-bottom:4px;color:var(--ink);letter-spacing:-0.01em;position:relative;padding-left:12px;}
+  .section-title::before{content:'';position:absolute;left:0;top:4px;width:5px;height:5px;border-radius:50%;background:var(--accent);}
   .section-desc{color:var(--ink-soft);font-size:13px;margin-bottom:14px;}
-  hr.rule{border:none;border-top:1px solid var(--line);margin:28px 0;}
+  hr.rule{border:none;border-top:1px solid var(--line);margin:32px 0;}
 
   .field-label{display:block;font-size:12px;color:var(--ink-soft);margin-bottom:4px;}
   input[type=text], input[type=password], input[type=date], input[type=file], select{
     width:100%;
     padding:9px 10px;
     border:1px solid var(--line);
-    border-radius:3px;
+    border-radius:6px;
     background:var(--surface);
     font-size:14px;
     color:var(--ink);
     font-family:inherit;
   }
   input[type=file]{padding:7px 8px;font-size:13px;}
-  input:focus, select:focus{outline:2px solid var(--accent); outline-offset:1px;}
+  input:focus, select:focus{outline:none; border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft);}
   .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
   .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
   @media(max-width:640px){.grid3{grid-template-columns:1fr;} .grid2{grid-template-columns:1fr;}}
@@ -100,19 +104,18 @@
   .event-row{display:grid;grid-template-columns:120px 1fr 1fr auto;gap:8px;align-items:end;margin-bottom:8px;}
   @media(max-width:640px){.event-row{grid-template-columns:1fr 1fr auto;grid-template-areas:"type type x" "date label label";}
     .event-row .ev-type{grid-area:type;} .event-row .ev-date{grid-area:date;} .event-row .ev-label{grid-area:label;} .event-row .ev-del{grid-area:x;}}
-  .icon-btn{background:none;border:1px solid var(--line);border-radius:3px;width:36px;height:36px;cursor:pointer;color:var(--ink-soft);font-size:16px;line-height:1;}
+  .icon-btn{background:none;border:1px solid var(--line);border-radius:6px;width:36px;height:36px;cursor:pointer;color:var(--ink-soft);font-size:16px;line-height:1;}
   .icon-btn:hover{border-color:var(--danger);color:var(--danger);}
-  .link-btn{background:none;border:none;color:var(--accent-dark);font-size:13px;font-weight:700;cursor:pointer;padding:4px 0;}
+  .link-btn{background:none;border:none;color:var(--accent-dark);font-size:13px;font-weight:600;cursor:pointer;padding:4px 0;}
 
   .btn{
-    background:var(--accent);color:#fff;border:none;border-radius:3px;
-    padding:11px 20px;font-size:14px;font-weight:700;cursor:pointer;
-    box-shadow:0 1px 2px rgba(60,120,50,0.25);
+    background:var(--accent);color:#fff;border:none;border-radius:6px;
+    padding:10px 18px;font-size:14px;font-weight:600;cursor:pointer;
   }
   .btn:hover{background:var(--accent-dark);}
-  .btn.secondary{background:var(--accent-soft);color:var(--accent-dark);border:1px solid var(--accent-soft2);box-shadow:none;}
-  .btn.secondary:hover{background:var(--accent-soft2);color:var(--accent-dark);}
-  .btn.danger{background:none;color:var(--danger);border:1px solid var(--danger);box-shadow:none;}
+  .btn.secondary{background:var(--surface);color:var(--ink);border:1px solid var(--line);}
+  .btn.secondary:hover{border-color:var(--accent);color:var(--accent-dark);}
+  .btn.danger{background:none;color:var(--danger);border:1px solid var(--danger);}
   .btn-row{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;}
 
   .uni-group{margin-bottom:20px;}
@@ -144,6 +147,9 @@
   }
   .result-item .add-btn:disabled{border-color:var(--line);color:var(--ink-soft);cursor:default;}
   .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}
+  .app-list{display:flex;flex-direction:column;gap:10px;margin-top:12px;}
+  .app-card{border:1px solid var(--line);border-radius:6px;padding:12px 14px;background:var(--surface);}
+  .app-card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;font-size:13px;font-weight:500;}
   .chip{
     display:flex;align-items:center;gap:6px;
     background:var(--surface);border:1px solid var(--line);border-radius:20px;
@@ -189,7 +195,7 @@
     table.sched td::before{content:attr(data-label);display:inline-block;min-width:64px;color:var(--ink-soft);font-size:11px;}
   }
 
-  .calendar-card{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:18px;box-shadow:0 1px 4px rgba(60,120,50,0.08);}
+  .calendar-card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px;box-shadow:0 1px 3px rgba(0,0,0,0.04);}
   .cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
   .cal-head h3{font-size:18px;}
   .cal-nav{display:flex;gap:4px;}
@@ -214,6 +220,7 @@
   .cal-event-text{font-size:10px;color:var(--ink);line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;}
   .cal-event-more{font-size:10px;color:var(--ink-soft);margin-top:1px;}
   .dot.lg{width:10px;height:10px;}
+  .dot.school{border-radius:3px;}
   @media(max-width:640px){
     .calendar-card{padding:12px;}
     .cal-cell{min-height:72px;padding:3px 3px;}
@@ -253,10 +260,9 @@
 <header>
   <div class="header-inner">
     <div class="title-row">
-      <h1>대입전형 캘린더</h1>
-      <span class="subtitle" id="todayLabel"></span>
+      <h1>27학번 예비 새내기의 대입 플래너</h1>
     </div>
-    <div class="subtitle">잘 해왔고, 잘하고 있고, 잘될거야 🍀</div>
+    <div class="subtitle" style="margin-bottom:16px;">잘 해왔고, 잘하고 있고, 잘될거야 🍀</div>
     <div id="globalBanner" style="display:none;background:#FBEAEA;color:#8A2E2E;border:1px solid #E3B9B9;border-radius:4px;padding:10px 14px;font-size:13px;margin-top:14px;"></div>
     <div id="headerNav"></div>
   </div>
@@ -265,6 +271,7 @@
 <div class="wrap">
   <div id="app"></div>
 </div>
+<div style="max-width:960px;margin:0 auto;padding:0 16px 24px;color:var(--ink-soft);font-size:12px;text-align:center;">made by 백운고등학교 박예진</div>
 
 
 <script>
@@ -344,12 +351,38 @@ let draftEvents = [];
 let searchQuery = '';
 let studentDraftEvents = [];
 let studentManualOpen = false;
+let manualPrefill = null;
 let teacherClassFilter = 'all';
 let teacherStudentFilter = 'all';
 let teacherSession = null;
 let adminUnlocked = false;
 let importPreview = null;
+let schoolEvents = [];
 let loaded = false;
+
+const SCHOOL_EVENT_COLORS = { mock:'#8E5EA7', exam:'#C23B3B', apply:'#3B6FA6', result:'#3B8C6E', register:'#D18B2E' };
+const SCHOOL_EVENT_KIND_LABELS = { mock:'모의고사', exam:'수능', apply:'원서접수', result:'합격자 발표', register:'등록·후속절차' };
+// 백운고 2026학년도 학사일정 중 대입 관련 고정 일정(정기시험·백운제·동아리발표회·졸업식·종업식 제외).
+// 이미지 판독이라 일부 날짜는 확인이 필요할 수 있어요 - 관리자 탭에서 언제든 추가/삭제할 수 있어요.
+const SEED_SCHOOL_EVENTS = [
+  { id:'se-1', date:'2026-09-02', kind:'mock', label:'모의평가' },
+  { id:'se-2', date:'2026-09-07', kind:'apply', label:'수시 원서접수 시작' },
+  { id:'se-3', date:'2026-09-11', kind:'apply', label:'수시 원서접수 마감' },
+  { id:'se-4', date:'2026-10-20', kind:'mock', label:'전국연합학력평가' },
+  { id:'se-5', date:'2026-11-19', kind:'exam', label:'대학수학능력시험' },
+  { id:'se-6', date:'2026-12-06', kind:'result', label:'수능 성적표 배부' },
+  { id:'se-7', date:'2026-12-20', kind:'result', label:'수시 합격자 발표 시작(대학별 상이)' },
+  { id:'se-8', date:'2026-12-27', kind:'register', label:'수시 등록 시작' },
+  { id:'se-9', date:'2026-12-30', kind:'register', label:'수시 등록 마감' },
+  { id:'se-10', date:'2027-01-04', kind:'apply', label:'정시 원서접수 시작' },
+  { id:'se-11', date:'2027-01-07', kind:'apply', label:'정시 원서접수 마감' },
+  { id:'se-12', date:'2027-02-05', kind:'result', label:'정시 합격자 발표' },
+  { id:'se-13', date:'2027-02-18', kind:'register', label:'정시 등록 시작' },
+  { id:'se-14', date:'2027-02-20', kind:'register', label:'정시 등록 마감' }
+];
+function getSchoolEventsAsCalEvents(){
+  return schoolEvents.map(e=>({ date:e.date, isSchoolEvent:true, kind:e.kind, label:e.label }));
+}
 
 function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,8); }
 function pad(n){ return String(n).padStart(2,'0'); }
@@ -418,6 +451,9 @@ async function loadAll(){
   try{ const r = await window.storage.get('teacher_pins', true); teacherPins = r ? JSON.parse(r.value) : []; }
   catch(e){ teacherPins = []; }
   if(teacherPins.length===0 && SEED_TEACHER_PINS.length>0){ teacherPins = SEED_TEACHER_PINS.slice(); await saveTeacherPins(); }
+  try{ const r = await window.storage.get('school_events', true); schoolEvents = r ? JSON.parse(r.value) : []; }
+  catch(e){ schoolEvents = []; }
+  if(schoolEvents.length===0 && SEED_SCHOOL_EVENTS.length>0){ schoolEvents = SEED_SCHOOL_EVENTS.slice(); await saveSchoolEvents(); }
   try{ const r = await window.storage.get('admin_pin', true); adminPin = r ? r.value : ''; }
   catch(e){ adminPin = ''; }
   try{
@@ -449,6 +485,10 @@ async function saveTeacherPins(){
   try{ await window.storage.set('teacher_pins', JSON.stringify(teacherPins), true); }
   catch(e){ console.error(e); showBanner('저장 중 문제가 생겼어요. 인터넷 연결을 확인하고 다시 시도해 주세요.'); }
 }
+async function saveSchoolEvents(){
+  try{ await window.storage.set('school_events', JSON.stringify(schoolEvents), true); }
+  catch(e){ console.error(e); showBanner('저장 중 문제가 생겼어요. 인터넷 연결을 확인하고 다시 시도해 주세요.'); }
+}
 async function saveAdminPin(){
   try{ await window.storage.set('admin_pin', adminPin, true); }
   catch(e){ console.error(e); showBanner('저장 중 문제가 생겼어요. 인터넷 연결을 확인하고 다시 시도해 주세요.'); }
@@ -462,21 +502,20 @@ function switchTab(tab){
   currentTab = tab;
   render();
 }
-document.getElementById('todayLabel').textContent = fmtDate(todayStr())+' 기준';
 
 function renderRoleSelect(){
   return `
     <section class="panel">
       <div class="role-grid" style="margin-top:8px;">
-        <button type="button" class="role-card" style="--role-color:#4FA84A;" data-role="student">
+        <button type="button" class="role-card" style="--role-color:#8FC63E;" data-role="student">
           <div class="role-card-title">학생</div>
           <div class="role-card-desc">학번과 이름으로 내 지원 캘린더를 확인해요.</div>
         </button>
-        <button type="button" class="role-card" style="--role-color:#3B7FC4;" data-role="teacher">
+        <button type="button" class="role-card" style="--role-color:#1F3A33;" data-role="teacher">
           <div class="role-card-title">담임교사</div>
           <div class="role-card-desc">코드로 들어와서 우리 반 학생 현황을 확인해요.</div>
         </button>
-        <button type="button" class="role-card" style="--role-color:#D9962E;" data-role="admin">
+        <button type="button" class="role-card" style="--role-color:#B99A3B;" data-role="admin">
           <div class="role-card-title">관리자</div>
           <div class="role-card-desc">코드로 들어와서 전형을 등록·관리해요.</div>
         </button>
@@ -521,7 +560,19 @@ function getStudentApplications(s){
     const entry = masterData.find(e=>e.id===id);
     if(!entry) return null;
     const overrideDept = s.appliedMajors && s.appliedMajors[id];
-    return overrideDept ? { ...entry, department: overrideDept } : entry;
+    const overrideUni = s.appliedUniversityLabel && s.appliedUniversityLabel[id];
+    const overrideAdm = s.appliedAdmissionLabel && s.appliedAdmissionLabel[id];
+    const evOverrides = (s.eventOverrides && s.eventOverrides[id]) || {};
+    const events = entry.events.map(ev=>{
+      const ov = evOverrides[ev.id];
+      if(!ov) return ev;
+      return { ...ev, date: (ov.date!=null && ov.date!=='') ? ov.date : ev.date, note: ov.note!=null ? ov.note : ev.note, isEdited:true };
+    });
+    const result = { ...entry, events };
+    if(overrideDept){ result.department = overrideDept; }
+    if(overrideUni){ result.university = overrideUni; }
+    if(overrideAdm){ result.admissionType = overrideAdm; }
+    return result;
   }).filter(Boolean);
   const custom = (s.customEntries||[]).map(e=>({ ...e, isCustom:true }));
   return fromMaster.concat(custom);
@@ -804,6 +855,38 @@ function renderAdmin(){
 
       <hr class="rule">
 
+      <div class="section-title">학사일정 (전체 고정 일정) 관리</div>
+      <div class="section-desc">모의고사·수능·원서접수 기간·합격자발표·등록기간처럼 모든 학생에게 공통인 일정이에요. 캘린더에 굵은 글씨의 네모 표시로 나타나요. 학교 학사일정표를 보고 날짜가 다르면 여기서 고쳐 주세요.</div>
+      <div class="pin-list">
+        ${schoolEvents.length===0 ? `<div class="pin-row" style="color:var(--ink-soft);">등록된 학사일정이 없어요.</div>` :
+          schoolEvents.slice().sort((a,b)=>a.date.localeCompare(b.date)).map(e=>`
+            <div class="pin-row">
+              <span><span class="dot school" style="background:${SCHOOL_EVENT_COLORS[e.kind]||'#888'};margin-right:6px;"></span><b>${fmtDate(e.date)}</b> · ${escapeHtml(e.label)} <span class="cnt">(${escapeHtml(SCHOOL_EVENT_KIND_LABELS[e.kind]||e.kind)})</span></span>
+              <button class="icon-btn" data-delete-school="${escapeHtml(e.id)}" title="삭제">🗑</button>
+            </div>
+          `).join('')
+        }
+      </div>
+      <div class="grid3">
+        <div class="field">
+          <label class="field-label">날짜</label>
+          <input type="date" id="se-date">
+        </div>
+        <div class="field">
+          <label class="field-label">종류</label>
+          <select id="se-kind">
+            ${Object.entries(SCHOOL_EVENT_KIND_LABELS).map(([k,v])=>`<option value="${k}">${v}</option>`).join('')}
+          </select>
+        </div>
+        <div class="field">
+          <label class="field-label">내용</label>
+          <input type="text" id="se-label" placeholder="예: 수시 원서접수 시작">
+        </div>
+      </div>
+      <button class="btn secondary" id="addSchoolEventBtn">학사일정 추가</button>
+
+      <hr class="rule">
+
       <div class="section-title">관리자 코드 변경</div>
       <div class="section-desc">이 화면은 항상 코드로 보호돼요. 코드를 바꾸고 싶으면 여기서 새 코드를 입력하세요.</div>
       <div class="grid2">
@@ -1059,6 +1142,27 @@ function attachAdminHandlers(){
     };
   });
 
+  const addSchoolEventBtn = document.getElementById('addSchoolEventBtn');
+  if(addSchoolEventBtn){
+    addSchoolEventBtn.onclick = async ()=>{
+      const date = document.getElementById('se-date').value;
+      const kind = document.getElementById('se-kind').value;
+      const label = document.getElementById('se-label').value.trim();
+      if(!date || !label){ alert('날짜와 내용을 입력해 주세요.'); return; }
+      schoolEvents.push({ id:uid(), date, kind, label });
+      await saveSchoolEvents();
+      render();
+    };
+  }
+  document.querySelectorAll('[data-delete-school]').forEach(btn=>{
+    btn.onclick = async ()=>{
+      if(!confirm('이 학사일정을 삭제할까요?')) return;
+      schoolEvents = schoolEvents.filter(e=>e.id!==btn.dataset.deleteSchool);
+      await saveSchoolEvents();
+      render();
+    };
+  });
+
   const setAdminPinBtn = document.getElementById('setAdminPinBtn');
   if(setAdminPinBtn){
     setAdminPinBtn.onclick = async ()=>{
@@ -1076,6 +1180,7 @@ if(draftEvents.length===0) draftEvents = [newDraftEvent()];
 if(studentDraftEvents.length===0) studentDraftEvents = [newDraftEvent()];
 
 function renderStudentManualForm(){
+  const pf = manualPrefill || {};
   const rowsHtml = studentDraftEvents.map((ev,i)=>`
     <div class="event-row">
       <div class="ev-type">
@@ -1101,20 +1206,36 @@ function renderStudentManualForm(){
 
   return `
     <div class="import-box" style="margin-top:12px;">
-      <div class="section-desc">여기서 추가한 전형은 다른 학생에게는 보이지 않고, 나와 선생님만 볼 수 있어요.</div>
+      <div class="section-desc">여기서 추가한 전형은 다른 학생에게는 보이지 않고, 나와 선생님만 볼 수 있어요. 날짜를 최소 1개 입력해야 등록돼요.</div>
       <div class="grid3">
         <div class="field">
           <label class="field-label">대학명</label>
-          <input type="text" id="sm-university" list="university-datalist" placeholder="예: 한국대학교">
+          <input type="text" id="sm-university" list="university-datalist" placeholder="예: 한국대학교" value="${escapeHtml(pf.university||'')}">
         </div>
         <div class="field">
           <label class="field-label">전형명</label>
-          <input type="text" id="sm-admissionType" placeholder="예: 학생부종합">
+          <input type="text" id="sm-admissionType" placeholder="예: 학생부종합" value="${escapeHtml(pf.admissionType||'')}">
         </div>
         <div class="field">
           <label class="field-label">학과</label>
-          <input type="text" id="sm-department" list="sm-department-datalist" placeholder="예: 경영학과 (없으면 전체)">
+          <input type="text" id="sm-department" list="sm-department-datalist" placeholder="예: 경영학과 (없으면 전체)" value="${escapeHtml(pf.department||'')}">
           <datalist id="sm-department-datalist"></datalist>
+        </div>
+      </div>
+      <div class="grid2">
+        <div class="field">
+          <label class="field-label">수험번호 (선택)</label>
+          <input type="text" id="sm-exam-input" placeholder="예: 12345678" value="${escapeHtml(pf.exam||'')}">
+        </div>
+        <div class="field">
+          <label class="field-label">수능 최저학력기준 (선택)</label>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <input type="text" id="sm-minscore-input" list="sm-minscore-datalist" placeholder="예: 국,수,영,탐1 합 7" value="${escapeHtml(pf.minScoreText||'')}" ${pf.minScoreNone?'disabled':''} style="flex:1;">
+            <datalist id="sm-minscore-datalist">${getMinScoreSuggestions(pf.university||'').map(m=>`<option value="${escapeHtml(m)}">`).join('')}</datalist>
+            <label style="display:flex;align-items:center;gap:4px;font-size:12px;color:var(--ink-soft);white-space:nowrap;">
+              <input type="checkbox" id="sm-minscore-none" ${pf.minScoreNone?'checked':''}> 없음
+            </label>
+          </div>
         </div>
       </div>
       <div style="margin-top:6px;">
@@ -1142,6 +1263,10 @@ function normalizeUniName(name){
 function getRealDepartmentSuggestions(uni){
   return REAL_DEPARTMENT_LOOKUP[normalizeUniName(uni)] || [];
 }
+const MIN_SCORE_LOOKUP = {"가톨릭대": ["국,수,영,과(1) 중 3개 합 5", "국,수,영,과(절사) 중 3개 합 4, 한4", "국,수,영,과(탐) 4개 합 5, 한 4", "국,수,영,탐(1) 중 2개 합 7  자유전공,인문사회계열,자연공학계열:  국,수,영,탐(1) 중 2개 합 6  약학: 국,수,영,과(1) 중 3개 합 5", "국,수,영,탐(1) 중 3개 합 7"], "고려대": ["국,수(미/기),영,과 중 3개 합 5", "국,수,영,탐(1) 중 2개 합 6", "국,수,영,탐(1) 중 3개 합 7, 한 4", "국,수,영,탐(1) 중 4개 합 5, 한4", "국,수,영,탐(1) 중 4개 합 8, 한4", "의대: 국,수,영,탐(1) 4개 합 5, 한 4"], "중앙대": ["국,수,영,탐 중 4개 합 5, 한4, 영 2등급은 1등급으로 인정", "국,수,영,탐(1) 중 3개 합 6, 한4, 영 2등급은 1등급으로 인정", "국,수,영,탐(1) 중 3개 합 7, 한 4  약학: 국,수,영,탐(1) 4개 합 5, 한 4  * 영 2등급은 1등급으로 인정", "국,수,영,탐(1) 중 4개 합 5, 한4, 영 2등급은 1등급으로 인정", "없음"], "성균관대": ["국,수,영,탐 중 3개 합 6  * 제2외/한문으로 탐 1과목 대체 가능  * 과 1과목 응시는 탐 2과목 평균 혹은 과 상위 1  과목 중 반영", "국,수,영,탐 중 3개 합 6  ※ 과(1)/탐(2) 평균 중 우수등급 반영(의예과 제외)  ※ 제2외 탐(1) 대체가능", "국,수,영,탐 중 3개 합 7  * 제2외/한문으로 탐 1과목 대체 가능  * 과 1과목 응시는 탐 2과목 평균 혹은 과 상위 1  과목 중 반영", "국,수,영,탐 중 3개 합 7 / 글로벌(바이오),SW,반도체,에너지,전자전기: 국,수,영,탐 중 3개 합 6  * 제2외/한문으로 탐 1과목 대체 가능  * 과 1과목 응시는 탐 2과목 평균 혹은 과 상위 1과목 중 반영  의예: 국,수,영,탐 중 4개 합 5"], "연세대": ["국,수(미/기),과(1) 중 2개 1, 영3, 한4 (국/수 1개 포함)", "국,수(미/기),과(1) 중 2개 각 1, 한4, 영3, 국/수 포함", "국,수(미/기),과(1) 중 2개 합 5, 영 3, 한 4 (수 포함)", "국,수(미/기),과(1) 중 2개 합 5, 한4, 영3, 국/수 포함", "국,수(미/기),영,과 중 3개 합 5, 한4, 영2, 수 포함", "국,수(미/기),영,과1,과2 중 4개 합 5  영2, 한4, 과 동일과목 I, II 선택 불가", "국,수(미/기),영,과1,과2 중 4개 합 5, 한4, 영2", "국,수(미/기),영,과1,과2 중 4개 합 6  영2, 한4, 과 동일과목 I, II 선택 불가", "국,수,영,탐1,탐2 중 2개 합 7 또는 국,수,탐1,탐2 중 1개 2  간호: 국,수,영,탐(1) 중 2개 합 5 또는 국,수중 1개 1", "국,수,탐(1) 중 2개 합 4 또는 국,수(미/기),과(1) 중 2개 합 5,  한4, 영3, 국/수 포함", "국,수,탐(1) 중 2개 합 4, 영 3, 한 4 (국/수 1개 포함)", "국,수,탐(1) 중 2개 합 4, 영 3, 한 4 (국/수 1개 포함) 또는 국,수(미/기),과(1) 중 2개 합 5, 영 3, 한 4 (수 포함)", "국,수,탐(1) 중 2개 합 4, 한4, 영3, 국/수 포함", "국,수,탐(1) 중 2개 합 5, 한4, 영3, 국/수 포함", "없음"], "전북대": ["국,수(미/기),영,과 중 4개 합 6", "국,수(미/기),영,과(1) 중 3개 합 6, 수 포함", "국,수(미/기),영,과(1) 중 3개 합 7, 수 포함", "국,수,영,탐(1) 중 2개 합 6", "수의예: 국,수(미/기),영,과(1) 중 3개 합 7(수 포함)  환경생명자원: 국,수,영,탐(1) 중 2개 합 8  융합자율전공2: 국,수,영,탐(1) 중 2개 합 7", "인문,생활과학: 국,수,영,탐(1)중 2개 합 8  자연(일부 제외): 국,수,영,탐(1)중 2개 합 8  (수 포함, 과 반영 시 1등급 상향)  융합자율전공1: 국,수,영,탐(1) 중 2개 합 7  간호,국어교육,영어교육: 국,수,영,탐(1) 중 2개 합 6  수학교육: 국,수(미/기),영,탐(1) 중 2개 합 7  (수 포함, 3 이내 )  과학교육학부: 수,과(1) 2개 합 10  약학: 국,수(미/기),영,과(1) 중 3개 합 7(수 포함)  의예: 국,수(미/기),영,과(절사) 4개 합 5  치의예: 국,수(미/기),영,과(1) 중 3개 합 6  (수 포함)  * 과학교육학부,수의예,약학,의예,치의예는 과  2과목 응시 필수"], "이화여대": ["국,수,영,탐(1) 중 2개 합 5  ※ 인문․예체능 국 포함, 자연․공학 수 포함  ※ 국제학부 영2, 국 포함", "국,수,영,탐(1) 중 2개 합 5 * 인문은 국, 자연은 수 응시 필수", "국,수,영,탐(1) 중 3개 합 5", "국,수,영,탐(1) 중 4개 합 5", "국,수,영,탐(1) 중 4개 합 6", "디자인: 국,수,영,탐(1) 중 2개 합 7  체육과학: 국,수,영,탐(1) 중 3개 합 9"], "아주대": ["국,수,영,탐 중 3개 합 5", "국,수,영,탐 중 4개 합 6", "국,수,영,탐(1) 중 2개 합 5 / 의학: 국,수,영,탐 4개 합 6"], "대전가톨릭대": ["국,수,영,탐 4개 합 6, 한 3"], "순천향대": ["국,수,영 중 1개 5  의료과학대: 국,수,영 중 1개 4  간호: 국,수,영,탐 중 3개 합 10  의예: 국,수,영,탐 4개 합 6  * 의예는 수(확) 0.5등급 하향, 과(2) 아니면 0.5  등급 하향"], "영남대": ["국,수,영 중 1개 5", "국,수,영,과(1) 중 3개 합 5", "국,수,영,과(1) 중 4개 합 6", "국,수,영,탐(1) 중 2개 합 8~9  *자연은 수(미/기) 반영 시 1등급 상향  의예: 국,수,영,과(1) 합 5  약학: 국,수,영,과(1) 중 3개 합 5  *의예,약학은 과 2과목 응시", "자유: 국,수,영,탐(1) 중 2개 합 8  *자연은 수(미/기) 반영 시 1등급 상향  의예: 국,수,영,과(1) 합 5  *의예는 과 2과목 응시"], "가천대": ["국,수(미/기),영,과 중 3개 각 1", "국,수(미/기),영,과 중 3개 합 5", "국,수,영,탐(1) 중 2개 합 6  바이오로직스: 국,수,영,과(1) 중 2개 합 5  의예: 국,수(미/기),영,과(절사) 중 3개 각 1  약학: 국,수(미/기),영,과(절사) 중 3개 합 5", "국,수,영,탐(1) 중 2개 합 6  클라우드공학: 국,수(미/기),영,과(절사) 중 2개  합 4  한의예: 국,수(미/기),영,과(절사) 중 2개 각 1", "없음"], "계명대": ["국,수(미/기),영,과(1) 중 3개 합 3  * 수(미/기), 과(2) 필수 응시", "국,수(미/기),영,과(1) 중 3개 합 4  수(미/기) 포함, ※ 수(미/기), 과 응시 필수", "국,수(미/기),영,과(1) 중 3개 합 4  수(미/기) 포함, 수(미/기), 과 응시 필수", "국,수(미/기),영,과(1) 중 3개 합 6  수(미/기), 과 응시 필수", "국,수,영,탐/직(1) 중 2개 합 9~10  경찰행정,간호: 국,수,영,탐(1) 중 2개 합 7  기독교,철학,사진영상미디어,경영(야): 없음", "국,수,영,탐/직(1) 중 2개 합10~12  경찰행정,간호: 국,수,영,탐(1) 중 2개 합 8  의예: 국,수(미/기),영,과(1) 중 3개 합 4 (수 포함)  약학: 국,수(미/기),영,과(1) 중 3개 합 6  문예창작과: 없음  * 의예,약학은 수(미/기), 과(2) 필수 응시"], "고신대": ["간호: 국,수,영,탐(1) 중 2개 합 7", "국,수,영,과(1) 중 3개 합 5, 수 포함", "국,수,영,과(1) 중 3개 합 5, 수 포함  수(확) 포함 3합 4등급", "없음", "의예: 국,수,영,과(1) 중 3개 합 4 (수 포함)  *수(확)선택자는 3개 합 3 (수 포함)"], "경희대": ["국,수,영,탐 중 2개 합 5, 한 5", "국,수,영,탐 중 3개 합 4, 한 5", "국,수,영,탐 중 3개 합 4, 한5"], "인하대": ["인문: 국,수,영,탐(1) 중 2개 합 6  자연: 국,수,영,탐(1) 중 2개 합 5  의예: 국,수,영,과(절사) 중 3개 합 4"], "상지대": ["국,수,영,탐 중 3개 합 4, 수(미/기) 포함 시 합 5", "국,수,영,탐 중 3개 합 5, 수(미/기) 포함 시 합 6", "한의예: 국,수,영,탐(절사) 중 3개 합 4  * 수(미/기) 반영 시 1등급 상향  간호: 국,수,탐(1) 중 2개 합 8"], "건양대": ["간호: 국,수,영,탐 중 3개 합 10  * 수(미/기) 반영 시 3개 합 12", "국,수,영,과(절사) 중 3개 합 4", "없음"], "충남대": ["국,수(미/기),영,과 중 3개 합 5, 수 포함", "국,수(미/기),영,과 중 3개 합 6, 수 포함", "국,수(미/기),영,과 중 3개 합 7, 수 포함", "국,수(미/기),영,탐(1)/직 중 3개 합 10, 수 포함", "국,수,영,탐(1) 중 3개 합 12", "국,수,영,탐/직(1) 중 3개 합 10", "국,수,영,탐/직(1) 중 3개 합 12", "기술교육,화공교육: 국,수,영,과(1) 중 3개 합 12  국어교육: 국,수,영,탐(1) 중 3개 합 10  수학교육: 국,수(미/기),영,탐(1) 중 3개 합 10  (수 포함)", "인문,사범: 국,수,영,탐(1) 중 3개 합 12  자연: 국,수,영,과(1) 중 3개 합 12  * 수학,정보통계: 수 포함 필수, 수(미/기) 지정  영어교육,교육: 국,영,수,탐(1) 중 3개 합 10  의예: 국,수(미/기),영,과 중 3개 합 4 (수 포함)  약학: 국,수(미/기),영,과 중 3개 합 5 (수 포함)  수의예: 국,수(미/기),영,과 중 3개 합 6 (수 포함)"], "충북대": ["국,수(미/기),영,과(1) 중 2개 합 8  국,수,영,탐(1) 응시 필수, 수 포함", "국,수(미/기),영,과(1) 중 3개 합 5  국,수,영,탐(1) 응시 필수, 수 포함", "국,수(미/기),영,과(1) 중 3개 합 7  국,수,영,탐(1) 응시 필수, 수 포함", "국,수,영,과(1) 중 2개 합 8  국,수,영,탐(1) 응시 필수, 수 포함", "국,수,영,과(1) 중 2개 합 8, 국,수,영,탐(1) 응시 필수", "국,수,영,과(1) 중 3개 합 8, 국,수,영,탐(1) 응시 필수", "국,수,영,탐(1) 중 2개 합 6, 국,수,영,탐(1) 응시 필수", "국,수,영,탐(1) 중 2개 합 8, 국,수,영,탐(1) 응시 필수", "국,수,영,탐/직(1) 중 2개 합 8, 국,수,영,탐(1) 응시 필수", "인문,자율: 국,수,영,탐/직(1) 중 2개 합 7~8  자연: 국,수,영,탐(1) 중 2개 합 7~8 (수 포함)  * 자연 일부 수(미/기) 및 과(1) 지정  간호: 국,수,영,탐(1) 중 2개 합 6  약학,제약: 국,수(미/기),영,과(1) 중 3개 합 6  수의과: 국,수,영,과(1) 중 3개 합 7  의예: 국,수(미/기),영,과(1) 중 3개 합 4  * 농업생명환경대,생활과학대,수의과대,간호,창  의융합대학 자연과학자율은 수 필수 아닌 선  택 반영"], "경북대": ["국,수,영,탐 중 3개 합 4, 수 포함", "국,수,영,탐 중 3개 합 5, 수 포함", "국,수,영,탐(1) 중 2개 합 5~6  * IT,공과,첨단기술융합,공학첨단대학은 수 필수  치의예: 국,수,영,탐 중 3개 합 4 (수 포함)  수의예,약학: 국,수,영,탐 중 3개 합 5 (수 포함)  * 의예는 탐 반올림, 치의예,수의예,약학은 탐 절사", "국,수,영,탐(1) 중 2개 합 6", "국,수,영,탐(1) 중 2개 합 6, 수 포함", "국,수,영,탐(1) 중 2개 합 7", "국,수,영,탐(1) 중 2개 합 7, 수 포함", "없음"], "대구가톨릭대": ["국,수(미/기),영,과 중 3개 합 5 (수(미/기), 과 응시 필수)", "국,수(미/기),영,과 중 3개 합 6 (수(미/기), 과 응시 필수)", "국,수,영,탐/직(1) 중 2개 합 8", "약학: 국,수(미/기),영,과(절사) 중 3개 합 5  간호: 국,수,영,탐/직(1) 중 2개 합 7", "의예: 국,수(미/기),영,과(절사) 중 3개 합 4"], "대구한의대": ["간호: 국,수,영,탐/직(1) 중 2개 합 7  한의예(인문): 국,수(확),영,사(1) 중 3개 합 4  한의예(자연): 국,수(미/기),영,과(1) 중 3개 합 5", "국,수(미/기),영,과(1) 중 3개 합 5", "국,수(확),영,사(1) 중 3개 합 4", "국,수,영,탐/직(1) 중 2개 합 8", "국,수,영,탐/직(1) 중 2개 합 9", "없음"], "동국대": ["간호: 국,수,영,탐/직(1) 중 2개 합 7", "국,수,영,과(1) 중 3개 합 4", "국,수,영,과(1) 중 3개 합 5", "국,수,영,과(1) 중 3개 합 6", "국,수,영,탐(1)/직 중 2개 합 7", "국,수,영,탐/직(1) 중 2개 합 7", "없음", "의예: 국,수,영,과(1) 중 3개 합 4  한의예: 국,수,영,과(1) 3개 합 5  간호: 국,수,영,탐/직(1) 중 2개 합 7"], "경상국립대": ["간호: 국,수,영,탐(1) 중 2개 합 8 / 의예: 국,수(미/기),영,과(절사) 중 3개 합 4 (수 포함)", "국,수(미/기),영,과 중 3개 합 6", "국,수(미/기),영,과 중 3개 합 7", "국,수,영,과 중 3개 합 7", "국,수,영,탐(1) 중 2개 합 5~10 * 수학교육은 수(미/기), 생물·화학교육은 과 필수 * 경제,심리,정치외교,행정,미컴은 3개 합 12 * 일부 학과는 수능최저 없음 약학: 국,수,(미/기),영,과(절사) 중 3개 합 5 (수 포함) 수의예: 국,수,영,과(절사) 중 3개 합 6 (수 포함)", "없음"], "부산대": ["간호,의생명: 국,수,영,탐(1) 중 2개 합 5, 한 4 (수 포함, 과 1과목 응시 필수) 의예: 국,수,영,탐 중 3개 합 4, 한 4 (수 포함) * 탐 2과목 응시 필수", "국,수,영,탐 중 3개 합 4, 한4  탐 응시 필수, 수 포함", "국,수,영,탐 중 3개 합 4, 한4, 수 포함, 과 응시 필수", "국,수,영,탐 중 3개 합 5, 한4  탐 응시 필수, 수 포함", "국,수,영,탐 중 3개 합 5, 한4, 수 포함, 과 응시 필수", "국,수,영,탐(1) 중 2개 합 6, 한4  과(1) 포함 탐 응시 필수, 수 포함", "국,수,영,탐(1) 중 2개 합 6, 한4  탐(2) 응시 필수, 수 포함", "국,수,영,탐(1) 중 3개 합 5, 한4  탐 응시 필수, 수 포함", "국,수,영,탐(1) 중 3개 합 5, 한4, 수 포함, 과 응시 필수", "국,수,영,탐(1) 중 3개 합 6, 한4  탐 응시 필수, 수 포함", "생명자원과학대: 국,수,영,탐(1) 중 2개 합 6, 한 4 나노대학: 국,수,영,탐(1) 중 2개 합 5, 한 4 (수 포함) * 탐 2과목 응시 필수, 일부 과 1과목 응시 필수", "인문: 국,수,영,탐(1) 중 2개 합 5, 한 4 경영: 국,수,영,탐(1) 중 3개 합 7, 한 4 자연: 국,수,영,탐(1) 중 2개 합 5, 한 4 (수 포함) * 탐 2과목 응시 필수, 일부 과 1과목 응시 필수"], "한양대": ["국,수,영,탐 중 3개 합 4", "국,수,영,탐(1) 중 2개 합 7  약학: 국,수,영,탐(1) 중 3개 합 5", "국,수,영,탐(1) 중 3개 합 7"], "한림대": ["국,수(미/기),영,과 중 3개 합 4", "국,수(미/기),영,과 중 3개 합 5", "없음"], "동아대": ["국,수,영,탐 중 3개 합 4", "국,수,영,탐(1) 중 1개 4  석당인재,간호: 국,수,영,탐(1) 중 2개 합 7", "국,수,영,탐(1) 중 3개 합 6"], "울산대": ["국,수(미/기),영,과 중 3개 합 4, 한4  동일분야 I+II 불가", "국,수,영,탐(1) 중 1개 5 아산아너스: 국,수,영,탐(1) 중 2개 합 6 미래엔지니어링: 국,수,영,탐(1) 중 2개 합 10 간호: 국,수,영,탐(1) 중 2개 합 7 (수 포함) * 아산아너스,미래엔지니어링,건축,간호는 수(미/기) 반영 시 1등급 상향"], "덕성여대": ["국,수,영,탐(1) 중 2개 합 7", "국,수,영,탐(1) 중 3개 합 5 (수 포함, 영, 사(1) 중 상위 1개만 적용)"], "삼육대": ["국,수(미/기),과(1) 중 3개 합 5", "국,수(미/기),영,과(1) 중 3개 합 5", "국,수,영,탐/직(1) 중 1개 4", "국,수,영,탐/직(1) 중 2개 합 6", "국,수,영,탐/직(1) 중 2개 합 7"], "숙명여대": ["약학: 국,수,영,탐(1) 중 3개 합 5 (수 포함)"], "가톨릭관동대": ["국,수(미/기),영,과 중 3개 합 6", "국,수,영,탐 중 2개 합 9", "의학: 국,수(미/기),영,과(절사) 중 3개 합 5  간호: 국,수,영,탐(절사) 중 2개 합 9"], "강원대": ["국,수,영,과(1) 중 3개 합 7, 수, 과(1) 포함", "국,수,영,과(1) 중 3개 합 8, 수, 과(1) 포함", "국,수,영,탐(1) 중 3개 합 10~14  * 인문 일부 학과는 직 인정  * 자연 일부 학과는 수/과 필수 반영  의예: 국,수,영,과(1)(절사) 중 3개 합 5 (수,과 포함)  수의예: 국,수,영,과(1)(절사) 중 3개 합 7 (수,과 포함)", "국,수,영,탐/직(1) 중 3개 합 11", "없음"], "대전대": ["국,수,영,탐 중 3개 합 6, 한5, 수 포함", "없음", "한의예: 국,수,영,탐(절사) 중 3개 합 5, 한 5 (수 포함)"], "을지대": ["간호: 국,수,영,탐(1) 중 2개 합 8  보건과학대: 국,수,영,탐(1) 중 1개 4  * 안경광학과,의료경영학과 없음", "국,수,영,과 중 3개 합 5 (과 포함, 생/II 포함)", "국,수,영,탐 중 2개 합 4, 탐 포함, 생 포함"], "세명대": ["국,수(미/기),영 중 3개 합 5", "없음", "한의예: 국,수,영,탐(1) 중 3개 합 5 (수 포함)"], "경성대": ["국,수(미/기),영,과(1) 중 3개 합 5", "약학: 국,수(미/기),영,과(1) 중 3개 합 5  간호: 국,수,영,탐(1) 중 2개 합 8"], "동의대": ["경찰행정,물리치료,방사선,임상병리,치위생: 국,수,영,탐(1) 중 2개 합 8 간호: 국,수,영,탐(1) 중 2개 합 7 한의예: 국,수,영,탐 중 3개 합 5"], "전남대": ["국,수(미/기),영,과 중 3개 합 5, 수 포함  수(미/기),과 응시 필수", "국,수(미/기),영,과 중 3개 합 6, 수 포함  수(미/기),과 응시 필수", "국,수(미/기),영,과(1) 중 3개 합 7  수(미/기),과 응시 필수", "국,수,영,탐/직(1) 중 2개 합 8  공과,사범: 국,수,영,탐/직(1) 중 2개 합 7  자율: 국,수,영,탐/직(1) 중 2개 합 7  경영,간호: 국,수,영,탐/직(1) 중 3개 합 9  수의예,약학: 국,수(미/기),영,과(1) 중 3개 합 6  치의학: 국,수(미/기),영,과 중 3개 합 5 (수 포함)  * 수학교육,물리교육,화학교육,생물교육,지구과학  교육,수의예,약학,치의학은 수(미/기), 과 2과목  필수 응시  * 공과(상업공학 제외), 미래모빌리티,빅데이터  융합은 수(미/기), 과/직 2과목 필수 응시  * 인공지능은 과 2과목 필수 응시  * 수학,통계, 물리는 수(미/기) 필수 응시", "수산생명의학: 국,수,영,탐/직(1) 중 2개 합 8"], "조선대": ["국,수(미/기),영,과(1) 중 3개 합 5, 수 포함", "국,수(미/기),영,과(1) 중 3개 합 6, 수 포함", "국,수,영,탐(1) 중 1개 6 간호: 국,수,영,탐(1) 중 2개 합 6 사범대: 국,수,영,탐(1) 중 2개 합 10 약학: 국,수(미/기),영,과(1) 중 3개 합 6 (수 포함) 의예,치의예: 국,수(미/기),영,과(1) 중 3개 합 5 (수 포함)", "없음"], "동신대": ["간호: 국,수,영,탐(1) 중 2개 합 11 / 물리치료: 국,수,영,탐(1) 중 2개 합 13 / 한의예: 국,수,영,탐(1) 중 3개 합 5", "없음"], "단국대": ["국,수(미/기),영,과 중 3개 합 5, 수 포함", "국,수(미/기),영,과 중 3개 합 6, 수 포함", "국,수,영,탐(1) 중 2개 합 6", "국,수,영,탐(1) 중 2개 합 8  간호: 국,수,(영,탐)(1) 중 2개 합 5  공공정책학(야): 국,수,영 중 1개 4"], "건국대": ["국,수,영,과 중 3개 합 5, 한4", "국,수,영,과(1) 중 3개 합 5, 한4", "없음"], "인제대": ["간호: 국,수,영,탐(1) 중 2개 합 7  글로컬리더스: 국,수,영,과(1) 중 2개 합 7 (수 포함)", "글로컬리더스: 국,수,영,과(1) 중 2개 합 9 (수 포함)", "의예: 국,수(미/기),영,과(1) 4개 각 2  약학: 국,수(미/기),영,과(1) 4개 합 9"], "동덕여대": ["국,수(미/기),과(1) 중 3개 합 6", "국,수,영,탐(1) 중 2개 합 6 / 약학: 국,수(미/기),과(1) 3개 합 6"], "차의과학대": ["약학: 국,수,영,탐(절사) 중 3개 합 6 (수 포함)"], "제주대": ["인문: 국,수,영,탐/직(절사) 중 2개 합 9  자연: 국,수,영,탐/직(절사) 중 2개 합 10  사범대(체육교육 제외): 국,수,영,탐/직(절사) 중  3개 합 10  * 수학교육은 수(미/기) 포함  간호: 국,수,영,탐/직(절사) 중 3개 합 11  초등교육: 국,수,영,탐/직(절사) 중 3개 합 8  수의예,약학: 국,수(미/기),영,과(절사) 중 3개  합 7 (수 포함)  의예: 국,수(미/기),영,과(절사) 중 3개 합 6  (수 포함)"], "차 의과학대": ["국,수,영,탐 중 3개 합 6, 수 포함"], "국립강릉원주대": ["국,수,영,과(1) 중 3개 합 6, 수 포함", "없음"], "원광대": ["간호: 국,수,영,탐 중 3개 합 12", "국,수,영,과 중 3개 합 6, 수 포함", "국,수,영,과 중 3개 합 7, 수 포함", "국,수,영,과(1) 중 3개 합 6, 수 포함", "국,수,영,과(1) 중 3개 합 7, 수 포함", "국,수,영,탐 중 3개 합 12", "국,수,영,탐 중 3개 합 6, 수 포함", "국,수,영,탐 중 3개 합 9", "국,수,영,탐(1) 중 3개 합 12", "국,수,영,탐(1) 중 3개 합 6, 수 포함", "국,수,영,탐(1) 중 3개 합 9", "없음"], "수원가톨릭대": ["국,수,영,탐,한 각 2"], "국립목포대": ["국,수(미/기),영,과 중 3개 합 7, 수(미/기), 과 포함", "약학: 국,수(미/기),영,과(절사) 중 3개 합 7 * 약학은 수(미/기)와 과 필수 반영 간호: 국,수,영,탐/직(1) 중 1개 6 * 간호는 수(미/기) 반영 시 1등급 상향"], "국립순천대": ["간호: 국,수,영,탐(1) 중 2개 합 10 수학교육: 수 4 약학: 국,수(미/기),영,과(절사) 중 3개 합 7 * 약학은 수(미/기), 과 필수 반영", "국,수(미/기),영,과 중 3개 합 7, 수(미/기), 과 포함"], "우석대": ["간호: 국,수,영,탐(1) 중 2개 합 12 한약학: 국,수,영,과(1) 중 3개 합 9", "없음", "한약학: 국,수,영,과(1) 중 3개 합 9 한의예: 국,수,영,탐(절사) 중 3개 합 7(수 포함)"], "서울대": ["국,수(미/기),영,과 중 3개 합 7", "국,수(미/기),영,과/직 중 3개 합 7", "국,수(미/기),영,탐/직(일부) 중 3개 합 7", "국,수,영,과 중 3개 합 7", "국,수,영,탐 중 3개 합 7", "국,수,영,탐 중 3개 합 7  ※ 경영대학, 공과대학, 농업생명과학대학, 생활과학대학,  첨단융합학부, 학부대학은 직탐 가능  ※ 식품영양, 의료학과는 제2외/한문 응시", "국,수,영,탐/직 중 3개 합 7"], "한국외국어대": ["국,수,영,탐(1) 중 2개 합 4", "국,수,영,탐(1) 중 2개 합 6"], "포항공과대": ["국,수(미/기),영,과 중 2개 합 4, 수 포함"], "세종대": ["국,수,영,탐(1) 중 2개 합 5", "국,수,영,탐(1) 중 2개 합 6", "국,수,영,탐(1) 중 3개 합 10"], "홍익대": ["국,수,영,탐(1) 중 1개 4", "국,수,영,탐(1) 중 2개 합 5, 한 4", "국,수,영,탐(1) 중 2개 합 5, 한4"], "서울시립대": ["국,수,영,탐(1) 중 3개 합 8, 한 4"], "서강대": ["국,수,영,탐(1) 중 3개 각 3, 한 4"], "용인대": ["국,수,영 중 2개 합 8  경찰행정: 국,수,영 3개 합 9", "없음"], "춘천교대": ["국,수,영,탐(1) 중 3개 합 10, 한4", "국,수,영,탐(1) 중 3개 합 12, 한4", "국,수,영,탐(1) 중 3개 합 9, 한4"], "경운대": ["간호: 국,수,영,탐/직(1) 중 2개 합 10  항공운항: 국,수,영,탐/직(1) 중 3개 합 10", "없음"], "국민대": ["국,수,영,과(1) 중 2개 합 6", "국,수,영,탐(1) 중 2개 합 6"], "서울교대": ["국,수,영 2개 합 6, 한 4", "국,수,영,탐 중 2개 합 6, 한4", "국,수,영,탐 중 2개 합 8, 한4"], "숭실대": ["국,수,영,탐(1) 중 2개 합 6"], "인천대": ["국,수,영,탐(1) 중 2개 합 7  동북아국제통상: 국,수,영,탐(1) 중 2개 합 6", "없음"], "수원대": ["국,수,영,탐(직1) 중 1개 4", "국,수,영,탐/직(1) 중 2개 합 7  간호: 국,수,영,탐/직(1) 중 2개 합 6", "없음"], "한국항공대": ["국,수,영,탐/직(1) 중 2개 합 6", "없음"], "한남대": ["국,수,영,탐(1) 중 2개 합 6"], "강서대": ["국,수,영,탐(1) 중 2개 합 7", "없음"], "경기대": ["국,수,영,탐/직(1) 중 2개 합 7, 한 6", "없음"], "서울과학기술대": ["국,수,영,탐/직(1) 중 2개 합 7"], "서울여대": ["국,수,영,탐(1) 중 2개 합 7"], "성신여대": ["국,수,영,탐(1) 중 2개 합 7"], "한성대": ["국,수,영,탐(1) 중 2개 합 7 (야간 8)  * 제2외/한문으로 탐(1) 대체 가능", "없음"], "한국공학대": ["없음", "인문: 국,수,영,탐(1) 중 2개 합 8  자연: 국,수,영,탐(1) 중 2개 합 7  * 수(미/기) 반영 시 1등급 상향"], "국립공주대": ["국,수,영,탐(1) 중 2개 합 10등급", "국,수,영,탐(1) 중 2개 합 11등급", "국,수,영,탐(1) 중 2개 합 7~11  * 수학교육은 수(확) 응시자 3등급 하향", "국,수,영,탐(1) 중 2개 합 9~10"], "나사렛대": ["간호: 국,수,영,탐 중 2개 합 7"], "한동대": ["국,수,영,탐(1) 중 2개 합 7 또는 1개 1", "없음"], "국립창원대": ["국,수,영,탐(1) 중 2개 합 7~9 / * 독문,일문,행정(야),국제무역(야),의류, 산업시스템공학,건설시스템공학,정보통신공학:  없음", "국,수,영,탐(1) 중 2개 합 8"], "경인교대": ["국,수,영,탐(1) 4개 합 14"], "한국교원대": ["국,수,영,탐 중 4개 합 14", "국,수,영,탐 중 4개 합 14  수(미/기) 1등급상향, 과(2) 1등급 상향", "국,수,영,탐 중 4개 합 14  수(미/기) 1등급상향, 물(Ⅰ/Ⅱ) 1등급 상향", "국,수,영,탐 중 4개 합 14  수(미/기) 1등급상향, 지(Ⅰ/Ⅱ) 1등급 상향", "국,수,영,탐 중 4개 합 14  수(미/기) 1등급상향, 화(Ⅰ/Ⅱ) 1등급 상향", "국,수,영,탐 중 4개 합 14, 독 1(탐) 인정", "국,수,영,탐 중 4개 합 14, 중Ⅰ/한Ⅰ탐(1) 인정", "국,수,영,탐/직 중 4개 합 14", "국,수,영,탐/직 중 4개 합 14  수(미/기) 1등급상향, 과 1등급 상향", "국,수,영,탐/직 중 4개 합 14, 수(미/기) 1등급상향"], "한국성서대": ["국,수,영,탐(1) 중 2개 평균 3", "없음"], "서경대": ["국,수,영,탐/직(1) 중 2개 합 8", "없음"], "한경국립대": ["국,수,영,탐(1) 중 2개 합 8  * 수(미/기) 반영 시 2등급 상향  (HK자율,인문융합,문예창작,영미언어,행정학,  법경영,법학,경영 제외)", "없음"], "상명대": ["국,수,영,탐(1) 중 2개 합 10  간호: 수,영,탐(1) 중 2개 합 8", "없음"], "한국기술교육대": ["인문: 국,수,영,탐(1) 중 2개 합 8 (국 포함) / 자연: 국,수,영,탐(1) 중 2개 합 8 (수 포함) * 디자인공학은 필수영역 없음"], "국립 한국교통대": ["간호: 국,수,영,탐(1) 중 2개 합 8", "없음"], "서원대": ["국,수,영,탐/직(1) 중 2개 합 8  유아교육: 국,수,영,탐/직(1) 중 2개 합 9  수학교육: 수(미/기) 1개 4 또는 수(확) 1개 2", "없음"], "청주대": ["국,수,영 중 1개 5", "없음", "항공운항: 국,수,영,탐 중 2개 합 8 * 수(미) 1등급 상향"], "대구대": ["간호: 국,수,영,탐/직(1) 중 2개 합 8", "없음"], "국립부경대": ["인문: 국,수,영,탐(1) 중 2개 합 8 (국 포함)  자연: 국,수,영,탐(1) 중 2개 합 9 (수 포함,  수(확) 선택 시 1등급 하향)  자율: 인문 또는 자연 기준 중 하나 충족"], "강남대": ["주간: 국,수,영,탐(1) 중 1개 3 / 야간: 없음"], "광주가톨릭대": ["국,수,영,탐/직(절사), 한 5개 합 25", "없음"], "국립한국해양대": ["국,영,탐 중 1개 5", "국,영,탐 중 2개 합 9", "수,영,탐 중 1개 5", "수,영,탐 중 2개 합 9", "해사대학: 수,영,탐(절사) 중 2개 합 9  해양과학기술융합대학: 수,영,탐(절사) 중 1개 5  해양인문사회과학대학: 국,영,탐(절사) 중 2개  합 9"], "경남대": ["간호: 국,수,영,탐(1) 중 2개 합 9 / 물리치료: 국,수,영,탐(1) 중 2개 합 10", "국,수,영 중 1개 5", "없음"], "경일대": ["간호: 국,수,영,탐/직(1) 중 2개 합 9"], "국립경국대": ["간호: 국,수,영,탐/직(1) 중 2개 합 9  수학교육: 수 5"], "국립금오공과대": ["국,수,영,탐(1) 중 2개 합 9  * 자연 계열은 수(미/기) 반영 시 1등급 상향,  스마트모빌리티전공은 수 포함"], "동명대": ["간호: 국,수,영,탐/직(1) 중 2개 합 9"], "국립목포해양대": ["항해: 국,수,영,탐(1) 중 2개 합 9 / 해상운송,해양정보,해군과학: 국,수,영,탐(1) 중 2개 합 10"], "화성의과학대": ["간호: 국,수,영 중 2개 합 10"], "예수대": ["국,수,영,탐(1) 중 2개 합 10  * 수(미/기) 포함 시 2개 합 11"], "광주대": ["간호: 국,수,영,탐/직(1) 중 2개 합 11", "없음"], "남부대": ["간호: 국,수,영,탐(1) 중 2개 합 12", "없음"], "감리교신학대": ["없음"], "광운대": ["없음"], "명지대": ["없음"], "서울기독대": ["없음"], "서울한영대": ["없음"], "성공회대": ["없음"], "장로회신학대": ["없음"], "총신대": ["없음"], "안양대": ["없음"], "인천가톨릭대": ["없음"], "청운대": ["없음"], "경동대": ["없음"], "국립한국교통대": ["없음"], "대진대": ["없음"], "동양대": ["없음"], "루터대": ["없음"], "서울신학대": ["없음"], "서울장신대": ["없음"], "성결대": ["없음"], "신한대": ["없음"], "아신대": ["없음"], "중부대": ["없음"], "칼빈대": ["없음"], "평택대": ["없음"], "한세대": ["없음"], "한신대": ["없음"], "협성대": ["없음"], "한라대": ["없음"], "국립한밭대": ["없음"], "목원대": ["없음"], "배재대": ["없음"], "우송대": ["없음"], "금강대": ["없음"], "남서울대": ["없음"], "백석대": ["없음"], "선문대": ["없음"], "세한대": ["없음"], "유원대": ["없음"], "한서대": ["없음"], "호서대": ["없음"], "가톨릭꽃동네대": ["없음"], "극동대": ["없음"], "중원대": ["없음"], "김천대": ["없음"], "대신대": ["없음"], "신경주대": ["없음"], "위덕대": ["없음"], "동서대": ["없음"], "부산가톨릭대": ["없음"], "부산외국어대": ["없음"], "신라대": ["없음"], "영산대": ["없음"], "가야대": ["없음"], "부산장신대": ["없음"], "창신대": ["없음"], "광신대": ["없음"], "광주여대": ["없음"], "송원대": ["없음"], "호남대": ["없음"], "호남신학대": ["없음"], "목포가톨릭대": ["없음"], "초당대": ["없음"], "국립군산대": ["없음"], "전주대": ["없음"], "한일장신대": ["없음"], "호원대": ["없음"], "제주국제대": ["없음"]};
+function getMinScoreSuggestions(uni){
+  return MIN_SCORE_LOOKUP[normalizeUniName(uni)] || [];
+}
 
 /* ---------------- STUDENT ---------------- */
 const NON_UNIVERSITY_LABELS = new Set(['대학수학능력시험','수능']);
@@ -1152,23 +1277,26 @@ function getAdmissionTypeOptions(uni){
   return [...new Set(masterData.filter(e=>e.university===uni).map(e=>e.admissionType))].sort((a,b)=>a.localeCompare(b,'ko'));
 }
 const GENERIC_ADMISSION_WORDS = new Set(['전체','공통','전형 미지정','모든 전형','전 전형','해당전형','해당 전형']);
-const ADMISSION_SUBSTEP_PATTERN = /(입력|업로드|제출|해당자|우편|방문|확인|대상자|등록자|소인|명단)/;
+const ADMISSION_SUBSTEP_PATTERN = /(입력|업로드|제출|해당자|우편|방문|확인|대상자|등록자|소인|명단|합격자|구비서류|첨부서류|원본서류|증빙서류|지원자격|접수자)/;
 const ADMISSION_DEPT_SUFFIX_PATTERN = /(학과|학부|전공|캠퍼스|과)$/;
 const ADMISSION_CATCHALL_PATTERN = /(외\s*모든\s*전형|그\s*외\s*전형|기타\s*전형|이외\s*전형)/;
+const ADMISSION_TIMING_SUFFIX_PATTERN = /(이전|이후)$/;
 function looksLikeRealAdmissionType(a){
   if(GENERIC_ADMISSION_WORDS.has(a)) return false;
   if(ADMISSION_SUBSTEP_PATTERN.test(a)) return false;
   if(ADMISSION_DEPT_SUFFIX_PATTERN.test(a.trim())) return false;
   if(ADMISSION_CATCHALL_PATTERN.test(a)) return false;
+  if(ADMISSION_TIMING_SUFFIX_PATTERN.test(a.trim())) return false;
   return true;
 }
 function getAdmissionTypeOptionsFiltered(uni){
   const opts = getAdmissionTypeOptions(uni);
-  const cleaned = opts.filter(looksLikeRealAdmissionType);
-  if(cleaned.length > 0) return cleaned;
-  // 전부 걸러졌으면 최소한 '전체' 계열 표시어라도 남겨서 목록이 비지 않게 함
-  const nonGeneric = opts.filter(a=>!GENERIC_ADMISSION_WORDS.has(a));
-  if(nonGeneric.length > 0) return nonGeneric;
+  // 1단계: 엄격한 기준으로 진짜 전형명만 남김
+  const strict = opts.filter(looksLikeRealAdmissionType);
+  if(strict.length > 0) return strict;
+  // 2단계: 그래도 하나도 안 남으면, 최소한 '전체' 같은 통칭어만 빼고 보여줌 (목록이 비지 않게)
+  const weak = opts.filter(a=>!GENERIC_ADMISSION_WORDS.has(a) && !ADMISSION_CATCHALL_PATTERN.test(a));
+  if(weak.length > 0) return weak;
   return opts;
 }
 function getDepartmentOptions(uni, admType){
@@ -1220,6 +1348,22 @@ function renderUniversityPickerHTML(me){
           <option value="">전형을 먼저 선택하세요</option>
         </select>
         <input type="text" id="pick-department-custom" placeholder="학과 직접 입력" style="display:none;margin-top:6px;">
+      </div>
+    </div>
+    <div class="grid2">
+      <div class="field">
+        <label class="field-label">수험번호 (선택)</label>
+        <input type="text" id="pick-exam-input" placeholder="예: 12345678">
+      </div>
+      <div class="field">
+        <label class="field-label">수능 최저학력기준 (선택)</label>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <input type="text" id="pick-minscore-input" list="pick-minscore-datalist" placeholder="예: 국,수,영,탐1 합 7" style="flex:1;">
+          <datalist id="pick-minscore-datalist"></datalist>
+          <label style="display:flex;align-items:center;gap:4px;font-size:12px;color:var(--ink-soft);white-space:nowrap;">
+            <input type="checkbox" id="pick-minscore-none"> 없음
+          </label>
+        </div>
       </div>
     </div>
     <div id="pickStatusArea" class="section-desc" style="margin:6px 0 0;"></div>
@@ -1280,18 +1424,68 @@ function renderStudent(){
 
       <div class="section-title" style="margin-top:20px;">내 지원 목록 (${applied.length})</div>
       ${applied.length===0 ? '<div class="empty">아직 담은 전형이 없어요. 위에서 검색해 추가해 보세요.</div>' :
-        `<div class="chips">
-          ${applied.map(e=>`
-            <div class="chip">${escapeHtml(e.university)} · ${escapeHtml(e.admissionType)} · ${escapeHtml(e.department)}${e.isCustom?' <span style="color:var(--accent);font-size:11px;">(직접 입력)</span>':''}
-              <button data-remove="${e.id}" title="삭제">✕</button>
+        `<div class="app-list">
+          ${applied.map(e=>{
+            const exam = (me.examNumbers && me.examNumbers[e.id]) || '';
+            const msInfo = (me.minScoreInfo && me.minScoreInfo[e.id]) || {};
+            const isNone = !!msInfo.none;
+            const msText = msInfo.text || '';
+            return `
+            <div class="app-card">
+              <div class="app-card-head">
+                <div class="grid3" style="flex:1;margin-bottom:0;">
+                  <div class="field" style="margin-bottom:0;">
+                    <label class="field-label">대학</label>
+                    <input type="text" class="applabel-input" data-entry-id="${e.id}" data-field="university" value="${escapeHtml(e.university)}">
+                  </div>
+                  <div class="field" style="margin-bottom:0;">
+                    <label class="field-label">전형</label>
+                    <input type="text" class="applabel-input" data-entry-id="${e.id}" data-field="admissionType" value="${escapeHtml(e.admissionType)}">
+                  </div>
+                  <div class="field" style="margin-bottom:0;">
+                    <label class="field-label">학과${e.isCustom?' <span style="color:var(--accent);">(직접 입력)</span>':''}</label>
+                    <input type="text" class="applabel-input" data-entry-id="${e.id}" data-field="department" value="${escapeHtml(e.department)}">
+                  </div>
+                </div>
+                <button class="icon-btn" data-remove="${e.id}" title="삭제" style="margin-top:20px;">✕</button>
+              </div>
+              <div class="grid2" style="margin-top:8px;">
+                <div class="field" style="margin-bottom:0;">
+                  <label class="field-label">수험번호</label>
+                  <input type="text" class="exam-input" data-exam-id="${e.id}" placeholder="예: 12345678" value="${escapeHtml(exam)}">
+                </div>
+                <div class="field" style="margin-bottom:0;">
+                  <label class="field-label">수능 최저학력기준</label>
+                  <div style="display:flex;gap:8px;align-items:center;">
+                    <input type="text" class="minscore-input" list="minscore-datalist-${e.id}" data-minscore-id="${e.id}" placeholder="예: 국,수,영,탐1 합 7" value="${escapeHtml(msText)}" ${isNone?'disabled':''} style="flex:1;">
+                    <datalist id="minscore-datalist-${e.id}">${getMinScoreSuggestions(e.university).map(m=>`<option value="${escapeHtml(m)}">`).join('')}</datalist>
+                    <label style="display:flex;align-items:center;gap:4px;font-size:12px;color:var(--ink-soft);white-space:nowrap;">
+                      <input type="checkbox" class="minscore-none" data-none-id="${e.id}" ${isNone?'checked':''}> 없음
+                    </label>
+                  </div>
+                </div>
+              </div>
+              <details style="margin-top:10px;" open>
+                <summary style="cursor:pointer;font-size:12px;color:var(--accent-dark);font-weight:600;">일정 확인·수정 (자동으로 채워진 날짜가 틀리면 여기서 고치세요)</summary>
+                <div style="margin-top:8px;display:flex;flex-direction:column;gap:6px;">
+                  ${(e.events||[]).slice().sort((a,b)=>(a.date||'').localeCompare(b.date||'')).map(ev=>`
+                    <div style="display:grid;grid-template-columns:100px 140px 1fr;gap:8px;align-items:center;">
+                      <span style="font-size:12px;color:var(--ink-soft);">${escapeHtml(EVENT_TYPES[ev.type]?EVENT_TYPES[ev.type].label:'기타')}${ev.isEdited?' <b style="color:var(--accent-dark);">(수정됨)</b>':''}</span>
+                      <input type="date" class="ev-date-edit" data-entry-id="${e.id}" data-event-id="${ev.id}" data-is-custom="${e.isCustom?'1':'0'}" value="${ev.date||''}">
+                      <input type="text" class="ev-note-edit" data-entry-id="${e.id}" data-event-id="${ev.id}" data-is-custom="${e.isCustom?'1':'0'}" placeholder="비고 (선택)" value="${escapeHtml(ev.note||'')}">
+                    </div>
+                  `).join('')}
+                </div>
+              </details>
             </div>
-          `).join('')}
+            `;
+          }).join('')}
         </div>`
       }
 
       <hr class="rule">
 
-      ${renderApplicationSummaryTable(applied)}
+      ${renderApplicationSummaryTable(applied, me)}
 
       ${applied.length===0 ? '' : `
         <div class="view-switch">
@@ -1313,7 +1507,7 @@ function getNextEventForEntry(entry){
   return withDates.slice().sort((a,b)=>b.date.localeCompare(a.date))[0];
 }
 
-function renderApplicationSummaryTable(applied){
+function renderApplicationSummaryTable(applied, me){
   if(applied.length===0) return '';
   const rows = applied.map(entry=>({ entry, nextEv: getNextEventForEntry(entry) }));
   rows.sort((a,b)=>{
@@ -1322,17 +1516,25 @@ function renderApplicationSummaryTable(applied){
     if(!b.nextEv) return -1;
     return a.nextEv.date.localeCompare(b.nextEv.date);
   });
+  function examOf(id){ return (me && me.examNumbers && me.examNumbers[id]) || '-'; }
+  function minScoreOf(id){
+    const info = (me && me.minScoreInfo && me.minScoreInfo[id]) || {};
+    if(info.none) return '없음';
+    return info.text ? info.text : '-';
+  }
   return `
     <div class="section-title">지원 현황 요약</div>
     <div class="section-desc">지원한 대학의 다음 일정과 D-day를 한눈에 볼 수 있어요.</div>
     <table class="sched" style="margin-bottom:20px;">
-      <thead><tr><th>대학</th><th>전형 / 학과</th><th>다음 일정</th><th>날짜</th><th>D-day</th></tr></thead>
+      <thead><tr><th>대학</th><th>전형 / 학과</th><th>수험번호</th><th>최저학력기준</th><th>다음 일정</th><th>날짜</th><th>D-day</th></tr></thead>
       <tbody>
         ${rows.map(({entry, nextEv})=>{
           if(!nextEv){
             return `<tr>
               <td data-label="대학">${escapeHtml(entry.university)}</td>
               <td data-label="전형/학과">${escapeHtml(entry.admissionType)} · ${escapeHtml(entry.department)}</td>
+              <td data-label="수험번호">${escapeHtml(examOf(entry.id))}</td>
+              <td data-label="최저학력기준">${escapeHtml(minScoreOf(entry.id))}</td>
               <td data-label="다음 일정" colspan="3" style="color:var(--ink-soft);">등록된 일정 없음</td>
             </tr>`;
           }
@@ -1341,6 +1543,8 @@ function renderApplicationSummaryTable(applied){
           return `<tr class="${nextEv.date===today?'today':''}">
             <td data-label="대학">${escapeHtml(entry.university)}</td>
             <td data-label="전형/학과">${escapeHtml(entry.admissionType)} · ${escapeHtml(entry.department)}</td>
+            <td data-label="수험번호">${escapeHtml(examOf(entry.id))}</td>
+            <td data-label="최저학력기준">${escapeHtml(minScoreOf(entry.id))}</td>
             <td data-label="다음 일정"><span class="evtype"><span class="dot" style="background:${eventColor(nextEv)}"></span>${escapeHtml(eventLabel(nextEv))}</span></td>
             <td data-label="날짜">${fmtDate(nextEv.date)}</td>
             <td data-label="D-day"><span class="dday ${dd.cls}">${dd.label}</span></td>
@@ -1378,6 +1582,8 @@ function attachUniversityPicker(){
     const opts = uni ? getAdmissionTypeOptionsFiltered(uni) : [];
     admCustom.style.display = 'none';
     admCustom.value = '';
+    const minscoreDatalist = document.getElementById('pick-minscore-datalist');
+    if(minscoreDatalist){ minscoreDatalist.innerHTML = getMinScoreSuggestions(uni).map(m=>`<option value="${escapeHtml(m)}">`).join(''); }
     if(!uni){
       admSelect.disabled = true;
       admSelect.innerHTML = '<option value="">대학을 먼저 선택하세요</option>';
@@ -1407,11 +1613,36 @@ function attachUniversityPicker(){
     // 등록된 학과 선택지가 하나뿐이면(대부분 '전체') 자동으로 채워줌
     if(registered.length===1){ deptSelect.value = registered[0]; }
   }
+  function bindGoManualBtn(uni, adm, dept){
+    const goManualBtn = document.getElementById('pickGoManualBtn');
+    if(!goManualBtn) return;
+    goManualBtn.onclick = ()=>{
+      manualPrefill = {
+        university: uni, admissionType: adm, department: dept,
+        exam: examInput ? examInput.value.trim() : '',
+        minScoreText: (minscoreNone && minscoreNone.checked) ? '' : (minscoreInput ? minscoreInput.value.trim() : ''),
+        minScoreNone: minscoreNone ? minscoreNone.checked : false
+      };
+      studentManualOpen = true;
+      studentDraftEvents = [newDraftEvent()];
+      render();
+    };
+  }
   function refreshStatus(){
     const uni = currentUniversity();
     const adm = currentAdmission();
     const dept = currentDepartment();
     const me = studentsData[currentStudentNumber];
+    // 대학 자체가 목록에 없는 새 학교면, 전형·학과를 마저 안 채워도 바로 안내해줌
+    if(uniSelect.value===CUSTOM && uni){
+      statusArea.innerHTML = '목록에 없는 대학이면 전형·학과를 마저 입력하지 않아도 돼요. <button type="button" id="pickGoManualBtn" class="link-btn" style="padding:0;">날짜와 함께 직접 추가하기 →</button>';
+      addBtn.disabled = true;
+      addBtn.textContent = '지원';
+      delete addBtn.dataset.entryId;
+      delete addBtn.dataset.major;
+      bindGoManualBtn(uni, adm, dept);
+      return;
+    }
     if(!uni || !adm || !dept){
       statusArea.textContent = '';
       addBtn.disabled = true;
@@ -1422,11 +1653,12 @@ function attachUniversityPicker(){
     }
     const { entry, major } = resolveEntryAndMajor(uni, adm, dept);
     if(!entry){
-      statusArea.textContent = '일치하는 전형을 찾지 못했어요. 철자를 확인하거나, 아래 "직접 추가하기"로 새로 등록해 보세요.';
+      statusArea.innerHTML = '일치하는 전형을 찾지 못했어요. 날짜가 있는 전형이 아니라면 <button type="button" id="pickGoManualBtn" class="link-btn" style="padding:0;">직접 추가하기로 계속하기 →</button>';
       addBtn.disabled = true;
       addBtn.textContent = '지원';
       delete addBtn.dataset.entryId;
       delete addBtn.dataset.major;
+      bindGoManualBtn(uni, adm, dept);
       return;
     }
     const already = (me.appliedIds||[]).includes(entry.id);
@@ -1459,6 +1691,16 @@ function attachUniversityPicker(){
   };
   deptCustom.oninput = ()=>{ refreshStatus(); };
 
+  const examInput = document.getElementById('pick-exam-input');
+  const minscoreInput = document.getElementById('pick-minscore-input');
+  const minscoreNone = document.getElementById('pick-minscore-none');
+  if(minscoreNone){
+    minscoreNone.onchange = ()=>{
+      minscoreInput.disabled = minscoreNone.checked;
+      if(minscoreNone.checked) minscoreInput.value = '';
+    };
+  }
+
   addBtn.onclick = async ()=>{
     const id = addBtn.dataset.entryId;
     const major = addBtn.dataset.major;
@@ -1470,6 +1712,17 @@ function attachUniversityPicker(){
       if(entry && major && major!==entry.department){
         me.appliedMajors = me.appliedMajors || {};
         me.appliedMajors[id] = major;
+      }
+      const examVal = examInput ? examInput.value.trim() : '';
+      if(examVal){
+        me.examNumbers = me.examNumbers || {};
+        me.examNumbers[id] = examVal;
+      }
+      const isNone = minscoreNone ? minscoreNone.checked : false;
+      const msVal = minscoreInput ? minscoreInput.value.trim() : '';
+      if(isNone || msVal){
+        me.minScoreInfo = me.minScoreInfo || {};
+        me.minScoreInfo[id] = { none:isNone, text: isNone ? '' : msVal };
       }
       await saveStudentsData();
     }
@@ -1523,9 +1776,101 @@ function attachStudentHandlers(){
       if((me.appliedIds||[]).includes(id)){
         me.appliedIds = me.appliedIds.filter(x=>x!==id);
         if(me.appliedMajors){ delete me.appliedMajors[id]; }
+        if(me.appliedUniversityLabel){ delete me.appliedUniversityLabel[id]; }
+        if(me.appliedAdmissionLabel){ delete me.appliedAdmissionLabel[id]; }
       } else {
         me.customEntries = (me.customEntries||[]).filter(x=>x.id!==id);
       }
+      if(me.examNumbers){ delete me.examNumbers[id]; }
+      if(me.eventOverrides){ delete me.eventOverrides[id]; }
+      if(me.minScoreInfo){ delete me.minScoreInfo[id]; }
+      await saveStudentsData();
+      render();
+    };
+  });
+  document.querySelectorAll('.applabel-input').forEach(inp=>{
+    inp.onchange = async ()=>{
+      const me = studentsData[currentStudentNumber];
+      const id = inp.dataset.entryId;
+      const field = inp.dataset.field;
+      const val = inp.value.trim();
+      if(!val){ render(); return; } // 비워두면 원래 값으로 되돌림 (재렌더)
+      const isCustomEntry = (me.customEntries||[]).some(ce=>ce.id===id);
+      if(isCustomEntry){
+        const ce = me.customEntries.find(ce=>ce.id===id);
+        if(ce) ce[field] = val;
+      } else if(field==='department'){
+        me.appliedMajors = me.appliedMajors || {};
+        me.appliedMajors[id] = val;
+      } else if(field==='university'){
+        me.appliedUniversityLabel = me.appliedUniversityLabel || {};
+        me.appliedUniversityLabel[id] = val;
+      } else if(field==='admissionType'){
+        me.appliedAdmissionLabel = me.appliedAdmissionLabel || {};
+        me.appliedAdmissionLabel[id] = val;
+      }
+      await saveStudentsData();
+      render();
+    };
+  });
+  document.querySelectorAll('.exam-input').forEach(inp=>{
+    inp.onchange = async ()=>{
+      const me = studentsData[currentStudentNumber];
+      const id = inp.dataset.examId;
+      me.examNumbers = me.examNumbers || {};
+      const val = inp.value.trim();
+      if(val){ me.examNumbers[id] = val; } else { delete me.examNumbers[id]; }
+      await saveStudentsData();
+    };
+  });
+  document.querySelectorAll('.minscore-input').forEach(inp=>{
+    inp.onchange = async ()=>{
+      const me = studentsData[currentStudentNumber];
+      const id = inp.dataset.minscoreId;
+      me.minScoreInfo = me.minScoreInfo || {};
+      const cur = me.minScoreInfo[id] || {};
+      cur.text = inp.value.trim();
+      cur.none = false;
+      me.minScoreInfo[id] = cur;
+      await saveStudentsData();
+    };
+  });
+  document.querySelectorAll('.minscore-none').forEach(chk=>{
+    chk.onchange = async ()=>{
+      const me = studentsData[currentStudentNumber];
+      const id = chk.dataset.noneId;
+      me.minScoreInfo = me.minScoreInfo || {};
+      const cur = me.minScoreInfo[id] || {};
+      cur.none = chk.checked;
+      if(chk.checked){ cur.text = ''; }
+      me.minScoreInfo[id] = cur;
+      await saveStudentsData();
+      render();
+    };
+  });
+  function applyEventEdit(entryId, eventId, isCustom, field, value){
+    const me = studentsData[currentStudentNumber];
+    if(isCustom){
+      const ce = (me.customEntries||[]).find(x=>x.id===entryId);
+      const ev = ce && ce.events.find(x=>x.id===eventId);
+      if(ev) ev[field] = value;
+    } else {
+      me.eventOverrides = me.eventOverrides || {};
+      me.eventOverrides[entryId] = me.eventOverrides[entryId] || {};
+      me.eventOverrides[entryId][eventId] = me.eventOverrides[entryId][eventId] || {};
+      me.eventOverrides[entryId][eventId][field] = value;
+    }
+  }
+  document.querySelectorAll('.ev-date-edit').forEach(inp=>{
+    inp.onchange = async ()=>{
+      applyEventEdit(inp.dataset.entryId, inp.dataset.eventId, inp.dataset.isCustom==='1', 'date', inp.value);
+      await saveStudentsData();
+      render();
+    };
+  });
+  document.querySelectorAll('.ev-note-edit').forEach(inp=>{
+    inp.onchange = async ()=>{
+      applyEventEdit(inp.dataset.entryId, inp.dataset.eventId, inp.dataset.isCustom==='1', 'note', inp.value.trim());
       await saveStudentsData();
       render();
     };
@@ -1535,15 +1880,17 @@ function attachStudentHandlers(){
   });
 
   const toggleManual = document.getElementById('toggleStudentManual');
-  if(toggleManual) toggleManual.onclick = ()=>{ studentManualOpen = !studentManualOpen; if(studentManualOpen) studentDraftEvents=[newDraftEvent()]; render(); };
+  if(toggleManual) toggleManual.onclick = ()=>{ studentManualOpen = !studentManualOpen; if(studentManualOpen) studentDraftEvents=[newDraftEvent()]; else manualPrefill = null; render(); };
 
   if(studentManualOpen){
     const smUniInput = document.getElementById('sm-university');
     const smDeptDatalist = document.getElementById('sm-department-datalist');
+    const smMinscoreDatalist = document.getElementById('sm-minscore-datalist');
     if(smUniInput && smDeptDatalist){
       smUniInput.oninput = ()=>{
         const opts = getRealDepartmentSuggestions(smUniInput.value.trim());
         smDeptDatalist.innerHTML = opts.map(d=>`<option value="${escapeHtml(d)}">`).join('');
+        if(smMinscoreDatalist){ smMinscoreDatalist.innerHTML = getMinScoreSuggestions(smUniInput.value.trim()).map(m=>`<option value="${escapeHtml(m)}">`).join(''); }
       };
     }
     const addRowBtn = document.getElementById('smAddEventRowBtn');
@@ -1560,6 +1907,14 @@ function attachStudentHandlers(){
     document.querySelectorAll('.sm-note-input').forEach(inp=>{
       inp.oninput = ()=>{ studentDraftEvents[+inp.dataset.idx].note = inp.value; };
     });
+    const smMinscoreInput = document.getElementById('sm-minscore-input');
+    const smMinscoreNone = document.getElementById('sm-minscore-none');
+    if(smMinscoreNone){
+      smMinscoreNone.onchange = ()=>{
+        smMinscoreInput.disabled = smMinscoreNone.checked;
+        if(smMinscoreNone.checked) smMinscoreInput.value = '';
+      };
+    }
     const smSubmitBtn = document.getElementById('smSubmitBtn');
     if(smSubmitBtn){
       smSubmitBtn.onclick = async ()=>{
@@ -1573,9 +1928,15 @@ function attachStudentHandlers(){
         const me = studentsData[currentStudentNumber];
         me.customEntries = me.customEntries || [];
         me.customEntries.push(newEntry);
+        const examVal = document.getElementById('sm-exam-input').value.trim();
+        if(examVal){ me.examNumbers = me.examNumbers || {}; me.examNumbers[newEntry.id] = examVal; }
+        const isNone = smMinscoreNone ? smMinscoreNone.checked : false;
+        const msVal = smMinscoreInput ? smMinscoreInput.value.trim() : '';
+        if(isNone || msVal){ me.minScoreInfo = me.minScoreInfo || {}; me.minScoreInfo[newEntry.id] = { none:isNone, text: isNone ? '' : msVal }; }
         await saveStudentsData();
         studentDraftEvents = [newDraftEvent()];
         studentManualOpen = false;
+        manualPrefill = null;
         render();
       };
     }
@@ -1705,20 +2066,34 @@ function attachTeacherHandlers(){
 }
 
 /* ---------------- shared table/calendar renderers ---------------- */
+function groupEventsForTeacher(events){
+  const map = new Map();
+  events.forEach(ev=>{
+    const key = [ev.date, ev.university, ev.admissionType, ev.type, ev.note||''].join('||');
+    if(!map.has(key)){ map.set(key, { ...ev, students:[] }); }
+    map.get(key).students.push({ name:ev.studentName, number:ev.studentNumber, className:ev.className });
+  });
+  return [...map.values()].sort((a,b)=>a.date.localeCompare(b.date));
+}
+
 function renderTableBlock(events, opts){
   const today = todayStr();
+  const rows = opts.showStudent ? groupEventsForTeacher(events) : events;
   return `
     <table class="sched">
       <thead><tr>
         <th>날짜</th><th>D-day</th>${opts.showStudent?'<th>학생</th>':''}<th>대학</th><th>전형 / 학과</th><th>일정</th>
       </tr></thead>
       <tbody>
-        ${events.map(ev=>{
+        ${rows.map(ev=>{
           const dd = ddayInfo(ev.date);
+          const studentCell = opts.showStudent
+            ? `<td data-label="학생">${ev.students.map(s=>`<div>${escapeHtml(s.name)} (${escapeHtml(s.number)})</div>`).join('')}</td>`
+            : '';
           return `<tr class="${ev.date===today?'today':''}">
             <td data-label="날짜">${fmtDate(ev.date)}</td>
             <td data-label="D-day"><span class="dday ${dd.cls}">${dd.label}</span></td>
-            ${opts.showStudent?`<td data-label="학생"><b>${escapeHtml(ev.studentName)}</b> (${escapeHtml(ev.studentNumber)})<br><span class="cnt" style="color:var(--ink-soft);font-size:11px;">${escapeHtml(ev.className||'')}</span></td>`:''}
+            ${studentCell}
             <td data-label="대학">${escapeHtml(ev.university)}${opts.showStudent && ev.isCustom ? ' <span style="color:var(--accent);font-size:11px;">(학생 입력)</span>' : ''}</td>
             <td data-label="전형/학과">${escapeHtml(ev.admissionType)} · ${escapeHtml(ev.department)}</td>
             <td data-label="일정"><span class="evtype"><span class="dot" style="background:${eventColor(ev)}"></span>${escapeHtml(eventLabel(ev))}</span></td>
@@ -1732,8 +2107,10 @@ function renderTableBlock(events, opts){
 function renderCalendarBlock(events, opts){
   const monthDate = opts.monthState==='teacher' ? teacherCalMonth : calMonth;
   const selDay = opts.monthState==='teacher' ? teacherSelectedDay : selectedDay;
+  const workingEvents = opts.showStudent ? groupEventsForTeacher(events) : events;
   const byDate = {};
-  events.forEach(ev=>{ (byDate[ev.date]=byDate[ev.date]||[]).push(ev); });
+  workingEvents.forEach(ev=>{ (byDate[ev.date]=byDate[ev.date]||[]).push(ev); });
+  getSchoolEventsAsCalEvents().forEach(ev=>{ (byDate[ev.date]=byDate[ev.date]||[]).unshift(ev); });
 
   const year = monthDate.getFullYear(), month = monthDate.getMonth();
   const firstDow = new Date(year, month, 1).getDay();
@@ -1750,11 +2127,20 @@ function renderCalendarBlock(events, opts){
     const isToday = dateStr===today;
     const isSel = dateStr===selDay;
     const rows = evs.slice(0,MAX_ROWS).map(ev=>{
+      if(ev.isSchoolEvent){
+        return `
+        <div class="cal-event-row" title="${escapeHtml(ev.label)}">
+          <span class="dot school" style="background:${SCHOOL_EVENT_COLORS[ev.kind]||'#888'}"></span>
+          <span class="cal-event-text" style="font-weight:700;color:#2255CC;">${escapeHtml(ev.label)}</span>
+        </div>
+      `;
+      }
+      const names = opts.showStudent ? ev.students.map(s=>s.name).join(', ') : '';
       const label = opts.showStudent
-        ? `${ev.studentName}(${ev.studentNumber}) · ${ev.university}`
+        ? `${ev.university} ${ev.admissionType} ${EVENT_TYPES[ev.type]?EVENT_TYPES[ev.type].label:'기타'}(${names})`
         : `${ev.university} · ${EVENT_TYPES[ev.type]?EVENT_TYPES[ev.type].label:'기타'}`;
       return `
-      <div class="cal-event-row" title="${escapeHtml(ev.university)} · ${escapeHtml(eventLabel(ev))}${opts.showStudent?` · ${escapeHtml(ev.studentName)}(${escapeHtml(ev.studentNumber)})`:''}">
+      <div class="cal-event-row" title="${escapeHtml(ev.university)} · ${escapeHtml(eventLabel(ev))}${opts.showStudent?` · ${escapeHtml(names)}`:''}">
         <span class="dot" style="background:${eventColor(ev)}"></span>
         <span class="cal-event-text">${escapeHtml(label)}</span>
       </div>
@@ -1774,15 +2160,26 @@ function renderCalendarBlock(events, opts){
   const detail = selDay && byDate[selDay] ? `
     <div class="day-detail">
       <h4>${fmtDate(selDay)}</h4>
-      ${byDate[selDay].map(ev=>`
+      ${byDate[selDay].map(ev=>{
+        if(ev.isSchoolEvent){
+          return `
+          <div class="detail-row">
+            <span class="dot school lg" style="background:${SCHOOL_EVENT_COLORS[ev.kind]||'#888'};margin-top:5px;"></span>
+            <div><b style="color:#2255CC;">${escapeHtml(ev.label)}</b><div style="color:var(--ink-soft);font-size:12px;">학사일정 · ${escapeHtml(SCHOOL_EVENT_KIND_LABELS[ev.kind]||'')}</div></div>
+          </div>
+        `;
+        }
+        const names = opts.showStudent ? ev.students.map(s=>`${s.name}(${s.number})`).join(', ') : '';
+        return `
         <div class="detail-row">
           <span class="dot lg" style="background:${eventColor(ev)};margin-top:5px;"></span>
           <div>
             <div><b>${escapeHtml(ev.university)}</b> · ${escapeHtml(ev.admissionType)} · ${escapeHtml(ev.department)}${opts.showStudent && ev.isCustom ? ' <span style="color:var(--accent);font-size:11px;">(학생 입력)</span>' : ''}</div>
-            <div style="color:var(--ink-soft);">${escapeHtml(eventLabel(ev))}${opts.showStudent?` · ${escapeHtml(ev.studentName)}(${escapeHtml(ev.studentNumber)}, ${escapeHtml(ev.className||'')})`:''}</div>
+            <div style="color:var(--ink-soft);">${escapeHtml(eventLabel(ev))}${opts.showStudent?` · ${escapeHtml(names)}`:''}</div>
           </div>
         </div>
-      `).join('')}
+      `;
+      }).join('')}
     </div>
   ` : (selDay ? `<div class="day-detail"><span style="color:var(--ink-soft);">이 날은 일정이 없어요.</span></div>` : '');
 
@@ -1801,6 +2198,7 @@ function renderCalendarBlock(events, opts){
       </div>
       <div class="legend">
         ${Object.values(EVENT_TYPES).map(v=>`<span><span class="dot lg" style="background:${v.color}"></span>${v.label}</span>`).join('')}
+        ${Object.entries(SCHOOL_EVENT_KIND_LABELS).map(([k,v])=>`<span><span class="dot school lg" style="background:${SCHOOL_EVENT_COLORS[k]}"></span>${v}</span>`).join('')}
       </div>
     </div>
     ${detail}

@@ -7,9 +7,54 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+  /* Firebase 연결 준비 상태를 나타내는 약속(Promise). 아래 모듈 스크립트가 끝나면 채워져요.
+     이 스크립트가 먼저 실행되므로, 아래/뒤 스크립트가 실행되는 순서와 상관없이 안전해요. */
+  window.__fbReadyResolve = null;
+  window.__fbReady = new Promise((res) => { window.__fbReadyResolve = res; });
+</script>
+<script type="module">
+  // ============================================================
+  // 여러 학교가 함께 쓰려면(GitHub Pages 등 정적 호스팅 배포 시) 여기에
+  // 본인의 Firebase 프로젝트 설정값을 붙여넣어 주세요.
+  // Firebase 콘솔(console.firebase.google.com) > 프로젝트 설정 > 일반 > 웹 앱에서 확인할 수 있어요.
+  // 값을 채우지 않으면(placeholder 그대로면) 이 기능은 자동으로 꺼지고,
+  // Claude 안에서 열었을 때는 원래대로 Claude의 저장 기능을 계속 사용해요.
+  // ============================================================
+  const firebaseConfig = {
+    apiKey: "AIzaSyCptDDHOoZIS5BYXmhsaDYuSm59FF8WIqg",
+    authDomain: "daeip-986e6.firebaseapp.com",
+    projectId: "daeip-986e6",
+    storageBucket: "daeip-986e6.firebasestorage.app",
+    messagingSenderId: "433860336347",
+    appId: "1:433860336347:web:b2c8cc351c4ff92612cafe"
+  };
+
+  const isPlaceholder = firebaseConfig.apiKey.startsWith('여기에');
+  if(isPlaceholder){
+    window.__fbReadyResolve(false);
+  } else {
+    try{
+      const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js");
+      const { getFirestore, doc, getDoc, setDoc, deleteDoc } = await import("https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js");
+      const app = initializeApp(firebaseConfig);
+      const db = getFirestore(app);
+      window.__fbGet = async (path) => {
+        const snap = await getDoc(doc(db, path));
+        return snap.exists() ? snap.data() : null;
+      };
+      window.__fbSet = async (path, data) => { await setDoc(doc(db, path), data); return true; };
+      window.__fbDelete = async (path) => { await deleteDoc(doc(db, path)); return true; };
+      window.__fbReadyResolve(true);
+    }catch(err){
+      console.error('Firebase 초기화 실패', err);
+      window.__fbReadyResolve(false);
+    }
+  }
+</script>
 <style>
   :root{
-    --bg:#FBF8F0;
+    --bg:#FFFFFF;
     --surface:#FFFFFF;
     --ink:#1F3A33;
     --ink-soft:#5E6B60;
@@ -41,6 +86,7 @@
     line-height:1.6;
     letter-spacing:-0.01em;
     -webkit-tap-highlight-color:transparent;
+    overflow-x:hidden;
   }
   h1,h2,h3{font-family:'Noto Sans KR', sans-serif; font-weight:900; margin:0;}
   button{font-family:inherit;}
@@ -50,6 +96,7 @@
   .header-inner{max-width:960px;margin:0 auto;padding:26px 16px 0;}
   .title-row{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:6px 16px;}
   header h1{font-size:23px;font-weight:800;letter-spacing:-0.02em;color:#232316;}
+  @media(max-width:400px){ header h1{font-size:19px;} }
   .subtitle{color:var(--ink-soft);font-size:13px;margin-top:2px;}
   .tabs{display:flex;gap:0;margin-top:18px;}
   .role-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:8px;}
@@ -150,6 +197,12 @@
   .app-list{display:flex;flex-direction:column;gap:10px;margin-top:12px;}
   .app-card{border:1px solid var(--line);border-radius:6px;padding:12px 14px;background:var(--surface);}
   .app-card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;font-size:13px;font-weight:500;}
+  .ev-edit-row{display:grid;grid-template-columns:100px 140px 1fr;gap:8px;align-items:center;}
+  .ev-edit-label{font-size:12px;color:var(--ink-soft);}
+  @media(max-width:640px){
+    .ev-edit-row{grid-template-columns:1fr;gap:4px;margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid var(--line);}
+    .ev-edit-row:last-child{border-bottom:none;}
+  }
   .chip{
     display:flex;align-items:center;gap:6px;
     background:var(--surface);border:1px solid var(--line);border-radius:20px;
@@ -307,8 +360,9 @@ const TYPE_MAP = [
 /* 저장 기능(window.storage)이 없는 환경(파일을 그냥 열었을 때 등)을 위한 안전장치.
    실제로는 데이터가 저장/공유되지 않고, 이 화면을 여는 동안만 메모리에 남아있어요. */
 let storageIsFallback = false;
+const claudeStorageNative = !!(window.storage && typeof window.storage.get === 'function');
 (function ensureStorage(){
-  if(window.storage && typeof window.storage.get === 'function') return;
+  if(claudeStorageNative) return;
   storageIsFallback = true;
   const mem = {};
   const keyOf = (k, shared) => (shared ? 'S:' : 'P:') + k;
@@ -319,6 +373,100 @@ let storageIsFallback = false;
     list: async () => ({ keys: [] })
   };
 })();
+
+/* ---------------- 여러 학교 지원 (학교 코드 + Firebase) ---------------- */
+let schoolCode = null;
+try{
+  const urlSchool = new URLSearchParams(location.search).get('school');
+  if(urlSchool){
+    // 링크에 ?school=학교이름 이 붙어있으면 코드 입력 화면 없이 자동으로 그 학교로 들어감
+    schoolCode = sanitizeSchoolCode(urlSchool);
+    localStorage.setItem('app_school_code', schoolCode);
+  } else {
+    schoolCode = localStorage.getItem('app_school_code') || null;
+  }
+}catch(e){ schoolCode = null; }
+function sanitizeSchoolCode(v){
+  let s = String(v||'').trim().toLowerCase();
+  s = s.replace(/[\/\s]+/g, '-');   // 슬래시·공백은 Firestore 경로에 못 쓰니 하이픈으로
+  s = s.replace(/^-+|-+$/g, '');    // 앞뒤 하이픈 정리
+  s = s.replace(/^\.+$/, '');       // '.' 또는 '..' 단독 금지
+  return s.slice(0, 100);
+}
+function skey(key){ return schoolCode + '__' + key; }
+
+async function setupFirebaseStorageIfNeeded(){
+  if(claudeStorageNative) return; // Claude 안에서는 기존 저장 기능을 그대로 사용
+  if(!window.__fbReady) return;
+  const timeout = new Promise(res=>setTimeout(()=>res(false), 4000));
+  const ok = await Promise.race([window.__fbReady, timeout]);
+  if(!ok) return; // 설정 안 됐거나 초기화 실패(또는 시간 초과) -> 메모리 임시 저장 유지
+  storageIsFallback = false;
+  window.storage = {
+    get: async (key, shared) => {
+      if(shared){
+        const data = await window.__fbGet(`schools/${schoolCode}/data/${key}`);
+        return data ? { key, value:data.value, shared } : null;
+      }
+      try{
+        const v = localStorage.getItem(skey(key));
+        return v!=null ? { key, value:v, shared } : null;
+      }catch(e){ return null; }
+    },
+    set: async (key, value, shared) => {
+      if(shared){
+        await window.__fbSet(`schools/${schoolCode}/data/${key}`, { value });
+        return { key, value, shared };
+      }
+      try{ localStorage.setItem(skey(key), value); }catch(e){}
+      return { key, value, shared };
+    },
+    delete: async (key, shared) => {
+      if(shared){ await window.__fbDelete(`schools/${schoolCode}/data/${key}`); return { key, deleted:true, shared }; }
+      try{ localStorage.removeItem(skey(key)); }catch(e){}
+      return { key, deleted:true, shared };
+    },
+    list: async () => ({ keys: [] })
+  };
+}
+
+function renderSchoolGate(){
+  const app = document.getElementById('app');
+  app.innerHTML = `
+    <section class="panel">
+      <div class="section-title">학교 코드 입력</div>
+      <div class="section-desc">우리 학교만의 코드를 입력해 주세요 (한글도 가능해요). 처음이면 새로 정하면 되고, 이미 쓰고 있다면 그 코드를 입력해 주세요. 이 기기에서는 한 번만 입력하면 다음부터 자동으로 이어져요. 학교마다 데이터가 완전히 분리돼요.</div>
+      <div class="register-box">
+        <div class="field">
+          <label class="field-label">학교 코드</label>
+          <input type="text" id="schoolCodeInput" placeholder="예: 백운고등학교">
+        </div>
+        <button class="btn" id="schoolCodeBtn">시작하기</button>
+        <div id="schoolCodeError" style="color:var(--danger);font-size:12px;margin-top:8px;"></div>
+      </div>
+    </section>
+  `;
+  const tryStart = async ()=>{
+    const raw = document.getElementById('schoolCodeInput').value;
+    const clean = sanitizeSchoolCode(raw);
+    if(!clean){ document.getElementById('schoolCodeError').textContent = '학교 코드를 입력해 주세요.'; return; }
+    schoolCode = clean;
+    try{ localStorage.setItem('app_school_code', schoolCode); }catch(e){}
+    boot();
+  };
+  document.getElementById('schoolCodeBtn').onclick = tryStart;
+  document.getElementById('schoolCodeInput').onkeydown = (e)=>{ if(e.key==='Enter') tryStart(); };
+}
+
+async function boot(){
+  // Claude 안에서 열었을 때는 대화(아티팩트)마다 이미 저장 공간이 따로 분리되어 있어서
+  // 학교 코드를 또 물어볼 필요가 없어요. 실제 배포(GitHub Pages 등)에서 Firebase를 쓸 때만 필요해요.
+  if(claudeStorageNative){ schoolCode = schoolCode || 'claude-preview'; await loadAll(); return; }
+  if(!schoolCode){ renderSchoolGate(); return; }
+  await setupFirebaseStorageIfNeeded();
+  await loadAll();
+}
+
 function showBanner(msg){
   const el = document.getElementById('globalBanner');
   if(!el) return;
@@ -506,6 +654,7 @@ function switchTab(tab){
 function renderRoleSelect(){
   return `
     <section class="panel">
+      ${claudeStorageNative ? '' : `<div style="font-size:12px;color:var(--ink-soft);margin-bottom:10px;">학교 코드: <b>${escapeHtml(schoolCode||'')}</b> · <button type="button" class="link-btn" id="switchSchoolBtn" style="padding:0;">다른 학교로 전환</button></div>`}
       <div class="role-grid" style="margin-top:8px;">
         <button type="button" class="role-card" style="--role-color:#8FC63E;" data-role="student">
           <div class="role-card-title">학생</div>
@@ -552,6 +701,16 @@ function attachRoleSelectHandlers(){
   document.querySelectorAll('[data-role]').forEach(btn=>{
     btn.onclick = ()=>switchTab(btn.dataset.role);
   });
+  const switchSchoolBtn = document.getElementById('switchSchoolBtn');
+  if(switchSchoolBtn){
+    switchSchoolBtn.onclick = ()=>{
+      if(!confirm('다른 학교 코드로 전환할까요? 지금 화면은 초기화되고 학교 코드를 다시 입력해야 해요.')) return;
+      try{ localStorage.removeItem('app_school_code'); }catch(e){}
+      schoolCode = null;
+      loaded = false;
+      location.reload();
+    };
+  }
 }
 
 
@@ -1469,8 +1628,8 @@ function renderStudent(){
                 <summary style="cursor:pointer;font-size:12px;color:var(--accent-dark);font-weight:600;">일정 확인·수정 (자동으로 채워진 날짜가 틀리면 여기서 고치세요)</summary>
                 <div style="margin-top:8px;display:flex;flex-direction:column;gap:6px;">
                   ${(e.events||[]).slice().sort((a,b)=>(a.date||'').localeCompare(b.date||'')).map(ev=>`
-                    <div style="display:grid;grid-template-columns:100px 140px 1fr;gap:8px;align-items:center;">
-                      <span style="font-size:12px;color:var(--ink-soft);">${escapeHtml(EVENT_TYPES[ev.type]?EVENT_TYPES[ev.type].label:'기타')}${ev.isEdited?' <b style="color:var(--accent-dark);">(수정됨)</b>':''}</span>
+                    <div class="ev-edit-row">
+                      <span class="ev-edit-label">${escapeHtml(EVENT_TYPES[ev.type]?EVENT_TYPES[ev.type].label:'기타')}${ev.isEdited?' <b style="color:var(--accent-dark);">(수정됨)</b>':''}</span>
                       <input type="date" class="ev-date-edit" data-entry-id="${e.id}" data-event-id="${ev.id}" data-is-custom="${e.isCustom?'1':'0'}" value="${ev.date||''}">
                       <input type="text" class="ev-note-edit" data-entry-id="${e.id}" data-event-id="${ev.id}" data-is-custom="${e.isCustom?'1':'0'}" placeholder="비고 (선택)" value="${escapeHtml(ev.note||'')}">
                     </div>
@@ -2230,7 +2389,7 @@ function attachHandlers(){
   else attachStudentHandlers();
 }
 
-loadAll();
+boot();
 </script>
 </body>
 </html>

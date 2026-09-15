@@ -54,11 +54,7 @@
 </script>
 <style>
   :root{
-<<<<<<< Updated upstream
     --bg:#FFFFFF;
-=======
-    --bg:#FBF8F0;
->>>>>>> Stashed changes
     --surface:#FFFFFF;
     --ink:#1F3A33;
     --ink-soft:#5E6B60;
@@ -100,10 +96,7 @@
   .header-inner{max-width:960px;margin:0 auto;padding:26px 16px 0;}
   .title-row{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:6px 16px;}
   header h1{font-size:23px;font-weight:800;letter-spacing:-0.02em;color:#232316;}
-<<<<<<< Updated upstream
   @media(max-width:400px){ header h1{font-size:19px;} }
-=======
->>>>>>> Stashed changes
   .subtitle{color:var(--ink-soft);font-size:13px;margin-top:2px;}
   .tabs{display:flex;gap:0;margin-top:18px;}
   .role-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:8px;}
@@ -204,15 +197,12 @@
   .app-list{display:flex;flex-direction:column;gap:10px;margin-top:12px;}
   .app-card{border:1px solid var(--line);border-radius:6px;padding:12px 14px;background:var(--surface);}
   .app-card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;font-size:13px;font-weight:500;}
-<<<<<<< Updated upstream
   .ev-edit-row{display:grid;grid-template-columns:100px 140px 1fr;gap:8px;align-items:center;}
   .ev-edit-label{font-size:12px;color:var(--ink-soft);}
   @media(max-width:640px){
     .ev-edit-row{grid-template-columns:1fr;gap:4px;margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid var(--line);}
     .ev-edit-row:last-child{border-bottom:none;}
   }
-=======
->>>>>>> Stashed changes
   .chip{
     display:flex;align-items:center;gap:6px;
     background:var(--surface);border:1px solid var(--line);border-radius:20px;
@@ -1681,13 +1671,8 @@ function renderStudent(){
                 <summary style="cursor:pointer;font-size:12px;color:var(--accent-dark);font-weight:600;">일정 확인·수정 (자동으로 채워진 날짜가 틀리면 여기서 고치세요)</summary>
                 <div style="margin-top:8px;display:flex;flex-direction:column;gap:6px;">
                   ${(e.events||[]).slice().sort((a,b)=>(a.date||'').localeCompare(b.date||'')).map(ev=>`
-<<<<<<< Updated upstream
                     <div class="ev-edit-row">
                       <span class="ev-edit-label">${escapeHtml(EVENT_TYPES[ev.type]?EVENT_TYPES[ev.type].label:'기타')}${ev.isEdited?' <b style="color:var(--accent-dark);">(수정됨)</b>':''}</span>
-=======
-                    <div style="display:grid;grid-template-columns:100px 140px 1fr;gap:8px;align-items:center;">
-                      <span style="font-size:12px;color:var(--ink-soft);">${escapeHtml(EVENT_TYPES[ev.type]?EVENT_TYPES[ev.type].label:'기타')}${ev.isEdited?' <b style="color:var(--accent-dark);">(수정됨)</b>':''}</span>
->>>>>>> Stashed changes
                       <input type="date" class="ev-date-edit" data-entry-id="${e.id}" data-event-id="${ev.id}" data-is-custom="${e.isCustom?'1':'0'}" value="${ev.date||''}">
                       <input type="text" class="ev-note-edit" data-entry-id="${e.id}" data-event-id="${ev.id}" data-is-custom="${e.isCustom?'1':'0'}" placeholder="비고 (선택)" value="${escapeHtml(ev.note||'')}">
                     </div>

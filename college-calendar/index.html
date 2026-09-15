@@ -2339,8 +2339,8 @@ function attachTeacherGateHandlers(){
   const unlockBtn = document.getElementById('teacherUnlockBtn');
   if(unlockBtn){
     const tryUnlock = ()=>{
-      const val = document.getElementById('teacherPinInput').value;
-      const match = teacherPins.find(p=>p.pin===val);
+      const val = document.getElementById('teacherPinInput').value.trim();
+      const match = teacherPins.find(p=>String(p.pin).trim()===val);
       if(match){ teacherSession = { className:match.className, label:match.label }; teacherClassFilter='all'; teacherStudentFilter='all'; render(); }
       else{ document.getElementById('teacherPinError').textContent = '코드가 맞지 않아요.'; }
     };

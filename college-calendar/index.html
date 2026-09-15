@@ -1614,6 +1614,7 @@ function renderStudent(){
           <label class="field-label">반</label>
           <input type="text" id="f-class" value="${escapeHtml(me.className)}">
         </div>
+        <button class="link-btn" id="studentLogoutBtn" style="align-self:flex-end;">로그아웃</button>
       </div>
 
       <div class="section-title">지원 대학 추가</div>
@@ -1977,6 +1978,14 @@ function attachStudentHandlers(){
   if(nameInput) nameInput.onchange = async ()=>{ studentsData[currentStudentNumber].name = nameInput.value.trim(); await saveStudentsData(); };
   if(classInput) classInput.onchange = async ()=>{ studentsData[currentStudentNumber].className = classInput.value.trim(); await saveStudentsData(); };
 
+  const logoutBtn = document.getElementById('studentLogoutBtn');
+  if(logoutBtn){
+    logoutBtn.onclick = async ()=>{
+      currentStudentNumber = null;
+      await saveMyStudentNumber();
+      render();
+    };
+  }
   attachUniversityPicker();
   document.querySelectorAll('[data-remove]').forEach(btn=>{
     btn.onclick = async ()=>{
@@ -2164,7 +2173,7 @@ function renderTeacherGate(){
         <div class="gate-box">
           <div class="field">
             <label class="field-label">코드</label>
-            <input type="password" id="teacherPinInput" placeholder="예: 260301">
+            <input type="password" id="teacherPinInput">
           </div>
           <button class="btn" id="teacherUnlockBtn">확인</button>
           <div id="teacherPinError" style="color:var(--danger);font-size:12px;margin-top:8px;"></div>

@@ -435,27 +435,66 @@ function renderSchoolGate(){
   app.innerHTML = `
     <section class="panel">
       <div class="section-title">학교 코드 입력</div>
-      <div class="section-desc">우리 학교만의 코드를 입력해 주세요 (한글도 가능해요). 처음이면 새로 정하면 되고, 이미 쓰고 있다면 그 코드를 입력해 주세요. 이 기기에서는 한 번만 입력하면 다음부터 자동으로 이어져요. 학교마다 데이터가 완전히 분리돼요.</div>
+      <div class="section-desc">우리 학교만의 코드를 정해 주세요 (한글도 가능해요). 이미 만든 적 있다면 그 코드를 그대로 입력하면 이어져요. 이 기기에서는 한 번만 입력하면 다음부터 자동으로 이어져요.</div>
       <div class="register-box">
         <div class="field">
-          <label class="field-label">학교 코드</label>
-          <input type="text" id="schoolCodeInput" placeholder="예: 백운고등학교">
+          <label class="field-label">학교 이름</label>
+          <input type="text" id="schoolNameInput" placeholder="예: 백운고등학교">
+        </div>
+        <div class="field">
+          <label class="field-label">학교 코드 (다른 학교와 겹치지 않게 구체적으로)</label>
+          <input type="text" id="schoolCodeInput" placeholder="예: 백운고등학교2027">
         </div>
         <button class="btn" id="schoolCodeBtn">시작하기</button>
         <div id="schoolCodeError" style="color:var(--danger);font-size:12px;margin-top:8px;"></div>
+        <div id="schoolCodeConfirm" style="display:none;margin-top:12px;padding:12px;border:1px solid var(--danger);border-radius:6px;background:#FBEAEA;">
+          <div style="font-size:13px;color:#8A2E2E;margin-bottom:10px;"></div>
+          <div class="btn-row" style="margin-top:0;">
+            <button class="btn secondary" id="schoolCodeChangeBtn">다른 코드 쓰기</button>
+            <button class="btn danger" id="schoolCodeProceedBtn">아니요, 이 코드로 계속 진행</button>
+          </div>
+        </div>
       </div>
     </section>
   `;
+
   const tryStart = async ()=>{
-    const raw = document.getElementById('schoolCodeInput').value;
-    const clean = sanitizeSchoolCode(raw);
-    if(!clean){ document.getElementById('schoolCodeError').textContent = '학교 코드를 입력해 주세요.'; return; }
+    const rawCode = document.getElementById('schoolCodeInput').value;
+    const name = document.getElementById('schoolNameInput').value.trim();
+    const clean = sanitizeSchoolCode(rawCode);
+    const errEl = document.getElementById('schoolCodeError');
+    const confirmBox = document.getElementById('schoolCodeConfirm');
+    confirmBox.style.display = 'none';
+    errEl.textContent = '';
+    if(!name || !clean){ errEl.textContent = '학교 이름과 코드를 모두 입력해 주세요.'; return; }
+
+    // 이 코드에 이미 다른 학교 이름이 등록되어 있는지 확인
     schoolCode = clean;
-    try{ localStorage.setItem('app_school_code', schoolCode); }catch(e){}
-    boot();
+    await setupFirebaseStorageIfNeeded();
+    let meta = null;
+    try{ const r = await window.storage.get('school_meta', true); meta = r ? JSON.parse(r.value) : null; }catch(e){ meta = null; }
+
+    if(meta && meta.name && meta.name.trim() !== name){
+      confirmBox.style.display = 'block';
+      confirmBox.querySelector('div').textContent = `이 코드는 이미 "${meta.name}"에서 쓰고 있는 것 같아요. 같은 학교가 맞나요? 다른 학교라면 코드를 더 구체적으로 바꿔 주세요 (예: 학교이름+숫자).`;
+      document.getElementById('schoolCodeChangeBtn').onclick = ()=>{ confirmBox.style.display='none'; };
+      document.getElementById('schoolCodeProceedBtn').onclick = async ()=>{ await finishSchoolSetup(clean, meta.name); };
+      return;
+    }
+    await finishSchoolSetup(clean, name, !meta);
   };
+
+  async function finishSchoolSetup(code, name, isNew){
+    if(isNew){
+      try{ await window.storage.set('school_meta', JSON.stringify({ name }), true); }catch(e){}
+    }
+    try{ localStorage.setItem('app_school_code', code); }catch(e){}
+    await loadAll();
+  }
+
   document.getElementById('schoolCodeBtn').onclick = tryStart;
   document.getElementById('schoolCodeInput').onkeydown = (e)=>{ if(e.key==='Enter') tryStart(); };
+  document.getElementById('schoolNameInput').onkeydown = (e)=>{ if(e.key==='Enter') tryStart(); };
 }
 
 async function boot(){
@@ -1540,7 +1579,7 @@ function renderStudent(){
     return `
       <section class="panel">
         <div class="section-title">시작하기</div>
-        <div class="section-desc">학번과 이름을 입력해 주세요. 처음이면 새로 만들어지고(반은 학번으로 자동 인식돼요), 이미 만들었다면 같은 학번·이름으로 다른 기기에서도 이어서 볼 수 있어요.</div>
+        <div class="section-desc">학번·이름·비밀번호(숫자 6자리)를 입력해 주세요. 처음이면 비밀번호를 새로 정하는 거예요(반은 학번으로 자동 인식돼요). 이미 만들었다면 같은 정보로 다른 기기에서도 이어서 볼 수 있어요. 비밀번호는 새 기기에서 로그인할 때만 필요해요.</div>
         <div class="register-box">
           <div class="field">
             <label class="field-label">학번</label>
@@ -1549,6 +1588,10 @@ function renderStudent(){
           <div class="field">
             <label class="field-label">이름</label>
             <input type="text" id="login-name" placeholder="예: 김새싹">
+          </div>
+          <div class="field">
+            <label class="field-label">비밀번호 (숫자 6자리)</label>
+            <input type="password" id="login-password" placeholder="예: 123456" inputmode="numeric" maxlength="6">
           </div>
           <button class="btn" id="loginBtn">시작하기</button>
           <div id="loginError" style="color:var(--danger);font-size:12px;margin-top:8px;"></div>
@@ -1899,15 +1942,22 @@ function attachStudentHandlers(){
     const tryLogin = async ()=>{
       const num = document.getElementById('login-number').value.trim();
       const name = document.getElementById('login-name').value.trim();
+      const password = document.getElementById('login-password').value.trim();
       const errEl = document.getElementById('loginError');
-      if(!num || !name){ errEl.textContent = '학번과 이름을 모두 입력해 주세요.'; return; }
+      if(!num || !name || !password){ errEl.textContent = '학번, 이름, 비밀번호를 모두 입력해 주세요.'; return; }
+      if(!/^\d{6}$/.test(password)){ errEl.textContent = '비밀번호는 숫자 6자리로 입력해 주세요.'; return; }
       const existing = studentsData[num];
       if(existing){
-        if(existing.name.trim() !== name){ errEl.textContent = '학번과 이름이 일치하지 않아요. 다시 확인해 주세요.'; return; }
+        if(existing.name.trim() !== name){ errEl.textContent = '학번, 이름, 비밀번호가 일치하지 않아요. 다시 확인해 주세요.'; return; }
+        if(existing.password){
+          if(existing.password !== password){ errEl.textContent = '학번, 이름, 비밀번호가 일치하지 않아요. 다시 확인해 주세요.'; return; }
+        } else {
+          existing.password = password; // 비밀번호 기능 이전에 만든 계정은 지금 입력한 걸로 등록
+        }
         currentStudentNumber = num;
       }else{
         const className = deriveClassName(num);
-        studentsData[num] = { id:num, studentNumber:num, name, className, appliedIds:[] };
+        studentsData[num] = { id:num, studentNumber:num, name, className, password, appliedIds:[] };
         currentStudentNumber = num;
       }
       await saveMyStudentNumber();
@@ -1915,7 +1965,7 @@ function attachStudentHandlers(){
       render();
     };
     loginBtn.onclick = tryLogin;
-    ['login-number','login-name'].forEach(id=>{
+    ['login-number','login-name','login-password'].forEach(id=>{
       const el = document.getElementById(id);
       if(el) el.onkeydown = (e)=>{ if(e.key==='Enter') tryLogin(); };
     });

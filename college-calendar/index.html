@@ -693,7 +693,7 @@ function switchTab(tab){
 function renderRoleSelect(){
   return `
     <section class="panel">
-      ${claudeStorageNative ? '' : `<div style="font-size:12px;color:var(--ink-soft);margin-bottom:10px;">학교 코드: <b>${escapeHtml(schoolCode||'')}</b> · <button type="button" class="link-btn" id="switchSchoolBtn" style="padding:0;">처음으로</button></div>`}
+      ${claudeStorageNative ? '' : `<div style="font-size:12px;color:var(--ink-soft);margin-bottom:10px;"><button type="button" class="link-btn" id="switchSchoolBtn" style="padding:0;">처음으로</button></div>`}
       <div class="role-grid" style="margin-top:8px;">
         <button type="button" class="role-card" style="--role-color:#8FC63E;" data-role="student">
           <div class="role-card-title">학생</div>
@@ -1695,6 +1695,10 @@ function renderStudent(){
           <button data-view="calendar" class="${currentView==='calendar'?'active':''}">캘린더</button>
           <button data-view="table" class="${currentView==='table'?'active':''}">표</button>
         </div>
+        <div class="btn-row" style="margin-top:-8px;margin-bottom:16px;">
+          <button type="button" class="btn secondary" id="wallpaperPhoneBtn">폰 배경화면 만들기</button>
+          <button type="button" class="btn secondary" id="wallpaperPcBtn">PC 배경화면 만들기</button>
+        </div>
         ${currentView==='calendar' ? renderCalendarBlock(events, {showStudent:false, monthState:'student'}) : renderTableBlock(events, {showStudent:false})}
       `}
     </section>
@@ -1708,6 +1712,77 @@ function getNextEventForEntry(entry){
   const future = withDates.filter(ev=>ev.date>=today).sort((a,b)=>a.date.localeCompare(b.date));
   if(future.length>0) return future[0];
   return withDates.slice().sort((a,b)=>b.date.localeCompare(a.date))[0];
+}
+
+function generateWallpaper(kind, me, applied){
+  const isPhone = kind === 'phone';
+  const W = isPhone ? 1080 : 1920;
+  const H = isPhone ? 1920 : 1080;
+  const canvas = document.createElement('canvas');
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
+
+  // 배경
+  ctx.fillStyle = '#FFFFFF';
+  ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = '#F1F8E3';
+  ctx.fillRect(0, 0, W, isPhone ? 320 : 220);
+
+  const pad = isPhone ? 64 : 100;
+  let y = isPhone ? 130 : 100;
+
+  ctx.fillStyle = '#1F3A33';
+  ctx.font = `900 ${isPhone?54:52}px 'Noto Sans KR', sans-serif`;
+  ctx.fillText('27학번 예비 새내기의 대입 플래너', pad, y);
+
+  y += isPhone ? 70 : 60;
+  ctx.fillStyle = '#5E6B60';
+  ctx.font = `500 ${isPhone?30:28}px 'Noto Sans KR', sans-serif`;
+  ctx.fillText(`${me.name} · ${fmtDate(todayStr())} 기준`, pad, y);
+
+  y = (isPhone ? 320 : 220) + (isPhone ? 90 : 80);
+  ctx.fillStyle = '#8FC63E';
+  ctx.font = `800 ${isPhone?38:36}px 'Noto Sans KR', sans-serif`;
+  ctx.fillText('다가오는 일정', pad, y);
+
+  // 다가오는 일정 최대 6개
+  const rows = applied.map(entry=>({ entry, nextEv: getNextEventForEntry(entry) }))
+    .filter(r=>r.nextEv)
+    .sort((a,b)=>a.nextEv.date.localeCompare(b.nextEv.date))
+    .slice(0, isPhone ? 6 : 5);
+
+  y += isPhone ? 50 : 46;
+  const lineH = isPhone ? 150 : 150;
+  rows.forEach(({entry, nextEv})=>{
+    const dd = ddayInfo(nextEv.date);
+    // D-day 배지
+    ctx.fillStyle = dd.cls==='today' ? '#D64545' : '#1F3A33';
+    ctx.font = `900 ${isPhone?44:42}px 'Noto Sans KR', sans-serif`;
+    ctx.fillText(dd.label, pad, y);
+    // 대학/전형
+    ctx.fillStyle = '#232316';
+    ctx.font = `700 ${isPhone?36:34}px 'Noto Sans KR', sans-serif`;
+    const uniText = `${entry.university} · ${entry.admissionType}`;
+    ctx.fillText(uniText.length>28 ? uniText.slice(0,28)+'…' : uniText, pad + (isPhone?230:210), y);
+    // 날짜/일정종류
+    ctx.fillStyle = '#5E6B60';
+    ctx.font = `500 ${isPhone?26:24}px 'Noto Sans KR', sans-serif`;
+    const typeLabel = EVENT_TYPES[nextEv.type] ? EVENT_TYPES[nextEv.type].label : '기타';
+    ctx.fillText(`${fmtDate(nextEv.date)} · ${typeLabel}`, pad + (isPhone?230:210), y + (isPhone?42:38));
+    y += lineH;
+  });
+
+  // 하단 응원 문구
+  ctx.fillStyle = '#8FC63E';
+  ctx.font = `800 ${isPhone?40:38}px 'Noto Sans KR', sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.fillText('잘 해왔고, 잘하고 있고, 잘될거야', W/2, H - (isPhone?100:80));
+  ctx.textAlign = 'left';
+
+  const link = document.createElement('a');
+  link.download = `대입플래너_배경화면_${isPhone?'폰':'PC'}_${todayStr()}.png`;
+  link.href = canvas.toDataURL('image/png');
+  link.click();
 }
 
 function renderApplicationSummaryTable(applied, me){
@@ -2096,6 +2171,14 @@ function attachStudentHandlers(){
   document.querySelectorAll('.view-switch button').forEach(btn=>{
     btn.onclick = ()=>{ currentView = btn.dataset.view; render(); };
   });
+  const wallpaperPhoneBtn = document.getElementById('wallpaperPhoneBtn');
+  const wallpaperPcBtn = document.getElementById('wallpaperPcBtn');
+  if(wallpaperPhoneBtn || wallpaperPcBtn){
+    const me = studentsData[currentStudentNumber];
+    const applied = getStudentApplications(me);
+    if(wallpaperPhoneBtn) wallpaperPhoneBtn.onclick = ()=>generateWallpaper('phone', me, applied);
+    if(wallpaperPcBtn) wallpaperPcBtn.onclick = ()=>generateWallpaper('pc', me, applied);
+  }
 
   const toggleManual = document.getElementById('toggleStudentManual');
   if(toggleManual) toggleManual.onclick = ()=>{ studentManualOpen = !studentManualOpen; if(studentManualOpen) studentDraftEvents=[newDraftEvent()]; else manualPrefill = null; render(); };

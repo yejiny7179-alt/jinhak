@@ -824,7 +824,8 @@ BASIC_Q.forEach(q=>{
 });
 const angleChipsWrap=document.getElementById('angleChips');
 ANGLE_TEMPLATES.forEach(t=>{
- const c=document.createElement('button'); c.type='button'; c.className='chip acc'; c.textContent=t.label;
+ const c=document.createElement('button'); c.type='button'; c.className='chip acc';
+ c.textContent=t.label+' · '+(t.text.length>18?t.text.slice(0,18)+'…':t.text);
  c.title=t.text;
  c.addEventListener('click',()=>{document.getElementById('qType').value='record';toggleRecordFields();document.getElementById('qText').value=t.text;});
  angleChipsWrap.appendChild(c);

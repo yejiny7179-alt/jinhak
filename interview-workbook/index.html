@@ -458,20 +458,25 @@ table.tbl th{background:var(--surface2);color:var(--muted);font-weight:700;font-
 </div>
 
 <!-- ================= 선생님 검색 ================= -->
+<!-- ================= 선생님 로그인 ================= -->
+<div class="card loginCard" id="viewTeacherLogin" hidden>
+  <h2>선생님 로그인</h2>
+  <p class="small muted">처음이라면 자동으로 계정이 만들어지고, 이미 등록했다면 같은 정보로 로그인됩니다. 학생 정보를 보호하기 위해 비밀번호가 필요합니다.</p>
+  <div class="field"><label>소속(학교)</label><input id="tlSchool" placeholder="예: 백운고등학교"></div>
+  <div class="field"><label>성함</label><input id="tlName"></div>
+  <div class="field"><label>비밀번호</label><input id="tlPassword" type="password" placeholder="스스로 정한 비밀번호"></div>
+  <div id="tlMsg"></div>
+  <button class="btn primary lg" id="btnTeacherLogin" type="button" style="width:100%">시작하기</button>
+  <button class="btn" id="btnBackToLanding3" type="button" style="width:100%;margin-top:8px">← 처음 화면으로</button>
+</div>
+
+<!-- ================= 선생님 검색 ================= -->
 <div id="viewTeacherSearch" hidden>
   <header class="top">
-    <div class="brand"><h1>선생님 모드</h1><small>학생을 찾아 질문과 답변을 확인하고 피드백을 남깁니다</small></div>
+    <div class="brand"><h1>선생님 모드</h1><small id="teacherGreeting">학생을 찾아 질문과 답변을 확인하고 피드백을 남깁니다</small></div>
     <div class="spacer"></div>
-    <button class="btn" id="btnBackToLanding2" type="button">← 처음 화면으로</button>
+    <button class="btn" id="btnTeacherLogout" type="button">로그아웃</button>
   </header>
-  <div class="card">
-    <h2>선생님 정보</h2>
-    <div class="grid c2">
-      <div class="field"><label>성함</label><input id="tName"></div>
-      <div class="field"><label>소속</label><input id="tSchoolBelong" placeholder="예: 백운고등학교"></div>
-    </div>
-    <p class="tiny muted" id="teacherNamePreview"></p>
-  </div>
   <div class="card">
     <h2>학생 찾기</h2>
     <div class="grid c2">
@@ -530,7 +535,7 @@ table.tbl th{background:var(--surface2);color:var(--muted);font-weight:700;font-
         service cloud.firestore {
           match /databases/{database}/documents {
             match /students/{doc} { allow read, write: if true; }
-            match /teacherNames/{doc} { allow read, write: if true; }
+            match /teacherAccounts/{doc} { allow read, write: if true; }
           }
         }
       * 이 설정은 비밀번호를 해시로 저장하지만, 문서 ID를 아는 사람은
@@ -616,7 +621,7 @@ function wasRevisedSinceFeedback(currentHtml, feedbackArr, followupId){
  const last = relevant[relevant.length-1];
  return last.answerSnapshot!=null && last.answerSnapshot!==currentHtml;
 }
-function answerWithRevision(currentHtml, feedbackArr, followupId){
+function answerWithRevision(currentHtml, feedbackArr, followupId, updatedAt){
  const cur = currentHtml || '<span class="muted">(작성한 답변 없음)</span>';
  if(!wasRevisedSinceFeedback(currentHtml, feedbackArr, followupId)){
    return `<div class="answerBox">${cur}</div>`;
@@ -624,7 +629,14 @@ function answerWithRevision(currentHtml, feedbackArr, followupId){
  const relevant = (feedbackArr||[]).filter(f => followupId ? f.followupId===followupId : !f.followupId);
  const last = relevant[relevant.length-1];
  const snap = last.answerSnapshot || '<span class="muted">(작성한 답변 없음)</span>';
- return `<div class="answerBox">${snap}</div><div class="revisedBlock"><div class="revisedLbl">✏ 피드백 이후 수정한 답변 — 아래 내용을 확인하고 다시 피드백을 남겨주세요</div><div class="revisedText">${cur}</div></div>`;
+ const whenStr = updatedAt ? ' ('+formatDateTime(updatedAt)+')' : '';
+ return `<div class="answerBox">${snap}</div><div class="revisedBlock"><div class="revisedLbl">✏ 피드백 이후 수정한 답변${whenStr} — 아래 내용을 확인하고 다시 피드백을 남겨주세요</div><div class="revisedText">${cur}</div></div>`;
+}
+function formatDateTime(ts){
+ const d = new Date(ts);
+ const y=d.getFullYear(), mo=d.getMonth()+1, da=d.getDate();
+ const h=String(d.getHours()).padStart(2,'0'), mi=String(d.getMinutes()).padStart(2,'0');
+ return `${y}. ${mo}. ${da}. ${h}:${mi}`;
 }
 // 면접일 디데이 표시 (다른 일정 날짜는 디데이 표시하지 않음)
 function ddayLabel(dateStr){
@@ -699,53 +711,46 @@ function showSlMsg(text, type){
  box.innerHTML = text ? `<div class="slMsgBox ${type||'info'}">${esc(text)}</div>` : '';
 }
 
-// ---------- 선생님 동명이인 처리 ----------
-// 같은 학교(소속)에 같은 성함을 처음 입력한 선생님은 이름 그대로,
-// 이후 다른 사람이 같은 이름을 입력하면 이름 뒤에 숫자를 붙여 구분합니다.
-// 한 번 배정된 표시 이름은 이 브라우저에 저장되어 계속 같은 이름으로 표시됩니다.
-let teacherNameCache={};
-async function resolveTeacherName(school, name){
+// ---------- 선생님 로그인 (비밀번호 기반, 동명이인은 새 계정으로 분리) ----------
+let TEACHER_SESSION=null; // {key, displayName, school}
+async function teacherLoginAttempt(school, name, password){
  const schoolNorm=safeSeg(school), nameNorm=safeSeg(name);
- if(!schoolNorm||!nameNorm) return name;
- const cacheKey=schoolNorm+'__'+nameNorm;
- if(teacherNameCache[cacheKey]) return teacherNameCache[cacheKey];
- const lsKey='iw_teacher_identity_'+cacheKey;
- const cached=localStorage.getItem(lsKey);
- if(cached){ teacherNameCache[cacheKey]=cached; return cached; }
- if(!fbReady) return name;
- let finalName=name;
- try{
-   const ref=db.collection('teacherNames').doc(cacheKey);
-   finalName = await db.runTransaction(async (tx)=>{
-     const snap=await tx.get(ref);
-     let count = snap.exists ? (snap.data().count||0) : 0;
-     count += 1;
-     tx.set(ref, {count, school, name, updatedAt:Date.now()});
-     return count===1 ? name : (name+count);
-   });
- }catch(e){ console.error(e); }
- teacherNameCache[cacheKey]=finalName;
- localStorage.setItem(lsKey, finalName);
- return finalName;
+ const baseKey=schoolNorm+'__'+nameNorm;
+ const hash=await sha256(password);
+ let n=1;
+ while(true){
+   const key = n===1 ? baseKey : baseKey+'_'+n;
+   const ref=db.collection('teacherAccounts').doc(key);
+   const snap=await ref.get();
+   if(!snap.exists){
+     if(n===1){
+       await ref.set({school, name, displayName:name, passwordHash:hash, createdAt:Date.now()});
+       return {ok:true, key, displayName:name, school};
+     }
+     return {ok:false, needsNewAccount:true, nextKey:key, nextDisplayName:name+n};
+   }
+   const data=snap.data();
+   if(data.passwordHash===hash){
+     return {ok:true, key, displayName:data.displayName, school:data.school};
+   }
+   n++;
+ }
 }
-async function updateTeacherNamePreview(){
- const name=document.getElementById('tName').value.trim();
- const school=document.getElementById('tSchoolBelong').value.trim();
- const preview=document.getElementById('teacherNamePreview');
- if(!name||!school){ preview.textContent=''; return; }
- const resolved=await resolveTeacherName(school, name);
- preview.textContent = resolved===name ? `표시 이름: ${resolved}` : `※ 같은 학교에 동명이인이 있어 "${resolved}"(으)로 표시됩니다.`;
+async function createHomonymTeacherAccount(school, name, password, key, displayName){
+ const hash=await sha256(password);
+ await db.collection('teacherAccounts').doc(key).set({school, name, displayName, passwordHash:hash, createdAt:Date.now()});
+ return {ok:true, key, displayName, school};
 }
 
-function show(id){ ['viewLanding','viewStudentLogin','viewStudentApp','viewTeacherSearch','viewTeacherWork'].forEach(x=>{
+function show(id){ ['viewLanding','viewStudentLogin','viewStudentApp','viewTeacherLogin','viewTeacherSearch','viewTeacherWork'].forEach(x=>{
   document.getElementById(x).hidden = (x!==id);
 });}
 
 // ---------- 랜딩 ----------
 document.getElementById('btnRoleStudent').addEventListener('click',()=>show('viewStudentLogin'));
-document.getElementById('btnRoleTeacher').addEventListener('click',()=>{show('viewTeacherSearch');});
+document.getElementById('btnRoleTeacher').addEventListener('click',()=>show('viewTeacherLogin'));
 document.getElementById('btnBackToLanding1').addEventListener('click',()=>show('viewLanding'));
-document.getElementById('btnBackToLanding2').addEventListener('click',()=>show('viewLanding'));
+document.getElementById('btnBackToLanding3').addEventListener('click',()=>show('viewLanding'));
 
 // ---------- 학생 로그인 ----------
 let CURRENT=null; // {key, school, number, name, questions:[], schedule:[], debates:[], mockInterviews:[]}
@@ -765,8 +770,15 @@ document.getElementById('btnStudentLogin').addEventListener('click', async ()=>{
     const snap=await ref.get();
     if(snap.exists){
       const data=snap.data();
-      if(data.passwordHash!==hash){showSlMsg('비밀번호가 일치하지 않습니다.','error');return;}
-      CURRENT={key, school:data.school, number:data.number, name:data.name, questions:data.questions||[], schedule:data.schedule||[], debates:data.debates||[], mockInterviews:data.mockInterviews||[]};
+      if(!data.passwordHash){
+        // 선생님이 미리 등록해둔 계정 — 지금 입력한 비밀번호를 새로 설정하고 이어서 로그인
+        await ref.update({passwordHash:hash});
+        CURRENT={key, school:data.school, number:data.number, name:data.name, questions:data.questions||[], schedule:data.schedule||[], debates:data.debates||[], mockInterviews:data.mockInterviews||[]};
+      } else if(data.passwordHash!==hash){
+        showSlMsg('비밀번호가 일치하지 않습니다.','error');return;
+      } else {
+        CURRENT={key, school:data.school, number:data.number, name:data.name, questions:data.questions||[], schedule:data.schedule||[], debates:data.debates||[], mockInterviews:data.mockInterviews||[]};
+      }
     } else {
       const newDoc={school, number, name, schoolNorm:safeSeg(school), numberNorm:safeSeg(number), nameNorm:safeSeg(name),
         passwordHash:hash, questions:[], schedule:[], debates:[], mockInterviews:[], updatedAt:Date.now()};
@@ -918,7 +930,7 @@ function renderFeedbackBlock(fbs, followups){
  return mainFbs.length? `<div class="fbBox">${mainFbs.map(fbHtml).join('')}</div>` : '';
 }
 function fbHtml(f){
- return `<div class="fbEntry"><div class="who">${esc(f.teacherName||'선생님')}${f.teacherSchool?(' · '+esc(f.teacherSchool)):''} · ${new Date(f.at).toLocaleDateString('ko-KR')}</div>${f.tags&&f.tags.length?`<div class="chips" style="margin-bottom:6px">${f.tags.map(t=>`<span class="badge">${esc(t)}</span>`).join(' ')}</div>`:''}${esc(f.comment)}</div>`;
+ return `<div class="fbEntry"><div class="who">${esc(f.teacherName||'선생님')}${f.teacherSchool?(' · '+esc(f.teacherSchool)):''} · ${formatDateTime(f.at)}</div>${f.tags&&f.tags.length?`<div class="chips" style="margin-bottom:6px">${f.tags.map(t=>`<span class="badge">${esc(t)}</span>`).join(' ')}</div>`:''}${esc(f.comment)}</div>`;
 }
 
 function renderList(){
@@ -945,7 +957,7 @@ function renderList(){
       ${wasRevisedSinceFeedback(q.answerHtml, fbs, null)?`<span class="badge" style="background:#dbeafe;color:#1e3a8a">✏ 답변 수정됨</span>`:''}
     </div>
     <div class="qtext">Q. ${esc(q.text)}</div>
-    ${answerWithRevision(q.answerHtml, fbs, null)}
+    ${answerWithRevision(q.answerHtml, fbs, null, q.updatedAt)}
     <div class="row" style="margin-top:8px">
       <button class="btn sm" data-act="edit" data-id="${q.id}">수정</button>
       <button class="btn sm danger" data-act="del" data-id="${q.id}">삭제</button>
@@ -961,7 +973,7 @@ function renderList(){
             <input type="checkbox" data-act="chkfollow" data-qid="${q.id}" data-fid="${fu.id}" ${fu.checked?'checked':''}>
             <div style="flex:1">
               <div class="ftext">${esc(fu.text)} ${wasRevisedSinceFeedback(fuAnswerHtml, fbs, fu.id)?`<span class="badge" style="background:#dbeafe;color:#1e3a8a">✏ 답변 수정됨</span>`:''}</div>
-              ${answerWithRevision(fuAnswerHtml, fbs, fu.id)}
+              ${answerWithRevision(fuAnswerHtml, fbs, fu.id, fu.updatedAt)}
               <div class="row" style="margin-top:6px">
                 <button class="btn sm" data-act="editfollow" data-qid="${q.id}" data-fid="${fu.id}">수정</button>
                 <button class="btn sm danger" data-act="delfollow" data-qid="${q.id}" data-fid="${fu.id}">삭제</button>
@@ -994,7 +1006,7 @@ function renderList(){
    const result=await openFollowupEditor('', '');
    if(!result) return;
    const q=CURRENT.questions.find(x=>x.id===b.dataset.id);
-   q.followups=q.followups||[]; q.followups.push({id:uid(), text:result.text, answerHtml:result.answerHtml, checked:false});
+   q.followups=q.followups||[]; q.followups.push({id:uid(), text:result.text, answerHtml:result.answerHtml, checked:false, updatedAt:Date.now()});
    await saveCurrent(); renderList();
  }));
  wrap.querySelectorAll('input[data-act="chkfollow"]').forEach(c=>c.addEventListener('change', async ()=>{
@@ -1006,7 +1018,7 @@ function renderList(){
    const initHtml = fu.answerHtml!=null ? fu.answerHtml : (fu.answerText?esc(fu.answerText):'');
    const result=await openFollowupEditor(fu.text, initHtml);
    if(!result) return;
-   fu.text=result.text; fu.answerHtml=result.answerHtml; delete fu.answerText;
+   fu.text=result.text; fu.answerHtml=result.answerHtml; delete fu.answerText; fu.updatedAt=Date.now();
    await saveCurrent(); renderList();
  }));
  wrap.querySelectorAll('button[data-act="delfollow"]').forEach(b=>b.addEventListener('click', async ()=>{
@@ -1331,8 +1343,45 @@ document.querySelectorAll('#tQFilterChips .chip').forEach(c=>{
  c.addEventListener('click',()=>{document.querySelectorAll('#tQFilterChips .chip').forEach(x=>x.classList.remove('on'));c.classList.add('on');tQTypeFilter=c.dataset.f;renderTeacherQList();});
 });
 document.getElementById('tQUnivFilter').addEventListener('change',(e)=>{ tQUnivFilter=e.target.value; renderTeacherQList(); });
-document.getElementById('tName').addEventListener('blur', updateTeacherNamePreview);
-document.getElementById('tSchoolBelong').addEventListener('blur', updateTeacherNamePreview);
+
+document.getElementById('btnTeacherLogin').addEventListener('click', async ()=>{
+ const msgBox=document.getElementById('tlMsg');
+ msgBox.innerHTML='';
+ const school=document.getElementById('tlSchool').value.trim();
+ const name=document.getElementById('tlName').value.trim();
+ const password=document.getElementById('tlPassword').value;
+ if(!school||!name||!password){ msgBox.innerHTML='<div class="slMsgBox error">소속, 성함, 비밀번호를 모두 입력해 주세요.</div>'; return; }
+ if(!fbReady){ msgBox.innerHTML='<div class="slMsgBox error">아직 Firebase 설정이 되어 있지 않습니다.</div>'; return; }
+ msgBox.innerHTML='<div class="slMsgBox info">확인 중…</div>';
+ try{
+   const result=await teacherLoginAttempt(school, name, password);
+   if(result.ok){
+     TEACHER_SESSION={key:result.key, displayName:result.displayName, school:result.school};
+     localStorage.setItem('iw_teacher_session_key', result.key);
+     document.getElementById('tlPassword').value='';
+     msgBox.innerHTML='';
+     document.getElementById('teacherGreeting').textContent = `${TEACHER_SESSION.displayName} 선생님 (${TEACHER_SESSION.school})`;
+     show('viewTeacherSearch');
+   } else if(result.needsNewAccount){
+     msgBox.innerHTML=`<div class="slMsgBox error">비밀번호가 일치하지 않습니다. 같은 학교에 동명이인이 처음 등록하시는 것이라면 아래 버튼으로 새 계정을 만드세요.</div>
+       <button class="btn sm primary" id="btnMakeHomonym" type="button" style="margin-top:8px">"${esc(result.nextDisplayName)}"(으)로 새 계정 만들기</button>`;
+     document.getElementById('btnMakeHomonym').addEventListener('click', async ()=>{
+       const r2=await createHomonymTeacherAccount(school, name, password, result.nextKey, result.nextDisplayName);
+       TEACHER_SESSION={key:r2.key, displayName:r2.displayName, school:r2.school};
+       localStorage.setItem('iw_teacher_session_key', r2.key);
+       document.getElementById('tlPassword').value='';
+       msgBox.innerHTML='';
+       document.getElementById('teacherGreeting').textContent = `${TEACHER_SESSION.displayName} 선생님 (${TEACHER_SESSION.school})`;
+       show('viewTeacherSearch');
+     });
+   }
+ }catch(e){ console.error(e); msgBox.innerHTML='<div class="slMsgBox error">로그인 중 오류: '+esc(e.message)+'</div>'; }
+});
+document.getElementById('btnTeacherLogout').addEventListener('click',()=>{
+ TEACHER_SESSION=null;
+ localStorage.removeItem('iw_teacher_session_key');
+ show('viewLanding');
+});
 document.getElementById('btnTeacherSearch').addEventListener('click', async ()=>{
  if(!fbReady){await uiAlert('아직 Firebase 설정이 되어 있지 않아 조회가 동작하지 않습니다.');return;}
  const school=document.getElementById('tfSchool').value;
@@ -1346,7 +1395,27 @@ document.getElementById('btnTeacherSearch').addEventListener('click', async ()=>
    if(norm(number)) q=q.where('numberNorm','==', safeSeg(number));
    if(norm(name)) q=q.where('nameNorm','==', safeSeg(name));
    const snap=await q.get();
-   if(snap.empty){ resultsWrap.innerHTML='<p class="empty small">일치하는 학생이 없습니다.</p>'; return; }
+   if(snap.empty){
+     if(norm(number) && norm(name)){
+       resultsWrap.innerHTML=`<div class="empty small">일치하는 학생이 없습니다.<br>아직 로그인한 적 없는 학생이라면, 미리 등록해서 모의 면접 평가를 먼저 남길 수 있어요.</div>
+         <button class="btn sm primary" id="btnPreRegister" type="button" style="margin-top:10px">"${esc(school)} ${esc(number)}번 ${esc(name)}" 학생 미리 등록하기</button>`;
+       document.getElementById('btnPreRegister').addEventListener('click', async ()=>{
+         const key=makeKey(school, number, name);
+         try{
+           const ref=db.collection('students').doc(key);
+           const exist=await ref.get();
+           if(exist.exists){ openTeacherWork(key); return; }
+           await ref.set({school, number, name, schoolNorm:safeSeg(school), numberNorm:safeSeg(number), nameNorm:safeSeg(name),
+             passwordHash:null, questions:[], schedule:[], debates:[], mockInterviews:[], updatedAt:Date.now()});
+           await uiAlert('학생을 미리 등록했습니다. 이 학생이 나중에 처음 로그인할 때 지금 남기는 평가를 바로 볼 수 있어요.');
+           openTeacherWork(key);
+         }catch(e){ console.error(e); await uiAlert('등록 중 오류: '+e.message); }
+       });
+     } else {
+       resultsWrap.innerHTML='<p class="empty small">일치하는 학생이 없습니다. 미리 등록하려면 학번과 이름을 함께 입력해 주세요.</p>';
+     }
+     return;
+   }
    resultsWrap.innerHTML='';
    snap.forEach(doc=>{
      const d=doc.data();
@@ -1512,12 +1581,12 @@ function renderTeacherMockList(){
  }));
 }
 async function saveMockEntry(){
- const tname=document.getElementById('tName').value.trim();
- const tschool=document.getElementById('tSchoolBelong').value.trim();
- if(!tname){await uiAlert('선생님 성함을 위 "선생님 정보"에 입력해 주세요.');return;}
+ const tname=TEACHER_SESSION?TEACHER_SESSION.displayName:'';
+ const tschool=TEACHER_SESSION?TEACHER_SESSION.school:'';
+ if(!tname){await uiAlert('선생님 로그인 정보가 없습니다. 다시 로그인해 주세요.');return;}
  const date=document.getElementById('mockDate').value;
  if(!date){await uiAlert('평가 날짜를 입력해 주세요.');return;}
- const resolvedName = tschool ? await resolveTeacherName(tschool, tname) : tname;
+ const resolvedName = tname;
  const deliveryGood=[...document.querySelectorAll('#mockDeliveryChips .chip.on')].map(c=>c.dataset.t);
  const contentGood=[...document.querySelectorAll('#mockContentChips .chip.on')].map(c=>c.dataset.t);
  const questions=[...document.querySelectorAll('#mockQRows .mockQRow')].map(row=>({
@@ -1574,7 +1643,7 @@ function renderTeacherQList(){
       ${wasRevisedSinceFeedback(q.answerHtml, fbs, null)?`<span class="badge" style="background:#dbeafe;color:#1e3a8a">✏ 답변 수정됨</span>`:''}
     </div>
     <div class="qtext">Q. ${esc(q.text)}</div>
-    ${answerWithRevision(q.answerHtml, fbs, null)}
+    ${answerWithRevision(q.answerHtml, fbs, null, q.updatedAt)}
     ${renderFeedbackBlock(fbs, followups)}
     ${followups.length?`<div class="followWrap"><b class="small">↳ 꼬리질문</b>${followups.map(fu=>{
       const fufbs=fbs.filter(f=>f.followupId===fu.id);
@@ -1582,7 +1651,7 @@ function renderTeacherQList(){
       return `<div class="followItem">
         <div class="fhead"><input type="checkbox" disabled ${fu.checked?'checked':''}>
         <div style="flex:1"><div class="ftext">${esc(fu.text)} ${wasRevisedSinceFeedback(fuAnswerHtml, fbs, fu.id)?`<span class="badge" style="background:#dbeafe;color:#1e3a8a">✏ 답변 수정됨</span>`:''}</div>
-        ${answerWithRevision(fuAnswerHtml, fbs, fu.id)}
+        ${answerWithRevision(fuAnswerHtml, fbs, fu.id, fu.updatedAt)}
         ${fufbs.length?`<div class="fbBox">${fufbs.map(fbHtml).join('')}</div>`:''}
         </div></div></div>`;
     }).join('')}</div>`:''}
@@ -1600,16 +1669,16 @@ function renderTeacherQList(){
  wrap.querySelectorAll('.fbtags .chip').forEach(c=>c.addEventListener('click',()=>c.classList.toggle('on')));
  wrap.querySelectorAll('button[data-act="savefb"]').forEach(b=>b.addEventListener('click', async ()=>{
    const qid=b.dataset.qid;
-   const tname=document.getElementById('tName').value.trim();
-   const tschool=document.getElementById('tSchoolBelong').value.trim();
-   if(!tname){await uiAlert('선생님 성함을 입력해 주세요.');return;}
+   const tname=TEACHER_SESSION?TEACHER_SESSION.displayName:'';
+   const tschool=TEACHER_SESSION?TEACHER_SESSION.school:'';
+   if(!tname){await uiAlert('선생님 로그인 정보가 없습니다. 다시 로그인해 주세요.');return;}
    const targetSel=wrap.querySelector(`.fbTarget[data-qid="${qid}"]`);
    const followupId=targetSel.value||null;
    const tagsWrap=wrap.querySelector(`.fbtags[data-qid="${qid}"]`);
    const tags=[...tagsWrap.querySelectorAll('.chip.on')].map(c=>c.dataset.t);
    const comment=wrap.querySelector(`.fbtext[data-qid="${qid}"]`).value.trim();
    if(!comment && !tags.length){await uiAlert('피드백 내용을 입력하거나 평가 포인트를 선택해 주세요.');return;}
-   const resolvedName = tschool ? await resolveTeacherName(tschool, tname) : tname;
+   const resolvedName = tname;
    const q=TCUR.data.questions.find(x=>x.id===qid);
    const targetAnswerSnapshot = followupId ? (()=>{ const fu=(q.followups||[]).find(x=>x.id===followupId); return fu ? (fu.answerHtml!=null?fu.answerHtml:(fu.answerText?esc(fu.answerText):'')) : ''; })() : (q.answerHtml||'');
    q.feedback=q.feedback||[];
@@ -1623,18 +1692,37 @@ function renderTeacherQList(){
 // ---------- 자동 로그인 (이 기기에 로그인 정보가 남아있으면 자동으로 이어서 로그인) ----------
 (async function tryAutoLogin(){
   if(!fbReady) return;
-  const savedKey = localStorage.getItem('iw_session_key');
-  if(!savedKey) return;
-  try{
-    const snap = await db.collection('students').doc(savedKey).get();
-    if(!snap.exists){ localStorage.removeItem('iw_session_key'); return; }
-    const data = snap.data();
-    CURRENT = {key:savedKey, school:data.school, number:data.number, name:data.name,
-      questions:data.questions||[], schedule:data.schedule||[], debates:data.debates||[], mockInterviews:data.mockInterviews||[]};
-    document.getElementById('studentGreeting').textContent = `${CURRENT.school} · ${CURRENT.number}번 · ${CURRENT.name}님`;
-    show('viewStudentApp');
-    goTab('guide');
-  }catch(e){ console.error(e); }
+  const savedStudentKey = localStorage.getItem('iw_session_key');
+  if(savedStudentKey){
+    try{
+      const snap = await db.collection('students').doc(savedStudentKey).get();
+      if(snap.exists){
+        const data = snap.data();
+        CURRENT = {key:savedStudentKey, school:data.school, number:data.number, name:data.name,
+          questions:data.questions||[], schedule:data.schedule||[], debates:data.debates||[], mockInterviews:data.mockInterviews||[]};
+        document.getElementById('studentGreeting').textContent = `${CURRENT.school} · ${CURRENT.number}번 · ${CURRENT.name}님`;
+        show('viewStudentApp');
+        goTab('guide');
+        return;
+      } else {
+        localStorage.removeItem('iw_session_key');
+      }
+    }catch(e){ console.error(e); }
+  }
+  const savedTeacherKey = localStorage.getItem('iw_teacher_session_key');
+  if(savedTeacherKey){
+    try{
+      const snap = await db.collection('teacherAccounts').doc(savedTeacherKey).get();
+      if(snap.exists){
+        const data = snap.data();
+        TEACHER_SESSION = {key:savedTeacherKey, displayName:data.displayName, school:data.school};
+        document.getElementById('teacherGreeting').textContent = `${TEACHER_SESSION.displayName} 선생님 (${TEACHER_SESSION.school})`;
+        show('viewTeacherSearch');
+      } else {
+        localStorage.removeItem('iw_teacher_session_key');
+      }
+    }catch(e){ console.error(e); }
+  }
 })();
 
 })();

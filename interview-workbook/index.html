@@ -506,6 +506,7 @@ table.tbl th{background:var(--surface2);color:var(--muted);font-weight:700;font-
           <button class="chip on" data-f="all" type="button">전체</button>
           <button class="chip" data-f="basic" type="button">기본질문</button>
           <button class="chip" data-f="record" type="button">생기부 기반</button>
+          <button class="chip" data-f="debate" type="button">토론면접</button>
         </div>
         <select id="tQUnivFilter"><option value="all">모든 대학</option></select>
       </div>
@@ -1623,15 +1624,24 @@ let tQUnivFilter='all';
 function renderTeacherQList(){
  const wrap=document.getElementById('teacherQList');
  const allQ=TCUR.data.questions||[];
+ const allD=TCUR.data.debates||[];
  const univSel=document.getElementById('tQUnivFilter');
- const univsInQ=[...new Set(allQ.map(q=>q.univ).filter(Boolean))];
+ const univsInQ=[...new Set([...allQ.map(q=>q.univ), ...allD.map(d=>d.univ)].filter(Boolean))];
  const prevVal=univSel.value;
  univSel.innerHTML='<option value="all">모든 대학</option><option value="공통">공통만</option>'+univsInQ.filter(u=>u!=='공통').map(u=>`<option value="${esc(u)}">${esc(u)}</option>`).join('');
  univSel.value = [...univSel.options].some(o=>o.value===prevVal) ? prevVal : 'all';
  tQUnivFilter = univSel.value;
- const list = allQ.filter(q=>(tQTypeFilter==='all'||q.type===tQTypeFilter) && (tQUnivFilter==='all'||(q.univ||'공통')===tQUnivFilter));
- if(!allQ.length){wrap.innerHTML='<div class="card"><div class="empty">이 학생이 아직 만든 질문이 없습니다.</div></div>';return;}
- if(!list.length){wrap.innerHTML='<div class="card"><div class="empty">조건에 맞는 질문이 없습니다.</div></div>';return;}
+
+ const showQuestions = tQTypeFilter==='all' || tQTypeFilter==='basic' || tQTypeFilter==='record';
+ const showDebates = tQTypeFilter==='all' || tQTypeFilter==='debate';
+ const qTypeMatch = (q)=> tQTypeFilter==='all' ? true : (tQTypeFilter==='debate' ? false : q.type===tQTypeFilter);
+ const univMatch = (u)=> tQUnivFilter==='all' || (u||'공통')===tQUnivFilter;
+
+ const list = showQuestions ? allQ.filter(q=>qTypeMatch(q) && univMatch(q.univ)) : [];
+ const dlist = showDebates ? allD.filter(d=>univMatch(d.univ)) : [];
+
+ if(!allQ.length && !allD.length){wrap.innerHTML='<div class="card"><div class="empty">이 학생이 아직 만든 질문이 없습니다.</div></div>';return;}
+ if(!list.length && !dlist.length){wrap.innerHTML='<div class="card"><div class="empty">조건에 맞는 질문이 없습니다.</div></div>';return;}
  wrap.innerHTML='';
  list.forEach(q=>{
    const fbs=q.feedback||[]; const followups=q.followups||[];
@@ -1663,6 +1673,22 @@ function renderTeacherQList(){
       <div class="field"><label>피드백 내용</label><textarea class="fbtext" data-qid="${q.id}" placeholder="구체적인 피드백을 남겨주세요."></textarea></div>
       <button class="btn sm accent" data-act="savefb" data-qid="${q.id}">피드백 저장</button>
     </div>
+   `;
+   wrap.appendChild(el);
+ });
+ dlist.forEach(d=>{
+   const el=document.createElement('div'); el.className='item';
+   el.innerHTML=`
+    <div class="head">
+      <span class="badge acc">토론면접</span>
+      ${d.univ && d.univ!=='공통'?`<span class="badge warn">${esc(d.univ)}</span>`:`<span class="badge gray">공통</span>`}
+      ${d.dept?`<span class="badge gray">${esc(d.dept)}</span>`:''}
+    </div>
+    <div class="qtext">${esc(d.title||'')}</div>
+    ${(d.source||d.link)?`<p class="tiny muted">${d.source?esc(d.source):''}${d.source&&d.link?' · ':''}${d.link?`<a href="${esc(d.link)}" target="_blank" rel="noopener">${esc(d.link)}</a>`:''}</p>`:''}
+    <h3>핵심 요약</h3><div class="answerBox">${d.summary?esc(d.summary).replace(/\n/g,'<br>'):'<span class="muted">-</span>'}</div>
+    <h3>논제</h3><div class="answerBox">${d.issue?esc(d.issue).replace(/\n/g,'<br>'):'<span class="muted">-</span>'}</div>
+    <h3>나의 주장</h3><div class="answerBox">${d.argument?esc(d.argument).replace(/\n/g,'<br>'):'<span class="muted">-</span>'}</div>
    `;
    wrap.appendChild(el);
  });

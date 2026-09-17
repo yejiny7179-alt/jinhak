@@ -151,6 +151,9 @@ table.tbl th{background:var(--surface2);color:var(--muted);font-weight:700;font-
 .mockQRow textarea, .mockQRow input{margin-bottom:8px}
 .reviewContent{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Courier New",monospace;white-space:pre;overflow-x:auto;font-size:12px;line-height:1.7;background:var(--surface2);border:1px solid var(--line2);border-radius:10px;padding:12px 14px;max-width:100%}
 .reviewContent::-webkit-scrollbar{height:8px}
+.reviewTitle{color:#1d4ed8;background:#e8efff;padding:0 4px;border-radius:4px}
+.reviewQ{color:#0f766e;background:#e6f6f4;padding:0 4px;border-radius:4px}
+.reviewA{color:#b45309;background:#fff4e0;padding:0 4px;border-radius:4px}
 </style>
 </head>
 <body>
@@ -1267,6 +1270,26 @@ async function loadReviewsCache(){
  }catch(e){ console.error(e); REVIEWS_CACHE=[]; }
  return REVIEWS_CACHE;
 }
+function formatReviewContent(text){
+ let html = esc(text);
+ const titles = [
+   [/대\s*학\s*\/\s*학\s*과/g, '대학/학과'],
+   [/전\s*형\s*명/g, '전형명'],
+   [/면\s*접\s*시\s*간/g, '면접시간'],
+   [/면\s*접\s*유\s*형/g, '면접유형'],
+   [/면\s*접\s*절\s*차/g, '면접절차'],
+   [/면\s*접\s*특\s*징/g, '면접특징'],
+   [/\[\s*유\s*의\s*사\s*항\s*\]/g, '[유의사항]'],
+   [/질문\s*및\s*답변\s*내용/g, '질문 및 답변 내용'],
+   [/면\s*접\s*방\s*법/g, '면접방법'],
+   [/면\s*접\s*내\s*용/g, '면접내용'],
+   [/면\s*접\s*개\s*요/g, '면접 개요']
+ ];
+ titles.forEach(([re,label])=>{ html = html.replace(re, `<b class="reviewTitle">${label}</b>`); });
+ html = html.replace(/^( *)(Q\s*[:：])/gm, '$1<b class="reviewQ">$2</b>');
+ html = html.replace(/^( *)(A\s*[:：])/gm, '$1<b class="reviewA">$2</b>');
+ return html;
+}
 function reviewCardHTML(r){
  return `<div class="item">
    <div class="head">
@@ -1275,7 +1298,7 @@ function reviewCardHTML(r){
      ${r.track?`<span class="badge gray">${esc(r.track)}</span>`:''}
      ${r.year?`<span class="badge">${esc(r.year)}</span>`:''}
    </div>
-   <div class="reviewContent">${r.content?esc(r.content):'<span class="muted">-</span>'}</div>
+   <div class="reviewContent">${r.content?formatReviewContent(r.content):'<span class="muted">-</span>'}</div>
    ${r.source?`<p class="tiny muted" style="margin-top:6px">출처: ${esc(r.source)}</p>`:''}
  </div>`;
 }

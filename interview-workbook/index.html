@@ -276,7 +276,7 @@ table.tbl th{background:var(--surface2);color:var(--muted);font-weight:700;font-
     <div class="card">
       <h2 id="schFormTitle">면접 보는 대학 추가</h2>
       <div class="grid c2">
-        <div class="field"><label>대학</label><input id="schUniv" placeholder="예: 백운대학교"></div>
+        <div class="field"><label>대학</label><input id="schUniv" placeholder="예: ○○대학교"></div>
         <div class="field"><label>전형</label><input id="schTrack" placeholder="예: 학생부종합전형"></div>
       </div>
       <div class="grid c3">
@@ -284,7 +284,18 @@ table.tbl th{background:var(--surface2);color:var(--muted);font-weight:700;font-
         <div class="field"><label>면접일</label><input id="schInterview" type="date"></div>
         <div class="field"><label>최종 발표일</label><input id="schFinal" type="date"></div>
       </div>
-      <div class="field"><label>면접 유형</label><input id="schType" placeholder="예: 서류기반 면접, 제시문 면접, 인성면접 등"></div>
+      <div class="field"><label>면접 유형</label>
+        <select id="schType">
+          <option value="">선택 안 함</option>
+          <option value="서류기반 면접">서류기반 면접</option>
+          <option value="제시문 면접">제시문 면접</option>
+          <option value="인성 면접">인성 면접</option>
+          <option value="창의력 면접">창의력 면접</option>
+          <option value="AI 면접">AI 면접</option>
+          <option value="기타">기타</option>
+        </select>
+      </div>
+      <div class="field" id="schTypeOtherWrap" hidden><label>면접 유형 (직접 입력)</label><input id="schTypeOther" placeholder="예: 심층 구술 면접"></div>
       <div class="row">
         <button class="btn primary" id="btnSaveSch" type="button">저장하기</button>
         <button class="btn" id="btnCancelSch" type="button" hidden>수정 취소</button>
@@ -816,6 +827,10 @@ function scheduleTableHTML(list, editable){
 }
 let schCalState=null; // {year, month}
 let editingSchId=null;
+const SCH_TYPE_PRESETS=['서류기반 면접','제시문 면접','인성 면접','창의력 면접','AI 면접'];
+document.getElementById('schType').addEventListener('change',()=>{
+ document.getElementById('schTypeOtherWrap').hidden = document.getElementById('schType').value!=='기타';
+});
 function renderSchedule(){
  if(!CURRENT) return;
  if(!schCalState){ const now=new Date(); schCalState={year:now.getFullYear(), month:now.getMonth()}; }
@@ -830,7 +845,15 @@ function renderSchedule(){
    document.getElementById('schStage1').value=it.stage1Date||'';
    document.getElementById('schInterview').value=it.interviewDate||'';
    document.getElementById('schFinal').value=it.finalDate||'';
-   document.getElementById('schType').value=it.type||'';
+   if(it.type && !SCH_TYPE_PRESETS.includes(it.type)){
+     document.getElementById('schType').value='기타';
+     document.getElementById('schTypeOtherWrap').hidden=false;
+     document.getElementById('schTypeOther').value=it.type;
+   } else {
+     document.getElementById('schType').value=it.type||'';
+     document.getElementById('schTypeOtherWrap').hidden=true;
+     document.getElementById('schTypeOther').value='';
+   }
    document.getElementById('schFormTitle').textContent='일정 수정';
    document.getElementById('btnCancelSch').hidden=false;
  }));
@@ -842,7 +865,8 @@ function renderSchedule(){
 }
 function resetSchForm(){
  editingSchId=null;
- ['schUniv','schTrack','schStage1','schInterview','schFinal','schType'].forEach(id=>document.getElementById(id).value='');
+ ['schUniv','schTrack','schStage1','schInterview','schFinal','schType','schTypeOther'].forEach(id=>document.getElementById(id).value='');
+ document.getElementById('schTypeOtherWrap').hidden=true;
  document.getElementById('schFormTitle').textContent='면접 보는 대학 추가';
  document.getElementById('btnCancelSch').hidden=true;
 }
@@ -856,7 +880,7 @@ document.getElementById('btnSaveSch').addEventListener('click', async ()=>{
    stage1Date:document.getElementById('schStage1').value,
    interviewDate:document.getElementById('schInterview').value,
    finalDate:document.getElementById('schFinal').value,
-   type:document.getElementById('schType').value.trim()
+   type:(document.getElementById('schType').value==='기타' ? document.getElementById('schTypeOther').value.trim() : document.getElementById('schType').value)
  };
  CURRENT.schedule=CURRENT.schedule||[];
  if(editingSchId){

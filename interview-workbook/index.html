@@ -149,6 +149,8 @@ table.tbl th{background:var(--surface2);color:var(--muted);font-weight:700;font-
 .mockQRow{border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:10px;background:var(--surface2)}
 .mockQRow .mockQNum{font-weight:800;color:var(--primary);margin-bottom:6px;font-size:12.5px}
 .mockQRow textarea, .mockQRow input{margin-bottom:8px}
+.reviewContent{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Courier New",monospace;white-space:pre;overflow-x:auto;font-size:12px;line-height:1.7;background:var(--surface2);border:1px solid var(--line2);border-radius:10px;padding:12px 14px;max-width:100%}
+.reviewContent::-webkit-scrollbar{height:8px}
 </style>
 </head>
 <body>
@@ -1273,7 +1275,7 @@ function reviewCardHTML(r){
      ${r.track?`<span class="badge gray">${esc(r.track)}</span>`:''}
      ${r.year?`<span class="badge">${esc(r.year)}</span>`:''}
    </div>
-   <div class="answerBox">${r.content?esc(r.content).replace(/\n/g,'<br>'):'<span class="muted">-</span>'}</div>
+   <div class="reviewContent">${r.content?esc(r.content):'<span class="muted">-</span>'}</div>
    ${r.source?`<p class="tiny muted" style="margin-top:6px">출처: ${esc(r.source)}</p>`:''}
  </div>`;
 }

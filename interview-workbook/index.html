@@ -605,16 +605,21 @@ function makeKey(school,number,name){return [safeSeg(school),safeSeg(number),saf
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7);}
 function esc(s){return (s==null?'':String(s)).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
 // 피드백 이후 수정 여부를 비교해, 수정됐다면 원문 아래에 파란 글씨로 수정본을 보여준다
+function wasRevisedSinceFeedback(currentHtml, feedbackArr, followupId){
+ const relevant = (feedbackArr||[]).filter(f => followupId ? f.followupId===followupId : !f.followupId);
+ if(!relevant.length) return false;
+ const last = relevant[relevant.length-1];
+ return last.answerSnapshot!=null && last.answerSnapshot!==currentHtml;
+}
 function answerWithRevision(currentHtml, feedbackArr, followupId){
  const cur = currentHtml || '<span class="muted">(작성한 답변 없음)</span>';
- const relevant = (feedbackArr||[]).filter(f => followupId ? f.followupId===followupId : !f.followupId);
- if(!relevant.length) return `<div class="answerBox">${cur}</div>`;
- const last = relevant[relevant.length-1];
- if(last.answerSnapshot==null || last.answerSnapshot===currentHtml){
+ if(!wasRevisedSinceFeedback(currentHtml, feedbackArr, followupId)){
    return `<div class="answerBox">${cur}</div>`;
  }
+ const relevant = (feedbackArr||[]).filter(f => followupId ? f.followupId===followupId : !f.followupId);
+ const last = relevant[relevant.length-1];
  const snap = last.answerSnapshot || '<span class="muted">(작성한 답변 없음)</span>';
- return `<div class="answerBox">${snap}</div><div class="revisedBlock"><div class="revisedLbl">✏ 피드백 이후 수정한 답변</div><div class="revisedText">${cur}</div></div>`;
+ return `<div class="answerBox">${snap}</div><div class="revisedBlock"><div class="revisedLbl">✏ 피드백 이후 수정한 답변 — 아래 내용을 확인하고 다시 피드백을 남겨주세요</div><div class="revisedText">${cur}</div></div>`;
 }
 // 면접일 디데이 표시 (다른 일정 날짜는 디데이 표시하지 않음)
 function ddayLabel(dateStr){
@@ -931,6 +936,7 @@ function renderList(){
     <div class="head">
       ${q.type==='basic'?'<span class="badge">기본질문</span>':`<span class="badge acc">생기부 기반</span><span class="badge gray">${esc(q.area)}</span>${q.univ && q.univ!=="공통"?`<span class="badge warn">${esc(q.univ)}</span>`:`<span class="badge gray">공통</span>`}`}
       ${fbs.length?`<span class="badge warn">선생님 피드백 ${fbs.length}건</span>`:''}
+      ${wasRevisedSinceFeedback(q.answerHtml, fbs, null)?`<span class="badge" style="background:#dbeafe;color:#1e3a8a">✏ 답변 수정됨</span>`:''}
     </div>
     <div class="qtext">Q. ${esc(q.text)}</div>
     ${answerWithRevision(q.answerHtml, fbs, null)}
@@ -948,7 +954,7 @@ function renderList(){
           <div class="fhead">
             <input type="checkbox" data-act="chkfollow" data-qid="${q.id}" data-fid="${fu.id}" ${fu.checked?'checked':''}>
             <div style="flex:1">
-              <div class="ftext">${esc(fu.text)}</div>
+              <div class="ftext">${esc(fu.text)} ${wasRevisedSinceFeedback(fuAnswerHtml, fbs, fu.id)?`<span class="badge" style="background:#dbeafe;color:#1e3a8a">✏ 답변 수정됨</span>`:''}</div>
               ${answerWithRevision(fuAnswerHtml, fbs, fu.id)}
               <div class="row" style="margin-top:6px">
                 <button class="btn sm" data-act="editfollow" data-qid="${q.id}" data-fid="${fu.id}">수정</button>
@@ -1172,6 +1178,7 @@ function mockCardHTML(m, editable){
      ${m.track?`<span class="badge gray">${esc(m.track)}</span>`:''}
    </div>
    ${m.deliveryGood&&m.deliveryGood.length?`<h3>전달 - 우수했던 부분</h3><div class="chips">${m.deliveryGood.map(t=>`<span class="badge acc">${esc(t)}</span>`).join(' ')}</div>`:''}
+   ${m.deliveryFeedback?`<h3>태도·자세·목소리 톤 피드백</h3><div class="answerBox">${esc(m.deliveryFeedback).replace(/\n/g,'<br>')}</div>`:''}
    ${m.contentGood&&m.contentGood.length?`<h3>내용 - 우수했던 부분</h3><div class="chips">${m.contentGood.map(t=>`<span class="badge acc">${esc(t)}</span>`).join(' ')}</div>`:''}
    ${qRows?`<h3>질문별 평가</h3>${qRows}`:''}
    ${m.strengths?`<h3>강점</h3><div class="answerBox">${esc(m.strengths).replace(/\n/g,'<br>')}</div>`:''}
@@ -1393,6 +1400,7 @@ function renderTeacherMock(){
    </div>
    <h3>전달 영역 - 우수했던 부분 (해당 항목 선택)</h3>
    <div class="chips" id="mockDeliveryChips">${MOCK_DELIVERY.map(t=>`<span class="chip" data-t="${esc(t)}">${esc(t)}</span>`).join('')}</div>
+   <div class="field"><label>태도·자세·목소리 톤 피드백</label><textarea id="mockDeliveryFeedback" placeholder="예: 목소리가 작아 잘 안 들렸어요. 답변할 때 시선을 면접관에게 맞춰보세요."></textarea></div>
    <h3>내용 영역 - 우수했던 부분 (해당 항목 선택)</h3>
    <div class="chips" id="mockContentChips">${MOCK_CONTENT.map(t=>`<span class="chip" data-t="${esc(t)}">${esc(t)}</span>`).join('')}</div>
    <h3>질문별 평가 <span class="hint">모의 면접에서 실제로 물어본 질문을 순서대로 기록하고, 답변 키워드와 그 질문에 대한 피드백을 남겨주세요</span></h3>
@@ -1432,7 +1440,7 @@ function addMockQRow(question,keywords,feedback){
 }
 function resetMockForm(){
  editingMockId=null;
- ['mockDate','mockDept','mockTrack','mockStrengths','mockImprove','mockMission'].forEach(id=>document.getElementById(id).value='');
+ ['mockDate','mockDept','mockTrack','mockStrengths','mockImprove','mockMission','mockDeliveryFeedback'].forEach(id=>document.getElementById(id).value='');
  document.getElementById('mockType').value='';
  document.getElementById('mockUniv').value='';
  document.querySelectorAll('#mockDeliveryChips .chip, #mockContentChips .chip').forEach(c=>c.classList.remove('on'));
@@ -1457,6 +1465,7 @@ function renderTeacherMockList(){
    document.getElementById('mockStrengths').value=m.strengths||'';
    document.getElementById('mockImprove').value=m.improve||'';
    document.getElementById('mockMission').value=m.mission||'';
+   document.getElementById('mockDeliveryFeedback').value=m.deliveryFeedback||'';
    document.querySelectorAll('#mockDeliveryChips .chip').forEach(c=>c.classList.toggle('on', (m.deliveryGood||[]).includes(c.dataset.t)));
    document.querySelectorAll('#mockContentChips .chip').forEach(c=>c.classList.toggle('on', (m.contentGood||[]).includes(c.dataset.t)));
    document.getElementById('mockQRows').innerHTML='';
@@ -1497,6 +1506,7 @@ async function saveMockEntry(){
    dept:document.getElementById('mockDept').value.trim(),
    track:document.getElementById('mockTrack').value.trim(),
    deliveryGood, contentGood, questions,
+   deliveryFeedback:document.getElementById('mockDeliveryFeedback').value.trim(),
    strengths:document.getElementById('mockStrengths').value.trim(),
    improve:document.getElementById('mockImprove').value.trim(),
    mission:document.getElementById('mockMission').value.trim()
@@ -1535,6 +1545,7 @@ function renderTeacherQList(){
    el.innerHTML=`
     <div class="head">
       ${q.type==='basic'?'<span class="badge">기본질문</span>':`<span class="badge acc">생기부 기반</span><span class="badge gray">${esc(q.area)}</span>${q.univ && q.univ!=="공통"?`<span class="badge warn">${esc(q.univ)}</span>`:`<span class="badge gray">공통</span>`}`}
+      ${wasRevisedSinceFeedback(q.answerHtml, fbs, null)?`<span class="badge" style="background:#dbeafe;color:#1e3a8a">✏ 답변 수정됨</span>`:''}
     </div>
     <div class="qtext">Q. ${esc(q.text)}</div>
     ${answerWithRevision(q.answerHtml, fbs, null)}
@@ -1544,7 +1555,7 @@ function renderTeacherQList(){
       const fuAnswerHtml = fu.answerHtml!=null ? fu.answerHtml : (fu.answerText?esc(fu.answerText):'');
       return `<div class="followItem">
         <div class="fhead"><input type="checkbox" disabled ${fu.checked?'checked':''}>
-        <div style="flex:1"><div class="ftext">${esc(fu.text)}</div>
+        <div style="flex:1"><div class="ftext">${esc(fu.text)} ${wasRevisedSinceFeedback(fuAnswerHtml, fbs, fu.id)?`<span class="badge" style="background:#dbeafe;color:#1e3a8a">✏ 답변 수정됨</span>`:''}</div>
         ${answerWithRevision(fuAnswerHtml, fbs, fu.id)}
         ${fufbs.length?`<div class="fbBox">${fufbs.map(fbHtml).join('')}</div>`:''}
         </div></div></div>`;

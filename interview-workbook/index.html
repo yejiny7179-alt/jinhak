@@ -146,6 +146,9 @@ table.tbl th{background:var(--surface2);color:var(--muted);font-weight:700;font-
 .revisedLbl{font-size:11.5px;color:#1d4ed8;font-weight:700;margin-bottom:4px}
 .revisedText{color:#1d4ed8;background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:10px 14px;font-size:14px;line-height:1.85;white-space:pre-wrap;overflow-wrap:anywhere}
 .ddayBadge{display:inline-block;background:#fee2e2;color:#b91c1c;border-radius:999px;padding:1px 8px;font-size:11px;font-weight:800;margin-left:6px}
+.mockQRow{border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:10px;background:var(--surface2)}
+.mockQRow .mockQNum{font-weight:800;color:var(--primary);margin-bottom:6px;font-size:12.5px}
+.mockQRow textarea, .mockQRow input{margin-bottom:8px}
 </style>
 </head>
 <body>
@@ -452,7 +455,7 @@ table.tbl th{background:var(--surface2);color:var(--muted);font-weight:700;font-
 <!-- ================= 선생님 검색 ================= -->
 <div id="viewTeacherSearch" hidden>
   <header class="top">
-    <div class="brand"><h1><svg width="28" height="28" style="vertical-align:-8px;margin-right:4px" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M26 100 Q26 76 38 72 L62 72 Q74 76 74 100 Z" fill="#a78bfa"/><path d="M42 72 L50 85 L58 72 Z" fill="#fff"/><path d="M38 72 L50 80 L45 93 L33 78 Z" fill="#8b5cf6"/><path d="M62 72 L50 80 L55 93 L67 78 Z" fill="#8b5cf6"/><rect x="43" y="57" width="14" height="16" rx="5" fill="#ffdfc0"/><circle cx="24" cy="44" r="5" fill="#ffdfc0"/><circle cx="76" cy="44" r="5" fill="#ffdfc0"/><circle cx="50" cy="42" r="26" fill="#ffdfc0"/><path d="M22 40 Q20 57 29 63 Q23 49 26 38 Z" fill="#2e2a2a"/><path d="M78 40 Q80 57 71 63 Q77 49 74 38 Z" fill="#2e2a2a"/><path d="M22 38 Q22 9 50 9 Q78 9 78 38 Q78 23 50 21 Q22 23 22 38 Z" fill="#2e2a2a"/><circle cx="50" cy="8" r="8" fill="#2e2a2a"/><path d="M35 33 Q39 30 43 32" stroke="#2e2a2a" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M57 32 Q61 30 65 33" stroke="#2e2a2a" stroke-width="1.8" fill="none" stroke-linecap="round"/><rect x="32" y="38" width="15" height="12" rx="6" fill="none" stroke="#57534e" stroke-width="2"/><rect x="53" y="38" width="15" height="12" rx="6" fill="none" stroke="#57534e" stroke-width="2"/><line x1="47" y1="44" x2="53" y2="44" stroke="#57534e" stroke-width="2"/><circle cx="39.5" cy="44.5" r="2.8" fill="#2b2b2b"/><circle cx="40.5" cy="43.3" r="0.9" fill="#fff"/><circle cx="60.5" cy="44.5" r="2.8" fill="#2b2b2b"/><circle cx="61.5" cy="43.3" r="0.9" fill="#fff"/><ellipse cx="33" cy="53" rx="4.5" ry="2.6" fill="#f9a8d4" opacity=".6"/><ellipse cx="67" cy="53" rx="4.5" ry="2.6" fill="#f9a8d4" opacity=".6"/><path d="M43 57 Q50 62 57 57" stroke="#a15c3a" stroke-width="2" fill="none" stroke-linecap="round"/></svg>선생님 모드</h1><small>학생을 찾아 질문과 답변을 확인하고 피드백을 남깁니다</small></div>
+    <div class="brand"><h1>선생님 모드</h1><small>학생을 찾아 질문과 답변을 확인하고 피드백을 남깁니다</small></div>
     <div class="spacer"></div>
     <button class="btn" id="btnBackToLanding2" type="button">← 처음 화면으로</button>
   </header>
@@ -1152,6 +1155,13 @@ function debateListHTML(list){
  </div>`).join('');
 }
 function mockCardHTML(m, editable){
+ const qRows=(m.questions||[]).map((q,i)=>`
+   <div class="mockQRow">
+     <div class="mockQNum">질문 ${i+1}</div>
+     <div style="white-space:pre-wrap;margin-bottom:6px;font-weight:600">${esc(q.question||'-')}</div>
+     ${q.keywords?`<div class="tiny muted" style="margin-bottom:6px"><b>답변 키워드</b> ${esc(q.keywords)}</div>`:''}
+     ${q.feedback?`<div class="fbEntry" style="margin-top:0">${esc(q.feedback)}</div>`:''}
+   </div>`).join('');
  return `<div class="item">
    <div class="head">
      <span class="badge acc">${esc(m.date||'-')}</span>
@@ -1163,7 +1173,10 @@ function mockCardHTML(m, editable){
    </div>
    ${m.deliveryGood&&m.deliveryGood.length?`<h3>전달 - 우수했던 부분</h3><div class="chips">${m.deliveryGood.map(t=>`<span class="badge acc">${esc(t)}</span>`).join(' ')}</div>`:''}
    ${m.contentGood&&m.contentGood.length?`<h3>내용 - 우수했던 부분</h3><div class="chips">${m.contentGood.map(t=>`<span class="badge acc">${esc(t)}</span>`).join(' ')}</div>`:''}
-   ${m.improve?`<h3>보완이 필요한 부분</h3><div class="answerBox">${esc(m.improve).replace(/\n/g,'<br>')}</div>`:''}
+   ${qRows?`<h3>질문별 평가</h3>${qRows}`:''}
+   ${m.strengths?`<h3>강점</h3><div class="answerBox">${esc(m.strengths).replace(/\n/g,'<br>')}</div>`:''}
+   ${m.improve?`<h3>보완할 점</h3><div class="answerBox">${esc(m.improve).replace(/\n/g,'<br>')}</div>`:''}
+   ${m.mission?`<h3>🎯 다음 모의 면접까지 미션</h3><div class="revisedBlock"><div class="revisedText" style="color:#166534;background:#f0fdf4;border-color:#bbf7d0">${esc(m.mission).replace(/\n/g,'<br>')}</div></div>`:''}
    ${m.comment?`<h3>종합 피드백</h3><div class="answerBox">${esc(m.comment).replace(/\n/g,'<br>')}</div>`:''}
    ${editable?`<div class="row" style="margin-top:8px">
      <button class="btn sm" data-act="editMock" data-id="${m.id}">수정</button>
@@ -1382,8 +1395,12 @@ function renderTeacherMock(){
    <div class="chips" id="mockDeliveryChips">${MOCK_DELIVERY.map(t=>`<span class="chip" data-t="${esc(t)}">${esc(t)}</span>`).join('')}</div>
    <h3>내용 영역 - 우수했던 부분 (해당 항목 선택)</h3>
    <div class="chips" id="mockContentChips">${MOCK_CONTENT.map(t=>`<span class="chip" data-t="${esc(t)}">${esc(t)}</span>`).join('')}</div>
-   <div class="field" style="margin-top:12px"><label>보완이 필요한 부분</label><textarea id="mockImprove" placeholder="아쉬웠던 점, 다음에 개선할 부분을 적어주세요."></textarea></div>
-   <div class="field"><label>종합 피드백</label><textarea id="mockComment" placeholder="전반적인 총평을 남겨주세요."></textarea></div>
+   <h3>질문별 평가 <span class="hint">모의 면접에서 실제로 물어본 질문을 순서대로 기록하고, 답변 키워드와 그 질문에 대한 피드백을 남겨주세요</span></h3>
+   <div id="mockQRows"></div>
+   <button class="btn sm" id="btnAddMockQ" type="button">+ 질문 추가</button>
+   <div class="field" style="margin-top:14px"><label>강점</label><textarea id="mockStrengths" placeholder="이번 모의 면접에서 잘한 점을 적어주세요."></textarea></div>
+   <div class="field"><label>보완할 점</label><textarea id="mockImprove" placeholder="아쉬웠던 점, 다음에 개선할 부분을 적어주세요."></textarea></div>
+   <div class="field"><label>다음 모의 면접까지 미션·과제</label><textarea id="mockMission" placeholder="예: 지원동기를 30초 안에 말할 수 있도록 다시 연습해오기"></textarea></div>
    <div class="row">
      <button class="btn primary" id="btnSaveMock" type="button">평가 저장하기</button>
      <button class="btn" id="btnCancelMock" type="button" hidden>수정 취소</button>
@@ -1392,16 +1409,35 @@ function renderTeacherMock(){
  <div id="teacherMockListWrap"></div>`;
  document.getElementById('mockDeliveryChips').querySelectorAll('.chip').forEach(c=>c.addEventListener('click',()=>c.classList.toggle('on')));
  document.getElementById('mockContentChips').querySelectorAll('.chip').forEach(c=>c.addEventListener('click',()=>c.classList.toggle('on')));
+ document.getElementById('btnAddMockQ').addEventListener('click',()=>addMockQRow());
  document.getElementById('btnCancelMock').addEventListener('click', resetMockForm);
  document.getElementById('btnSaveMock').addEventListener('click', saveMockEntry);
+ addMockQRow();
  renderTeacherMockList();
+}
+function renumberMockQRows(){
+ document.querySelectorAll('#mockQRows .mockQRow .mockQNum').forEach((el,i)=>{ el.textContent='질문 '+(i+1); });
+}
+function addMockQRow(question,keywords,feedback){
+ const rowsWrap=document.getElementById('mockQRows');
+ const div=document.createElement('div'); div.className='mockQRow';
+ div.innerHTML=`<div class="mockQNum">질문</div>
+   <div class="field"><label>질문 (메인 질문·꼬리 질문 함께 적어도 됩니다)</label><textarea class="mqQuestion" rows="2">${esc(question||'')}</textarea></div>
+   <div class="field"><label>답변 키워드</label><input class="mqKeywords" value="${esc(keywords||'')}" placeholder="학생 답변에서 나온 핵심 키워드"></div>
+   <div class="field"><label>이 질문에 대한 피드백</label><textarea class="mqFeedback" rows="2">${esc(feedback||'')}</textarea></div>
+   <button class="btn sm danger" type="button" data-act="delMockQRow">이 질문 삭제</button>`;
+ div.querySelector('[data-act="delMockQRow"]').addEventListener('click',()=>{ div.remove(); renumberMockQRows(); });
+ rowsWrap.appendChild(div);
+ renumberMockQRows();
 }
 function resetMockForm(){
  editingMockId=null;
- ['mockDate','mockDept','mockTrack','mockImprove','mockComment'].forEach(id=>document.getElementById(id).value='');
+ ['mockDate','mockDept','mockTrack','mockStrengths','mockImprove','mockMission'].forEach(id=>document.getElementById(id).value='');
  document.getElementById('mockType').value='';
  document.getElementById('mockUniv').value='';
  document.querySelectorAll('#mockDeliveryChips .chip, #mockContentChips .chip').forEach(c=>c.classList.remove('on'));
+ document.getElementById('mockQRows').innerHTML='';
+ addMockQRow();
  document.getElementById('mockFormTitle').textContent='모의 면접 평가표 작성';
  document.getElementById('btnCancelMock').hidden=true;
 }
@@ -1418,10 +1454,17 @@ function renderTeacherMockList(){
    document.getElementById('mockUniv').value=m.univ||'';
    document.getElementById('mockDept').value=m.dept||'';
    document.getElementById('mockTrack').value=m.track||'';
+   document.getElementById('mockStrengths').value=m.strengths||'';
    document.getElementById('mockImprove').value=m.improve||'';
-   document.getElementById('mockComment').value=m.comment||'';
+   document.getElementById('mockMission').value=m.mission||'';
    document.querySelectorAll('#mockDeliveryChips .chip').forEach(c=>c.classList.toggle('on', (m.deliveryGood||[]).includes(c.dataset.t)));
    document.querySelectorAll('#mockContentChips .chip').forEach(c=>c.classList.toggle('on', (m.contentGood||[]).includes(c.dataset.t)));
+   document.getElementById('mockQRows').innerHTML='';
+   if(m.questions && m.questions.length){
+     m.questions.forEach(q=>addMockQRow(q.question, q.keywords, q.feedback));
+   } else {
+     addMockQRow();
+   }
    document.getElementById('mockFormTitle').textContent='모의 면접 평가 수정';
    document.getElementById('btnCancelMock').hidden=false;
    wrap.scrollIntoView({behavior:'smooth', block:'start'});
@@ -1442,15 +1485,21 @@ async function saveMockEntry(){
  const resolvedName = tschool ? await resolveTeacherName(tschool, tname) : tname;
  const deliveryGood=[...document.querySelectorAll('#mockDeliveryChips .chip.on')].map(c=>c.dataset.t);
  const contentGood=[...document.querySelectorAll('#mockContentChips .chip.on')].map(c=>c.dataset.t);
+ const questions=[...document.querySelectorAll('#mockQRows .mockQRow')].map(row=>({
+   question: row.querySelector('.mqQuestion').value.trim(),
+   keywords: row.querySelector('.mqKeywords').value.trim(),
+   feedback: row.querySelector('.mqFeedback').value.trim()
+ })).filter(q=>q.question||q.keywords||q.feedback);
  const item={
    date, teacherName:resolvedName, teacherSchool:tschool,
    type:document.getElementById('mockType').value,
    univ:document.getElementById('mockUniv').value,
    dept:document.getElementById('mockDept').value.trim(),
    track:document.getElementById('mockTrack').value.trim(),
-   deliveryGood, contentGood,
+   deliveryGood, contentGood, questions,
+   strengths:document.getElementById('mockStrengths').value.trim(),
    improve:document.getElementById('mockImprove').value.trim(),
-   comment:document.getElementById('mockComment').value.trim()
+   mission:document.getElementById('mockMission').value.trim()
  };
  TCUR.data.mockInterviews=TCUR.data.mockInterviews||[];
  if(editingMockId){

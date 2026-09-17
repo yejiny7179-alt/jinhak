@@ -220,8 +220,9 @@ table.tbl th{background:var(--surface2);color:var(--muted);font-weight:700;font-
     <button data-tab="schedule" type="button">면접 일정</button>
     <button data-tab="build" type="button">질문 만들기</button>
     <button data-tab="list" type="button">내 질문 목록 <span class="n" id="cntQ">0</span></button>
-    <button data-tab="reviews" type="button">면접 후기</button>
+    <button data-tab="mock" type="button">모의 면접</button>
     <button data-tab="debate" type="button">토론면접 준비</button>
+    <button data-tab="reviews" type="button">면접 후기</button>
   </nav>
 
   <!-- 가이드 -->
@@ -348,12 +349,19 @@ table.tbl th{background:var(--surface2);color:var(--muted);font-weight:700;font-
         </select>
       </div>
       <div id="recordFields" hidden>
-        <div class="field"><label>생기부 영역</label>
-          <select id="qArea">
-            <option value="학업·탐구">학업·탐구</option>
-            <option value="진로·전공">진로·전공</option>
-            <option value="공동체·인성">공동체·인성</option>
-          </select>
+        <div class="grid c2">
+          <div class="field"><label>생기부 영역</label>
+            <select id="qArea">
+              <option value="학업·탐구">학업·탐구</option>
+              <option value="진로·전공">진로·전공</option>
+              <option value="공동체·인성">공동체·인성</option>
+            </select>
+          </div>
+          <div class="field"><label>지원 대학 <span class="tiny muted">(대학마다 학과·질문이 다르면 선택)</span></label>
+            <select id="qUniv">
+              <option value="공통">공통 (모든 대학에 해당)</option>
+            </select>
+          </div>
         </div>
       </div>
       <div class="field"><label>예상 질문 (메인 질문)</label><textarea id="qText" placeholder="예: 화학 심화탐구에서 특정 촉매를 선택한 이유는 무엇인가요?"></textarea></div>
@@ -380,11 +388,36 @@ table.tbl th{background:var(--surface2);color:var(--muted);font-weight:700;font-
             <button class="chip" data-f="basic" type="button">기본질문</button>
             <button class="chip" data-f="record" type="button">생기부 기반</button>
           </div>
+          <select id="listUnivFilter"><option value="all">모든 대학</option></select>
           <button class="btn sm" id="btnRefreshList" type="button">↻ 새로고침(피드백 확인)</button>
         </div>
       </div>
     </div>
     <div id="qList"></div>
+  </section>
+
+  <!-- 모의 면접 -->
+  <section id="view-mock" class="view">
+    <div class="notice">선생님과 1:1로 모의 면접을 본 뒤 남겨주신 평가표입니다. 새로운 평가는 선생님이 학생을 조회해서 등록합니다.</div>
+    <div id="mockList"></div>
+  </section>
+
+  <!-- 토론면접 준비 -->
+  <section id="view-debate" class="view">
+    <div class="notice">성결대처럼 시사·이슈를 주제로 토론하는 면접을 준비할 때 사용하세요. <b>이슈/기사 찾기 → 요약 → 논제 뽑기 → 나의 주장 쓰기</b> 순서로 정리하면 어떤 시사 질문에도 대응할 수 있어요.</div>
+    <div class="card">
+      <h2 id="dbFormTitle">시사 이슈 정리 추가</h2>
+      <div class="field"><label>기사·이슈 제목</label><input id="dbTitle" placeholder="예: 인공지능 규제 관련 법안 논란"></div>
+      <div class="field"><label>출처 / 링크 <span class="tiny muted">(선택)</span></label><input id="dbSource" placeholder="예: OO신문, 2026.09"></div>
+      <div class="field"><label>핵심 요약</label><textarea id="dbSummary" placeholder="기사·이슈의 핵심 내용을 3~5문장으로 요약해 보세요."></textarea></div>
+      <div class="field"><label>논제 뽑기 <span class="tiny muted">(이 이슈에서 찬반이 갈리는 질문은 무엇인가요?)</span></label><textarea id="dbIssue" placeholder="예: 인공지능 개발에 대한 정부 규제를 강화해야 하는가?"></textarea></div>
+      <div class="field"><label>나의 주장</label><textarea id="dbArgument" placeholder="자신의 입장과 그 근거를 정리해 보세요."></textarea></div>
+      <div class="row">
+        <button class="btn primary" id="btnSaveDb" type="button">저장하기</button>
+        <button class="btn" id="btnCancelDb" type="button" hidden>수정 취소</button>
+      </div>
+    </div>
+    <div id="debateList"></div>
   </section>
 
   <!-- 면접 후기 -->
@@ -404,24 +437,6 @@ table.tbl th{background:var(--surface2);color:var(--muted);font-weight:700;font-
       </div>
     </div>
     <div id="reviewsList"></div>
-  </section>
-
-  <!-- 토론면접 준비 -->
-  <section id="view-debate" class="view">
-    <div class="notice">성결대처럼 시사·이슈를 주제로 토론하는 면접을 준비할 때 사용하세요. <b>이슈/기사 찾기 → 요약 → 논제 뽑기 → 나의 주장 쓰기</b> 순서로 정리하면 어떤 시사 질문에도 대응할 수 있어요.</div>
-    <div class="card">
-      <h2 id="dbFormTitle">시사 이슈 정리 추가</h2>
-      <div class="field"><label>기사·이슈 제목</label><input id="dbTitle" placeholder="예: 인공지능 규제 관련 법안 논란"></div>
-      <div class="field"><label>출처 / 링크 <span class="tiny muted">(선택)</span></label><input id="dbSource" placeholder="예: OO신문, 2026.09"></div>
-      <div class="field"><label>핵심 요약</label><textarea id="dbSummary" placeholder="기사·이슈의 핵심 내용을 3~5문장으로 요약해 보세요."></textarea></div>
-      <div class="field"><label>논제 뽑기 <span class="tiny muted">(이 이슈에서 찬반이 갈리는 질문은 무엇인가요?)</span></label><textarea id="dbIssue" placeholder="예: 인공지능 개발에 대한 정부 규제를 강화해야 하는가?"></textarea></div>
-      <div class="field"><label>나의 주장</label><textarea id="dbArgument" placeholder="자신의 입장과 그 근거를 정리해 보세요."></textarea></div>
-      <div class="row">
-        <button class="btn primary" id="btnSaveDb" type="button">저장하기</button>
-        <button class="btn" id="btnCancelDb" type="button" hidden>수정 취소</button>
-      </div>
-    </div>
-    <div id="debateList"></div>
   </section>
 </div>
 
@@ -475,6 +490,7 @@ table.tbl th{background:var(--surface2);color:var(--muted);font-weight:700;font-
     <button class="btn" id="btnBackToSearch" type="button">← 학생 목록으로</button>
   </header>
   <div id="teacherScheduleWrap"></div>
+  <div id="teacherMockWrap"></div>
   <div id="teacherQList"></div>
 </div>
 
@@ -545,6 +561,9 @@ const BASIC_Q=[
  "마지막으로 하고 싶은 말이 있나요?"
 ];
 const FB_TAGS=['지원동기','학과/전공 이해','학업역량','전공역량/노력','인성/공동체','기록의 진실성','배움의 태도','논리적 전달','구체성 부족','좋은 예시'];
+// 모의 면접 평가표 항목 (워크북 PART7 기준)
+const MOCK_DELIVERY=['인사·자세','표정·시선처리','목소리·전달력','자신감','답변태도·열정'];
+const MOCK_CONTENT=['지원동기','학과/학교정보','전공역량/노력','학업/미래계획','진학의지','학업역량','기록의 진실성','배움의 태도','인성/공동체','사회기여의지'];
 // 질문을 만드는 5가지 결 (활동/사례 자리에 자신의 내용을 채워 넣어 사용)
 const ANGLE_TEMPLATES=[
  {label:'①사실확인', text:'[활동/사례]는 구체적으로 어떤 활동이었나요?'},
@@ -710,7 +729,7 @@ document.getElementById('btnBackToLanding1').addEventListener('click',()=>show('
 document.getElementById('btnBackToLanding2').addEventListener('click',()=>show('viewLanding'));
 
 // ---------- 학생 로그인 ----------
-let CURRENT=null; // {key, school, number, name, questions:[], schedule:[], debates:[]}
+let CURRENT=null; // {key, school, number, name, questions:[], schedule:[], debates:[], mockInterviews:[]}
 document.getElementById('btnStudentLogin').addEventListener('click', async ()=>{
   showSlMsg('');
   const school=document.getElementById('slSchool').value;
@@ -728,12 +747,12 @@ document.getElementById('btnStudentLogin').addEventListener('click', async ()=>{
     if(snap.exists){
       const data=snap.data();
       if(data.passwordHash!==hash){showSlMsg('비밀번호가 일치하지 않습니다.','error');return;}
-      CURRENT={key, school:data.school, number:data.number, name:data.name, questions:data.questions||[], schedule:data.schedule||[], debates:data.debates||[]};
+      CURRENT={key, school:data.school, number:data.number, name:data.name, questions:data.questions||[], schedule:data.schedule||[], debates:data.debates||[], mockInterviews:data.mockInterviews||[]};
     } else {
       const newDoc={school, number, name, schoolNorm:safeSeg(school), numberNorm:safeSeg(number), nameNorm:safeSeg(name),
-        passwordHash:hash, questions:[], schedule:[], debates:[], updatedAt:Date.now()};
+        passwordHash:hash, questions:[], schedule:[], debates:[], mockInterviews:[], updatedAt:Date.now()};
       await ref.set(newDoc);
-      CURRENT={key, school, number, name, questions:[], schedule:[], debates:[]};
+      CURRENT={key, school, number, name, questions:[], schedule:[], debates:[], mockInterviews:[]};
     }
     document.getElementById('studentGreeting').textContent=`${CURRENT.school} · ${CURRENT.number}번 · ${CURRENT.name}님`;
     document.getElementById('slPassword').value='';
@@ -748,7 +767,7 @@ async function saveCurrent(){
   if(!fbReady||!CURRENT) return;
   const note=document.getElementById('savingNote'); note.textContent='저장 중…';
   try{
-    await db.collection('students').doc(CURRENT.key).update({questions:CURRENT.questions, schedule:CURRENT.schedule, debates:CURRENT.debates, updatedAt:Date.now()});
+    await db.collection('students').doc(CURRENT.key).update({questions:CURRENT.questions, schedule:CURRENT.schedule, debates:CURRENT.debates, mockInterviews:CURRENT.mockInterviews, updatedAt:Date.now()});
     note.textContent='저장됨 ✓';
     setTimeout(()=>{ if(note.textContent==='저장됨 ✓') note.textContent=''; },1500);
   }catch(e){ console.error(e); note.textContent=''; await uiAlert('저장 중 오류: '+e.message); }
@@ -757,7 +776,7 @@ async function refreshCurrent(){
   if(!fbReady||!CURRENT) return;
   try{
     const snap=await db.collection('students').doc(CURRENT.key).get();
-    if(snap.exists){ CURRENT.questions=snap.data().questions||[]; CURRENT.schedule=snap.data().schedule||[]; CURRENT.debates=snap.data().debates||[]; }
+    if(snap.exists){ CURRENT.questions=snap.data().questions||[]; CURRENT.schedule=snap.data().schedule||[]; CURRENT.debates=snap.data().debates||[]; CURRENT.mockInterviews=snap.data().mockInterviews||[]; }
     renderList();
   }catch(e){ console.error(e); }
 }
@@ -767,11 +786,12 @@ document.querySelectorAll('#viewStudentApp nav.tabs button').forEach(b=>b.addEve
 window.goTab=function(name){
  document.querySelectorAll('#viewStudentApp nav.tabs button').forEach(b=>b.classList.toggle('on', b.dataset.tab===name));
  document.querySelectorAll('#viewStudentApp section.view').forEach(s=>s.classList.toggle('on', s.id==='view-'+name));
- if(name==='build') toggleRecordFields();
+ if(name==='build'){ toggleRecordFields(); populateQUnivSelect(); }
  if(name==='list') renderList();
  if(name==='schedule') renderSchedule();
  if(name==='reviews') renderReviews();
  if(name==='debate') renderDebates();
+ if(name==='mock') renderMockList();
 };
 
 // ---------- 질문 만들기 ----------
@@ -809,6 +829,16 @@ Object.keys(AREA_TEMPLATES).forEach(area=>{
 });
 document.getElementById('qType').addEventListener('change',toggleRecordFields);
 function toggleRecordFields(){document.getElementById('recordFields').hidden = document.getElementById('qType').value!=='record';}
+function populateQUnivSelect(selected){
+ const sel=document.getElementById('qUniv');
+ const univs=(CURRENT&&CURRENT.schedule||[]).map(it=>it.univ).filter(Boolean);
+ const unique=[...new Set(univs)];
+ sel.innerHTML='<option value="공통">공통 (모든 대학에 해당)</option>'+unique.map(u=>`<option value="${esc(u)}">${esc(u)}</option>`).join('');
+ if(selected && selected!=='공통' && !unique.includes(selected)){
+   sel.innerHTML += `<option value="${esc(selected)}">${esc(selected)} (일정에서 삭제됨)</option>`;
+ }
+ sel.value = selected || '공통';
+}
 document.getElementById('btnMark').addEventListener('click',()=>{
  const sel=window.getSelection();
  if(!sel || sel.rangeCount===0 || sel.isCollapsed){uiAlert('먼저 답변에서 키워드로 표시할 부분을 드래그로 선택하세요.');return;}
@@ -834,13 +864,15 @@ document.getElementById('btnSaveQ').addEventListener('click', async ()=>{
  const text=document.getElementById('qText').value.trim();
  if(!text){await uiAlert('질문을 입력해 주세요.');return;}
  const answerHtml=document.getElementById('qAnswer').innerHTML;
+ const univ=type==='record' ? document.getElementById('qUniv').value : null;
  if(editingId){
    const idx=CURRENT.questions.findIndex(x=>x.id===editingId);
    if(idx>-1){ CURRENT.questions[idx].type=type; CURRENT.questions[idx].area = type==='record'?document.getElementById('qArea').value:null;
+     CURRENT.questions[idx].univ=univ;
      CURRENT.questions[idx].text=text; CURRENT.questions[idx].answerHtml=answerHtml; CURRENT.questions[idx].updatedAt=Date.now(); }
  } else {
    CURRENT.questions.unshift({
-     id:uid(), type, area: type==='record'?document.getElementById('qArea').value:null,
+     id:uid(), type, area: type==='record'?document.getElementById('qArea').value:null, univ,
      text, answerHtml, followups:[], feedback:[], createdAt:Date.now(), updatedAt:Date.now()
    });
  }
@@ -853,9 +885,11 @@ document.getElementById('btnSaveQ').addEventListener('click', async ()=>{
 
 // ---------- 목록 (학생) ----------
 let listFilter='all';
+let listUnivFilter='all';
 document.querySelectorAll('#view-list .chip').forEach(c=>{
  c.addEventListener('click',()=>{document.querySelectorAll('#view-list .chip').forEach(x=>x.classList.remove('on'));c.classList.add('on');listFilter=c.dataset.f;renderList();});
 });
+document.getElementById('listUnivFilter').addEventListener('change',(e)=>{ listUnivFilter=e.target.value; renderList(); });
 document.getElementById('btnRefreshList').addEventListener('click', refreshCurrent);
 
 function renderFeedbackBlock(fbs, followups){
@@ -869,7 +903,13 @@ function fbHtml(f){
 function renderList(){
  if(!CURRENT) return;
  document.getElementById('listStudentTitle').textContent=`${CURRENT.name}님의 질문 목록`;
- const list=(CURRENT.questions||[]).filter(q=>listFilter==='all'||q.type===listFilter);
+ const univSel=document.getElementById('listUnivFilter');
+ const univsInQ=[...new Set((CURRENT.questions||[]).map(q=>q.univ).filter(Boolean))];
+ const prevVal=univSel.value;
+ univSel.innerHTML='<option value="all">모든 대학</option><option value="공통">공통만</option>'+univsInQ.filter(u=>u!=='공통').map(u=>`<option value="${esc(u)}">${esc(u)}</option>`).join('');
+ univSel.value = [...univSel.options].some(o=>o.value===prevVal) ? prevVal : 'all';
+ listUnivFilter = univSel.value;
+ const list=(CURRENT.questions||[]).filter(q=>(listFilter==='all'||q.type===listFilter) && (listUnivFilter==='all'|| (q.univ||'공통')===listUnivFilter));
  const wrap=document.getElementById('qList');
  document.getElementById('cntQ').textContent=(CURRENT.questions||[]).length;
  if(!list.length){wrap.innerHTML='<div class="empty">아직 만든 질문이 없습니다. "질문 만들기" 탭에서 시작해 보세요.</div>';return;}
@@ -879,7 +919,7 @@ function renderList(){
    const el=document.createElement('div'); el.className='item';
    el.innerHTML=`
     <div class="head">
-      ${q.type==='basic'?'<span class="badge">기본질문</span>':`<span class="badge acc">생기부 기반</span><span class="badge gray">${esc(q.area)}</span>`}
+      ${q.type==='basic'?'<span class="badge">기본질문</span>':`<span class="badge acc">생기부 기반</span><span class="badge gray">${esc(q.area)}</span>${q.univ && q.univ!=="공통"?`<span class="badge warn">${esc(q.univ)}</span>`:`<span class="badge gray">공통</span>`}`}
       ${fbs.length?`<span class="badge warn">선생님 피드백 ${fbs.length}건</span>`:''}
     </div>
     <div class="qtext">Q. ${esc(q.text)}</div>
@@ -916,12 +956,12 @@ function renderList(){
  wrap.querySelectorAll('button[data-act="edit"]').forEach(b=>b.addEventListener('click',()=>{
    const q=CURRENT.questions.find(x=>x.id===b.dataset.id); if(!q)return;
    editingId=q.id;
+   goTab('build');
    document.getElementById('qType').value=q.type; toggleRecordFields();
-   if(q.type==='record'){document.getElementById('qArea').value=q.area;}
+   if(q.type==='record'){document.getElementById('qArea').value=q.area; populateQUnivSelect(q.univ);}
    document.getElementById('qText').value=q.text;
    document.getElementById('qAnswer').innerHTML=q.answerHtml||'';
    document.getElementById('editingNote').textContent='✏ 이 질문을 수정하고 있습니다.';
-   goTab('build');
  }));
  wrap.querySelectorAll('button[data-act="del"]').forEach(b=>b.addEventListener('click', async ()=>{
    if(!(await uiConfirm('이 질문을 삭제할까요? 꼬리질문과 피드백도 함께 삭제됩니다.')))return;
@@ -1089,6 +1129,32 @@ function debateListHTML(list){
      <button class="btn sm danger" data-act="delDb" data-id="${d.id}">삭제</button>
    </div>
  </div>`).join('');
+}
+function mockCardHTML(m, editable){
+ return `<div class="item">
+   <div class="head">
+     <span class="badge acc">${esc(m.date||'-')}</span>
+     <span class="badge">면접위원 ${esc(m.teacherName||'-')}</span>
+     ${m.type?`<span class="badge gray">${esc(m.type)}</span>`:''}
+     ${m.univ?`<span class="badge gray">${esc(m.univ)}</span>`:''}
+     ${m.dept?`<span class="badge gray">${esc(m.dept)}</span>`:''}
+     ${m.track?`<span class="badge gray">${esc(m.track)}</span>`:''}
+   </div>
+   ${m.deliveryGood&&m.deliveryGood.length?`<h3>전달 - 우수했던 부분</h3><div class="chips">${m.deliveryGood.map(t=>`<span class="badge acc">${esc(t)}</span>`).join(' ')}</div>`:''}
+   ${m.contentGood&&m.contentGood.length?`<h3>내용 - 우수했던 부분</h3><div class="chips">${m.contentGood.map(t=>`<span class="badge acc">${esc(t)}</span>`).join(' ')}</div>`:''}
+   ${m.improve?`<h3>보완이 필요한 부분</h3><div class="answerBox">${esc(m.improve).replace(/\n/g,'<br>')}</div>`:''}
+   ${m.comment?`<h3>종합 피드백</h3><div class="answerBox">${esc(m.comment).replace(/\n/g,'<br>')}</div>`:''}
+   ${editable?`<div class="row" style="margin-top:8px">
+     <button class="btn sm" data-act="editMock" data-id="${m.id}">수정</button>
+     <button class="btn sm danger" data-act="delMock" data-id="${m.id}">삭제</button>
+   </div>`:''}
+ </div>`;
+}
+function renderMockList(){
+ if(!CURRENT) return;
+ const wrap=document.getElementById('mockList');
+ const list=(CURRENT.mockInterviews||[]).slice().sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+ wrap.innerHTML = list.length ? list.map(m=>mockCardHTML(m,false)).join('') : '<div class="empty">아직 등록된 모의 면접 평가가 없습니다.</div>';
 }
 function renderDebates(){
  if(!CURRENT) return;
@@ -1297,6 +1363,7 @@ async function openTeacherWork(key){
  show('viewTeacherWork');
  teacherCalState=null;
  renderTeacherSchedule();
+ renderTeacherMock();
  renderTeacherQList();
 }
 let teacherCalState=null;
@@ -1322,6 +1389,123 @@ async function saveTeacherQuestions(){
  if(!TCUR) return;
  await db.collection('students').doc(TCUR.key).update({questions:TCUR.data.questions||[], updatedAt:Date.now()});
 }
+async function saveTeacherMock(){
+ if(!TCUR) return;
+ await db.collection('students').doc(TCUR.key).update({mockInterviews:TCUR.data.mockInterviews||[], updatedAt:Date.now()});
+}
+let editingMockId=null;
+function renderTeacherMock(){
+ const wrap=document.getElementById('teacherMockWrap');
+ const univs=(TCUR.data.schedule||[]).map(it=>it.univ).filter(Boolean);
+ const univOptions='<option value="">(직접 입력 또는 미지정)</option>'+[...new Set(univs)].map(u=>`<option value="${esc(u)}">${esc(u)}</option>`).join('');
+ wrap.innerHTML=`<div class="card">
+   <h2 id="mockFormTitle">모의 면접 평가표 작성</h2>
+   <p class="small muted">1:1 모의 면접을 본 뒤 그날의 평가를 남겨주세요. 면접위원 이름은 위 "선생님 정보"에 입력한 성함이 사용됩니다.</p>
+   <div class="grid c2">
+     <div class="field"><label>평가 날짜</label><input id="mockDate" type="date"></div>
+     <div class="field"><label>면접 유형 <span class="tiny muted">(선택)</span></label>
+       <select id="mockType">
+         <option value="">선택 안 함</option>
+         <option value="서류기반 면접">서류기반 면접</option>
+         <option value="제시문 면접">제시문 면접</option>
+         <option value="인성 면접">인성 면접</option>
+         <option value="창의력 면접">창의력 면접</option>
+         <option value="AI 면접">AI 면접</option>
+         <option value="기타">기타</option>
+       </select>
+     </div>
+   </div>
+   <div class="grid c3">
+     <div class="field"><label>지원 대학 <span class="tiny muted">(선택)</span></label><select id="mockUniv">${univOptions}</select></div>
+     <div class="field"><label>학과 <span class="tiny muted">(선택)</span></label><input id="mockDept" placeholder="예: 컴퓨터공학과"></div>
+     <div class="field"><label>전형 <span class="tiny muted">(선택)</span></label><input id="mockTrack" placeholder="예: 학생부종합전형"></div>
+   </div>
+   <h3>전달 영역 - 우수했던 부분 (해당 항목 선택)</h3>
+   <div class="chips" id="mockDeliveryChips">${MOCK_DELIVERY.map(t=>`<span class="chip" data-t="${esc(t)}">${esc(t)}</span>`).join('')}</div>
+   <h3>내용 영역 - 우수했던 부분 (해당 항목 선택)</h3>
+   <div class="chips" id="mockContentChips">${MOCK_CONTENT.map(t=>`<span class="chip" data-t="${esc(t)}">${esc(t)}</span>`).join('')}</div>
+   <div class="field" style="margin-top:12px"><label>보완이 필요한 부분</label><textarea id="mockImprove" placeholder="아쉬웠던 점, 다음에 개선할 부분을 적어주세요."></textarea></div>
+   <div class="field"><label>종합 피드백</label><textarea id="mockComment" placeholder="전반적인 총평을 남겨주세요."></textarea></div>
+   <div class="row">
+     <button class="btn primary" id="btnSaveMock" type="button">평가 저장하기</button>
+     <button class="btn" id="btnCancelMock" type="button" hidden>수정 취소</button>
+   </div>
+ </div>
+ <div id="teacherMockListWrap"></div>`;
+ document.getElementById('mockDeliveryChips').querySelectorAll('.chip').forEach(c=>c.addEventListener('click',()=>c.classList.toggle('on')));
+ document.getElementById('mockContentChips').querySelectorAll('.chip').forEach(c=>c.addEventListener('click',()=>c.classList.toggle('on')));
+ document.getElementById('btnCancelMock').addEventListener('click', resetMockForm);
+ document.getElementById('btnSaveMock').addEventListener('click', saveMockEntry);
+ renderTeacherMockList();
+}
+function resetMockForm(){
+ editingMockId=null;
+ ['mockDate','mockDept','mockTrack','mockImprove','mockComment'].forEach(id=>document.getElementById(id).value='');
+ document.getElementById('mockType').value='';
+ document.getElementById('mockUniv').value='';
+ document.querySelectorAll('#mockDeliveryChips .chip, #mockContentChips .chip').forEach(c=>c.classList.remove('on'));
+ document.getElementById('mockFormTitle').textContent='모의 면접 평가표 작성';
+ document.getElementById('btnCancelMock').hidden=true;
+}
+function renderTeacherMockList(){
+ const wrap=document.getElementById('teacherMockListWrap');
+ const list=(TCUR.data.mockInterviews||[]).slice().sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+ if(!list.length){ wrap.innerHTML='<p class="empty small">아직 등록된 평가가 없습니다.</p>'; return; }
+ wrap.innerHTML=list.map(m=>mockCardHTML(m,true)).join('');
+ wrap.querySelectorAll('button[data-act="editMock"]').forEach(b=>b.addEventListener('click',()=>{
+   const m=(TCUR.data.mockInterviews||[]).find(x=>x.id===b.dataset.id); if(!m)return;
+   editingMockId=m.id;
+   document.getElementById('mockDate').value=m.date||'';
+   document.getElementById('mockType').value=m.type||'';
+   document.getElementById('mockUniv').value=m.univ||'';
+   document.getElementById('mockDept').value=m.dept||'';
+   document.getElementById('mockTrack').value=m.track||'';
+   document.getElementById('mockImprove').value=m.improve||'';
+   document.getElementById('mockComment').value=m.comment||'';
+   document.querySelectorAll('#mockDeliveryChips .chip').forEach(c=>c.classList.toggle('on', (m.deliveryGood||[]).includes(c.dataset.t)));
+   document.querySelectorAll('#mockContentChips .chip').forEach(c=>c.classList.toggle('on', (m.contentGood||[]).includes(c.dataset.t)));
+   document.getElementById('mockFormTitle').textContent='모의 면접 평가 수정';
+   document.getElementById('btnCancelMock').hidden=false;
+   wrap.scrollIntoView({behavior:'smooth', block:'start'});
+ }));
+ wrap.querySelectorAll('button[data-act="delMock"]').forEach(b=>b.addEventListener('click', async ()=>{
+   if(!(await uiConfirm('이 모의 면접 평가를 삭제할까요?')))return;
+   TCUR.data.mockInterviews=(TCUR.data.mockInterviews||[]).filter(x=>x.id!==b.dataset.id);
+   await saveTeacherMock();
+   renderTeacherMockList();
+ }));
+}
+async function saveMockEntry(){
+ const tname=document.getElementById('tName').value.trim();
+ const tschool=document.getElementById('tSchoolBelong').value.trim();
+ if(!tname){await uiAlert('선생님 성함을 위 "선생님 정보"에 입력해 주세요.');return;}
+ const date=document.getElementById('mockDate').value;
+ if(!date){await uiAlert('평가 날짜를 입력해 주세요.');return;}
+ const resolvedName = tschool ? await resolveTeacherName(tschool, tname) : tname;
+ const deliveryGood=[...document.querySelectorAll('#mockDeliveryChips .chip.on')].map(c=>c.dataset.t);
+ const contentGood=[...document.querySelectorAll('#mockContentChips .chip.on')].map(c=>c.dataset.t);
+ const item={
+   date, teacherName:resolvedName, teacherSchool:tschool,
+   type:document.getElementById('mockType').value,
+   univ:document.getElementById('mockUniv').value,
+   dept:document.getElementById('mockDept').value.trim(),
+   track:document.getElementById('mockTrack').value.trim(),
+   deliveryGood, contentGood,
+   improve:document.getElementById('mockImprove').value.trim(),
+   comment:document.getElementById('mockComment').value.trim()
+ };
+ TCUR.data.mockInterviews=TCUR.data.mockInterviews||[];
+ if(editingMockId){
+   const idx=TCUR.data.mockInterviews.findIndex(x=>x.id===editingMockId);
+   if(idx>-1) TCUR.data.mockInterviews[idx]={...item, id:editingMockId};
+ } else {
+   item.id=uid(); TCUR.data.mockInterviews.push(item);
+ }
+ await saveTeacherMock();
+ resetMockForm();
+ renderTeacherMockList();
+ await uiAlert('저장되었습니다.');
+}
 function renderTeacherQList(){
  const wrap=document.getElementById('teacherQList');
  const list=TCUR.data.questions||[];
@@ -1333,7 +1517,7 @@ function renderTeacherQList(){
    const el=document.createElement('div'); el.className='item';
    el.innerHTML=`
     <div class="head">
-      ${q.type==='basic'?'<span class="badge">기본질문</span>':`<span class="badge acc">생기부 기반</span><span class="badge gray">${esc(q.area)}</span>`}
+      ${q.type==='basic'?'<span class="badge">기본질문</span>':`<span class="badge acc">생기부 기반</span><span class="badge gray">${esc(q.area)}</span>${q.univ && q.univ!=="공통"?`<span class="badge warn">${esc(q.univ)}</span>`:`<span class="badge gray">공통</span>`}`}
     </div>
     <div class="qtext">Q. ${esc(q.text)}</div>
     ${answerWithRevision(q.answerHtml, fbs, null)}

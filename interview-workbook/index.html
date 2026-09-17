@@ -485,6 +485,19 @@ table.tbl th{background:var(--surface2);color:var(--muted);font-weight:700;font-
   </header>
   <div id="teacherScheduleWrap"></div>
   <div id="teacherMockWrap"></div>
+  <div class="card">
+    <div class="row between">
+      <h2 style="margin:0">학생 질문 목록</h2>
+      <div class="row">
+        <div class="chips" id="tQFilterChips">
+          <button class="chip on" data-f="all" type="button">전체</button>
+          <button class="chip" data-f="basic" type="button">기본질문</button>
+          <button class="chip" data-f="record" type="button">생기부 기반</button>
+        </div>
+        <select id="tQUnivFilter"><option value="all">모든 대학</option></select>
+      </div>
+    </div>
+  </div>
   <div id="teacherQList"></div>
 </div>
 
@@ -556,7 +569,7 @@ const BASIC_Q=[
 const FB_TAGS=['지원동기','학과/전공 이해','학업역량','전공역량/노력','인성/공동체','기록의 진실성','배움의 태도','논리적 전달','구체성 부족','좋은 예시'];
 // 모의 면접 평가표 항목 (워크북 PART7 기준)
 const MOCK_DELIVERY=['인사·자세','표정·시선처리','목소리·전달력','자신감','답변태도·열정'];
-const MOCK_CONTENT=['지원동기','학과/학교정보','전공역량/노력','학업/미래계획','진학의지','학업역량','기록의 진실성','배움의 태도','인성/공동체','사회기여의지'];
+const MOCK_CONTENT=['지원동기','학과/학교정보','전공역량/노력','학업/미래계획','진학의지','학업역량','배움의 태도','인성/공동체','사회기여의지'];
 // 질문을 만드는 5가지 결 (활동/사례 자리에 자신의 내용을 채워 넣어 사용)
 const ANGLE_TEMPLATES=[
  {label:'①사실확인', text:'[활동/사례]는 구체적으로 어떤 활동이었나요?'},
@@ -750,11 +763,12 @@ document.getElementById('btnStudentLogin').addEventListener('click', async ()=>{
     document.getElementById('studentGreeting').textContent=`${CURRENT.school} · ${CURRENT.number}번 · ${CURRENT.name}님`;
     document.getElementById('slPassword').value='';
     showSlMsg('');
+    localStorage.setItem('iw_session_key', CURRENT.key);
     show('viewStudentApp');
     goTab('guide');
   }catch(e){ console.error(e); showSlMsg('로그인 중 오류가 발생했습니다: '+e.message,'error'); }
 });
-document.getElementById('btnStudentLogout').addEventListener('click',()=>{ CURRENT=null; show('viewLanding'); });
+document.getElementById('btnStudentLogout').addEventListener('click',()=>{ CURRENT=null; localStorage.removeItem('iw_session_key'); show('viewLanding'); });
 
 async function saveCurrent(){
   if(!fbReady||!CURRENT) return;
@@ -1267,6 +1281,10 @@ document.getElementById('btnAllReviews').addEventListener('click', async ()=>{
 // 선생님 모드
 // =========================================================================
 document.getElementById('btnBackToSearch').addEventListener('click',()=>show('viewTeacherSearch'));
+document.querySelectorAll('#tQFilterChips .chip').forEach(c=>{
+ c.addEventListener('click',()=>{document.querySelectorAll('#tQFilterChips .chip').forEach(x=>x.classList.remove('on'));c.classList.add('on');tQTypeFilter=c.dataset.f;renderTeacherQList();});
+});
+document.getElementById('tQUnivFilter').addEventListener('change',(e)=>{ tQUnivFilter=e.target.value; renderTeacherQList(); });
 document.getElementById('tName').addEventListener('blur', updateTeacherNamePreview);
 document.getElementById('tSchoolBelong').addEventListener('blur', updateTeacherNamePreview);
 document.getElementById('btnTeacherSearch').addEventListener('click', async ()=>{
@@ -1446,10 +1464,20 @@ async function saveMockEntry(){
  renderTeacherMockList();
  await uiAlert('저장되었습니다.');
 }
+let tQTypeFilter='all';
+let tQUnivFilter='all';
 function renderTeacherQList(){
  const wrap=document.getElementById('teacherQList');
- const list=TCUR.data.questions||[];
- if(!list.length){wrap.innerHTML='<div class="card"><div class="empty">이 학생이 아직 만든 질문이 없습니다.</div></div>';return;}
+ const allQ=TCUR.data.questions||[];
+ const univSel=document.getElementById('tQUnivFilter');
+ const univsInQ=[...new Set(allQ.map(q=>q.univ).filter(Boolean))];
+ const prevVal=univSel.value;
+ univSel.innerHTML='<option value="all">모든 대학</option><option value="공통">공통만</option>'+univsInQ.filter(u=>u!=='공통').map(u=>`<option value="${esc(u)}">${esc(u)}</option>`).join('');
+ univSel.value = [...univSel.options].some(o=>o.value===prevVal) ? prevVal : 'all';
+ tQUnivFilter = univSel.value;
+ const list = allQ.filter(q=>(tQTypeFilter==='all'||q.type===tQTypeFilter) && (tQUnivFilter==='all'||(q.univ||'공통')===tQUnivFilter));
+ if(!allQ.length){wrap.innerHTML='<div class="card"><div class="empty">이 학생이 아직 만든 질문이 없습니다.</div></div>';return;}
+ if(!list.length){wrap.innerHTML='<div class="card"><div class="empty">조건에 맞는 질문이 없습니다.</div></div>';return;}
  wrap.innerHTML='';
  list.forEach(q=>{
    const fbs=q.feedback||[]; const followups=q.followups||[];
@@ -1505,6 +1533,23 @@ function renderTeacherQList(){
    renderTeacherQList();
  }));
 }
+
+// ---------- 자동 로그인 (이 기기에 로그인 정보가 남아있으면 자동으로 이어서 로그인) ----------
+(async function tryAutoLogin(){
+  if(!fbReady) return;
+  const savedKey = localStorage.getItem('iw_session_key');
+  if(!savedKey) return;
+  try{
+    const snap = await db.collection('students').doc(savedKey).get();
+    if(!snap.exists){ localStorage.removeItem('iw_session_key'); return; }
+    const data = snap.data();
+    CURRENT = {key:savedKey, school:data.school, number:data.number, name:data.name,
+      questions:data.questions||[], schedule:data.schedule||[], debates:data.debates||[], mockInterviews:data.mockInterviews||[]};
+    document.getElementById('studentGreeting').textContent = `${CURRENT.school} · ${CURRENT.number}번 · ${CURRENT.name}님`;
+    show('viewStudentApp');
+    goTab('guide');
+  }catch(e){ console.error(e); }
+})();
 
 })();
 </script>

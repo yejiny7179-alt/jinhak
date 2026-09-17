@@ -185,7 +185,7 @@ table.tbl th{background:var(--surface2);color:var(--muted);font-weight:700;font-
       </div>
     </div>
     <div class="landingHr"></div>
-    <p class="landingCaption">학생과 선생님이 함께 사용하는 면접 준비 공간입니다.</p>
+    <p class="landingCaption">학생과 선생님이 함께하는 면접 준비 공간입니다.</p>
     <p class="landingCredit">제작 백운고등학교 박예진</p>
   </div>
 </div>
@@ -407,8 +407,17 @@ table.tbl th{background:var(--surface2);color:var(--muted);font-weight:700;font-
     <div class="notice">성결대처럼 시사·이슈를 주제로 토론하는 면접을 준비할 때 사용하세요. <b>이슈/기사 찾기 → 요약 → 논제 뽑기 → 나의 주장 쓰기</b> 순서로 정리하면 어떤 시사 질문에도 대응할 수 있어요.</div>
     <div class="card">
       <h2 id="dbFormTitle">시사 이슈 정리 추가</h2>
+      <div class="grid c2">
+        <div class="field"><label>지원 대학 <span class="tiny muted">(관련 있으면 선택)</span></label>
+          <select id="dbUniv"><option value="공통">공통 (모든 대학에 해당)</option></select>
+        </div>
+        <div class="field"><label>학과 <span class="tiny muted">(선택)</span></label><input id="dbDept" placeholder="예: 컴퓨터공학과"></div>
+      </div>
       <div class="field"><label>기사·이슈 제목</label><input id="dbTitle" placeholder="예: 인공지능 규제 관련 법안 논란"></div>
-      <div class="field"><label>출처 / 링크 <span class="tiny muted">(선택)</span></label><input id="dbSource" placeholder="예: OO신문, 2026.09"></div>
+      <div class="grid c2">
+        <div class="field"><label>출처 <span class="tiny muted">(선택)</span></label><input id="dbSource" placeholder="예: OO신문, 2026.09"></div>
+        <div class="field"><label>링크 <span class="tiny muted">(선택)</span></label><input id="dbLink" placeholder="예: https://..."></div>
+      </div>
       <div class="field"><label>핵심 요약</label><textarea id="dbSummary" placeholder="기사·이슈의 핵심 내용을 3~5문장으로 요약해 보세요."></textarea></div>
       <div class="field"><label>논제 뽑기 <span class="tiny muted">(이 이슈에서 찬반이 갈리는 질문은 무엇인가요?)</span></label><textarea id="dbIssue" placeholder="예: 인공지능 개발에 대한 정부 규제를 강화해야 하는가?"></textarea></div>
       <div class="field"><label>나의 주장</label><textarea id="dbArgument" placeholder="자신의 입장과 그 근거를 정리해 보세요."></textarea></div>
@@ -465,21 +474,6 @@ table.tbl th{background:var(--surface2);color:var(--muted);font-weight:700;font-
     <button class="btn primary" id="btnTeacherSearch" type="button">학생 조회</button>
     <div id="teacherResults" style="margin-top:14px"></div>
   </div>
-  <div class="card">
-    <h2>면접 후기 자료 관리 <span class="hint">여기서 등록한 후기는 모든 학생이 "면접 후기" 탭에서 검색해서 볼 수 있습니다</span></h2>
-    <div class="grid c3">
-      <div class="field"><label>대학</label><input id="rvAdminUniv" placeholder="예: ○○대학교"></div>
-      <div class="field"><label>학과</label><input id="rvAdminDept" placeholder="예: 컴퓨터공학과"></div>
-      <div class="field"><label>전형</label><input id="rvAdminTrack" placeholder="예: 학생부종합전형"></div>
-    </div>
-    <div class="field"><label>연도 <span class="tiny muted">(선택)</span></label><input id="rvAdminYear" placeholder="예: 2026"></div>
-    <div class="field"><label>후기 내용</label><textarea id="rvAdminContent" placeholder="면접 질문, 분위기, 유의사항 등 후기 내용을 자유롭게 적어주세요."></textarea></div>
-    <div class="row">
-      <button class="btn primary" id="btnSaveReview" type="button">등록하기</button>
-      <button class="btn" id="btnCancelReviewEdit" type="button" hidden>수정 취소</button>
-    </div>
-    <div id="teacherReviewsList" style="margin-top:14px"></div>
-  </div>
 </div>
 
 <!-- ================= 선생님 - 학생 상세 ================= -->
@@ -494,7 +488,7 @@ table.tbl th{background:var(--surface2);color:var(--muted);font-weight:700;font-
   <div id="teacherQList"></div>
 </div>
 
-<footer>선생님과 함께 사용하는 면접 준비 공간입니다.<br>제작 백운고등학교 박예진</footer>
+<footer>학생과 선생님이 함께하는 면접 준비 공간입니다.<br>제작 백운고등학교 박예진</footer>
 </div>
 <div id="uiOverlayRoot"></div>
 
@@ -516,7 +510,6 @@ table.tbl th{background:var(--surface2);color:var(--muted);font-weight:700;font-
           match /databases/{database}/documents {
             match /students/{doc} { allow read, write: if true; }
             match /teacherNames/{doc} { allow read, write: if true; }
-            match /reviews/{doc} { allow read, write: if true; }
           }
         }
       * 이 설정은 비밀번호를 해시로 저장하지만, 문서 ID를 아는 사람은
@@ -724,7 +717,7 @@ function show(id){ ['viewLanding','viewStudentLogin','viewStudentApp','viewTeach
 
 // ---------- 랜딩 ----------
 document.getElementById('btnRoleStudent').addEventListener('click',()=>show('viewStudentLogin'));
-document.getElementById('btnRoleTeacher').addEventListener('click',()=>{show('viewTeacherSearch'); renderTeacherReviews();});
+document.getElementById('btnRoleTeacher').addEventListener('click',()=>{show('viewTeacherSearch');});
 document.getElementById('btnBackToLanding1').addEventListener('click',()=>show('viewLanding'));
 document.getElementById('btnBackToLanding2').addEventListener('click',()=>show('viewLanding'));
 
@@ -1116,11 +1109,25 @@ document.getElementById('schCalNext').addEventListener('click',()=>{
 
 // ---------- 토론면접 준비 ----------
 let editingDbId=null;
+function populateDbUnivSelect(selected){
+ const sel=document.getElementById('dbUniv');
+ const univs=(CURRENT&&CURRENT.schedule||[]).map(it=>it.univ).filter(Boolean);
+ const unique=[...new Set(univs)];
+ sel.innerHTML='<option value="공통">공통 (모든 대학에 해당)</option>'+unique.map(u=>`<option value="${esc(u)}">${esc(u)}</option>`).join('');
+ if(selected && selected!=='공통' && !unique.includes(selected)){
+   sel.innerHTML += `<option value="${esc(selected)}">${esc(selected)} (일정에서 삭제됨)</option>`;
+ }
+ sel.value = selected || '공통';
+}
 function debateListHTML(list){
  if(!list.length) return '<div class="empty">아직 정리한 이슈가 없습니다.</div>';
  return list.map(d=>`<div class="item">
+   <div class="head">
+     ${d.univ && d.univ!=='공통' ? `<span class="badge warn">${esc(d.univ)}</span>` : `<span class="badge gray">공통</span>`}
+     ${d.dept?`<span class="badge gray">${esc(d.dept)}</span>`:''}
+   </div>
    <div class="qtext">${esc(d.title)}</div>
-   ${d.source?`<p class="tiny muted">${esc(d.source)}</p>`:''}
+   ${(d.source||d.link)?`<p class="tiny muted">${d.source?esc(d.source):''}${d.source&&d.link?' · ':''}${d.link?`<a href="${esc(d.link)}" target="_blank" rel="noopener">${esc(d.link)}</a>`:''}</p>`:''}
    <h3>핵심 요약</h3><div class="answerBox">${d.summary?esc(d.summary).replace(/\n/g,'<br>'):'<span class="muted">-</span>'}</div>
    <h3>논제</h3><div class="answerBox">${d.issue?esc(d.issue).replace(/\n/g,'<br>'):'<span class="muted">-</span>'}</div>
    <h3>나의 주장</h3><div class="answerBox">${d.argument?esc(d.argument).replace(/\n/g,'<br>'):'<span class="muted">-</span>'}</div>
@@ -1158,13 +1165,17 @@ function renderMockList(){
 }
 function renderDebates(){
  if(!CURRENT) return;
+ populateDbUnivSelect(document.getElementById('dbUniv').value);
  const wrap=document.getElementById('debateList');
  wrap.innerHTML=debateListHTML(CURRENT.debates||[]);
  wrap.querySelectorAll('button[data-act="editDb"]').forEach(b=>b.addEventListener('click',()=>{
    const d=(CURRENT.debates||[]).find(x=>x.id===b.dataset.id); if(!d)return;
    editingDbId=d.id;
+   populateDbUnivSelect(d.univ||'공통');
+   document.getElementById('dbDept').value=d.dept||'';
    document.getElementById('dbTitle').value=d.title||'';
    document.getElementById('dbSource').value=d.source||'';
+   document.getElementById('dbLink').value=d.link||'';
    document.getElementById('dbSummary').value=d.summary||'';
    document.getElementById('dbIssue').value=d.issue||'';
    document.getElementById('dbArgument').value=d.argument||'';
@@ -1179,7 +1190,8 @@ function renderDebates(){
 }
 function resetDbForm(){
  editingDbId=null;
- ['dbTitle','dbSource','dbSummary','dbIssue','dbArgument'].forEach(id=>document.getElementById(id).value='');
+ ['dbDept','dbTitle','dbSource','dbLink','dbSummary','dbIssue','dbArgument'].forEach(id=>document.getElementById(id).value='');
+ populateDbUnivSelect('공통');
  document.getElementById('dbFormTitle').textContent='시사 이슈 정리 추가';
  document.getElementById('btnCancelDb').hidden=true;
 }
@@ -1189,7 +1201,10 @@ document.getElementById('btnSaveDb').addEventListener('click', async ()=>{
  const title=document.getElementById('dbTitle').value.trim();
  if(!title){await uiAlert('기사·이슈 제목을 입력해 주세요.');return;}
  const item={
+   univ:document.getElementById('dbUniv').value,
+   dept:document.getElementById('dbDept').value.trim(),
    title, source:document.getElementById('dbSource').value.trim(),
+   link:document.getElementById('dbLink').value.trim(),
    summary:document.getElementById('dbSummary').value.trim(),
    issue:document.getElementById('dbIssue').value.trim(),
    argument:document.getElementById('dbArgument').value.trim()
@@ -1206,14 +1221,13 @@ document.getElementById('btnSaveDb').addEventListener('click', async ()=>{
  renderDebates();
 });
 
-// ---------- 면접 후기 (학생: 검색/조회 전용, 자료는 선생님이 등록) ----------
+// ---------- 면접 후기 (제작 시 미리 넣어둔 자료 · 검색 전용) ----------
 let REVIEWS_CACHE=null;
-async function loadReviewsCache(force){
- if(REVIEWS_CACHE && !force) return REVIEWS_CACHE;
- if(!fbReady){ REVIEWS_CACHE=[]; return REVIEWS_CACHE; }
+async function loadReviewsCache(){
+ if(REVIEWS_CACHE) return REVIEWS_CACHE;
  try{
-   const snap=await db.collection('reviews').get();
-   REVIEWS_CACHE=[]; snap.forEach(doc=>REVIEWS_CACHE.push({id:doc.id, ...doc.data()}));
+   const res=await fetch('./reviews-data.json');
+   REVIEWS_CACHE = await res.json();
  }catch(e){ console.error(e); REVIEWS_CACHE=[]; }
  return REVIEWS_CACHE;
 }
@@ -1226,13 +1240,14 @@ function reviewCardHTML(r){
      ${r.year?`<span class="badge">${esc(r.year)}</span>`:''}
    </div>
    <div class="answerBox">${r.content?esc(r.content).replace(/\n/g,'<br>'):'<span class="muted">-</span>'}</div>
+   ${r.source?`<p class="tiny muted" style="margin-top:6px">출처: ${esc(r.source)}</p>`:''}
  </div>`;
 }
 async function renderReviews(list){
  const wrap=document.getElementById('reviewsList');
  wrap.innerHTML='<p class="muted small">불러오는 중…</p>';
  const all = list || await loadReviewsCache();
- if(!all.length){ wrap.innerHTML='<div class="empty">등록된 면접 후기가 아직 없습니다. 선생님께 후기 자료 등록을 요청해 보세요.</div>'; return; }
+ if(!all.length){ wrap.innerHTML='<div class="empty">등록된 면접 후기가 아직 없습니다.</div>'; return; }
  wrap.innerHTML = all.map(reviewCardHTML).join('');
 }
 document.getElementById('btnSearchReviews').addEventListener('click', async ()=>{
@@ -1245,7 +1260,7 @@ document.getElementById('btnSearchReviews').addEventListener('click', async ()=>
 });
 document.getElementById('btnAllReviews').addEventListener('click', async ()=>{
  document.getElementById('rvSearchText').value='';
- renderReviews(await loadReviewsCache(true));
+ renderReviews(await loadReviewsCache());
 });
 
 // =========================================================================
@@ -1277,81 +1292,6 @@ document.getElementById('btnTeacherSearch').addEventListener('click', async ()=>
      resultsWrap.appendChild(row);
    });
  }catch(e){ console.error(e); resultsWrap.innerHTML='<p class="empty small">조회 중 오류가 발생했습니다: '+esc(e.message)+'</p>'; }
-});
-
-// ---------- 면접 후기 자료 관리 (선생님) ----------
-let editingReviewId=null;
-function teacherReviewRowHTML(r){
- return `<div class="item">
-   <div class="head">
-     ${r.univ?`<span class="badge acc">${esc(r.univ)}</span>`:''}
-     ${r.dept?`<span class="badge gray">${esc(r.dept)}</span>`:''}
-     ${r.track?`<span class="badge gray">${esc(r.track)}</span>`:''}
-     ${r.year?`<span class="badge">${esc(r.year)}</span>`:''}
-   </div>
-   <div class="answerBox">${r.content?esc(r.content).replace(/\n/g,'<br>'):'<span class="muted">-</span>'}</div>
-   <div class="row" style="margin-top:8px">
-     <button class="btn sm" data-act="editRv" data-id="${r.id}">수정</button>
-     <button class="btn sm danger" data-act="delRv" data-id="${r.id}">삭제</button>
-   </div>
- </div>`;
-}
-async function renderTeacherReviews(){
- const wrap=document.getElementById('teacherReviewsList');
- if(!fbReady){ wrap.innerHTML=''; return; }
- wrap.innerHTML='<p class="muted small">불러오는 중…</p>';
- let list=[];
- try{
-   const snap=await db.collection('reviews').get();
-   snap.forEach(doc=>list.push({id:doc.id, ...doc.data()}));
- }catch(e){ console.error(e); wrap.innerHTML='<p class="empty small">불러오기 중 오류가 발생했습니다.</p>'; return; }
- if(!list.length){ wrap.innerHTML='<p class="empty small">등록된 후기가 없습니다.</p>'; return; }
- wrap.innerHTML=list.map(teacherReviewRowHTML).join('');
- wrap.querySelectorAll('button[data-act="editRv"]').forEach(b=>b.addEventListener('click',()=>{
-   const r=list.find(x=>x.id===b.dataset.id); if(!r)return;
-   editingReviewId=r.id;
-   document.getElementById('rvAdminUniv').value=r.univ||'';
-   document.getElementById('rvAdminDept').value=r.dept||'';
-   document.getElementById('rvAdminTrack').value=r.track||'';
-   document.getElementById('rvAdminYear').value=r.year||'';
-   document.getElementById('rvAdminContent').value=r.content||'';
-   document.getElementById('btnCancelReviewEdit').hidden=false;
- }));
- wrap.querySelectorAll('button[data-act="delRv"]').forEach(b=>b.addEventListener('click', async ()=>{
-   if(!(await uiConfirm('이 후기를 삭제할까요?')))return;
-   try{ await db.collection('reviews').doc(b.dataset.id).delete(); }catch(e){ console.error(e); await uiAlert('삭제 중 오류가 발생했습니다.'); return; }
-   REVIEWS_CACHE=null;
-   renderTeacherReviews();
- }));
-}
-function resetReviewForm(){
- editingReviewId=null;
- ['rvAdminUniv','rvAdminDept','rvAdminTrack','rvAdminYear','rvAdminContent'].forEach(id=>document.getElementById(id).value='');
- document.getElementById('btnCancelReviewEdit').hidden=true;
-}
-document.getElementById('btnCancelReviewEdit').addEventListener('click', resetReviewForm);
-document.getElementById('btnSaveReview').addEventListener('click', async ()=>{
- if(!fbReady){await uiAlert('아직 Firebase 설정이 되어 있지 않아 등록이 동작하지 않습니다.');return;}
- const univ=document.getElementById('rvAdminUniv').value.trim();
- const dept=document.getElementById('rvAdminDept').value.trim();
- const track=document.getElementById('rvAdminTrack').value.trim();
- const year=document.getElementById('rvAdminYear').value.trim();
- const content=document.getElementById('rvAdminContent').value.trim();
- if(!univ && !dept && !track){ await uiAlert('대학, 학과, 전형 중 최소 하나는 입력해 주세요.'); return; }
- if(!content){ await uiAlert('후기 내용을 입력해 주세요.'); return; }
- const data={univ, dept, track, year, content, updatedAt:Date.now()};
- try{
-   if(editingReviewId){
-     await db.collection('reviews').doc(editingReviewId).update(data);
-   } else {
-     data.createdAt=Date.now();
-     await db.collection('reviews').add(data);
-   }
- }catch(e){ console.error(e); await uiAlert('저장 중 오류가 발생했습니다: '+e.message); return; }
- REVIEWS_CACHE=null;
- resetReviewForm();
- renderTeacherReviews();
- await uiAlert('저장되었습니다.');
 });
 
 let TCUR=null; // {key, data}

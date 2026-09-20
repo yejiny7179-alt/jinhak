@@ -1858,22 +1858,15 @@ document.getElementById('btnTeacherSearch').addEventListener('click', async ()=>
    if(snap.empty){
      if(norm(number) && norm(name)){
        resultsWrap.innerHTML=`<div class="empty small">일치하는 학생이 없습니다.<br>아직 로그인한 적 없는 학생이라면, 미리 등록해서 모의 면접 평가를 먼저 남길 수 있어요.</div>
-         <div class="grid c2" style="margin-top:10px">
-           <div class="field"><label>지원 대학 <span class="tiny muted">(선택)</span></label><input id="preRegUniv" placeholder="예: ○○대학교"></div>
-           <div class="field"><label>학과 <span class="tiny muted">(선택)</span></label><input id="preRegDept" placeholder="예: 컴퓨터공학과"></div>
-         </div>
-         <button class="btn sm primary" id="btnPreRegister" type="button">"${esc(school)} ${esc(number)}번 ${esc(name)}" 학생 미리 등록하기</button>`;
+         <button class="btn sm primary" id="btnPreRegister" type="button" style="margin-top:10px">"${esc(school)} ${esc(number)}번 ${esc(name)}" 학생 미리 등록하기</button>`;
        document.getElementById('btnPreRegister').addEventListener('click', async ()=>{
          const key=makeKey(school, number, name);
-         const preUniv=document.getElementById('preRegUniv').value.trim();
-         const preDept=document.getElementById('preRegDept').value.trim();
          try{
            const ref=db.collection('students').doc(key);
            const exist=await ref.get();
            if(exist.exists){ openTeacherWork(key); return; }
-           const schedule = preUniv ? [{id:uid(), univ:preUniv, dept:preDept, track:'', stage1Date:'', interviewDate:'', finalDate:'', type:''}] : [];
            await ref.set({school, number, name, schoolNorm:safeSeg(school), numberNorm:safeSeg(number), nameNorm:safeSeg(name),
-             passwordHash:null, questions:[], schedule, debates:[], mockInterviews:[], research:[], updatedAt:Date.now()});
+             passwordHash:null, questions:[], schedule:[], debates:[], mockInterviews:[], research:[], updatedAt:Date.now()});
            await uiAlert('학생을 미리 등록했습니다. 이 학생이 나중에 처음 로그인할 때 지금 남기는 평가를 바로 볼 수 있어요.');
            openTeacherWork(key);
          }catch(e){ console.error(e); await uiAlert('등록 중 오류: '+e.message); }

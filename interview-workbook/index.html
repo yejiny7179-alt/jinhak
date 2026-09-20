@@ -73,6 +73,10 @@ textarea{resize:vertical;min-height:70px}
 .fbReply{background:#fff;border:1px solid #fde68a;border-radius:8px;padding:6px 10px;margin-bottom:6px;font-size:12.5px}
 .fbReply b{color:#7c2d12}
 .followWrap{margin-top:12px;padding:12px 14px;background:#f8fafc;border:1px dashed var(--line2);border-radius:10px}
+.kbGroup{border:1px solid var(--line);border-radius:12px;background:#fff;padding:16px 18px;margin-bottom:14px}
+.kbGroupHeader{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.kbEntry{border-top:1px dashed var(--line2);padding-top:10px;margin-top:10px}
+.kbEntry:first-of-type{border-top:0;padding-top:0;margin-top:0}
 .followItem{border:1px solid var(--line);background:#fff;border-radius:10px;padding:10px 12px;margin-bottom:8px}
 .followItem .fhead{display:flex;align-items:flex-start;gap:8px}
 .followItem .fhead input[type=checkbox]{margin-top:4px;width:16px;height:16px;accent-color:var(--accent);flex:none}
@@ -242,6 +246,7 @@ table.tbl th{background:var(--surface2);color:var(--muted);font-weight:700;font-
     <button data-tab="practice" type="button">연습하기</button>
     <button data-tab="mock" type="button">모의 면접</button>
     <button data-tab="debate" type="button">토론면접 준비</button>
+    <button data-tab="presentation" type="button">제시문 면접</button>
     <button data-tab="research" type="button">대학·학과 조사</button>
     <button data-tab="reviews" type="button">면접 후기</button>
   </nav>
@@ -528,6 +533,56 @@ table.tbl th{background:var(--surface2);color:var(--muted);font-weight:700;font-
       </div>
     </div>
     <div id="debateList"></div>
+  </section>
+
+  <!-- 제시문 면접 -->
+  <section id="view-presentation" class="view">
+    <div class="notice">기출 제시문 문제를 풀어보고 표 양식에 맞게 정리해 보세요. 아래에는 면접에 필요한 배경지식을 분야·주제별로 쌓아둘 수 있어요.</div>
+
+    <div class="card">
+      <h2>제시문 기출 자료 검색</h2>
+      <p class="small muted">선생님이 올려주신 제시문 기반 면접 기출자료집에서 검색해 보세요.</p>
+      <div class="row">
+        <input id="pgSearchText" placeholder="검색어 (대학명, 키워드 등)" style="flex:1;min-width:160px">
+        <button class="btn primary sm" id="btnSearchPresGuide" type="button">검색</button>
+        <button class="btn sm" id="btnAllPresGuide" type="button">전체 보기</button>
+      </div>
+      <div id="presGuideList" style="margin-top:10px"></div>
+    </div>
+
+    <div class="card">
+      <h2 id="psFormTitle">제시문 기출 정리 추가</h2>
+      <div class="field"><label>대학 / 계열</label><input id="psUnivField" placeholder="예: ○○대학교 / 인문계열"></div>
+      <div class="field"><label>제시문 핵심 요약</label><textarea id="psSummary" placeholder="제시문의 핵심 내용을 요약해 보세요."></textarea></div>
+      <div class="field"><label>문제(질문) 요지</label><textarea id="psQuestion" placeholder="제시문에서 요구하는 질문의 요지를 정리해 보세요."></textarea></div>
+      <div class="field"><label>답변 구상 (주장 → 근거 → 예시)</label><textarea id="psAnswer" placeholder="주장 → 근거 → 예시 순서로 답변을 구상해 보세요."></textarea></div>
+      <div class="field"><label>예상 꼬리질문</label><textarea id="psFollowup" placeholder="이 답변에 이어질 만한 꼬리질문을 예상해 보세요."></textarea></div>
+      <div class="field"><label>스스로 피드백</label><textarea id="psFeedback" placeholder="답변을 다시 보며 스스로 느낀 점, 보완할 점을 적어보세요."></textarea></div>
+      <div class="row">
+        <button class="btn primary" id="btnSavePs" type="button">저장하기</button>
+        <button class="btn" id="btnCancelPs" type="button" hidden>수정 취소</button>
+      </div>
+    </div>
+    <div id="presentationList"></div>
+
+    <div class="card">
+      <h2 id="kbFormTitle">배경지식 정리 추가</h2>
+      <p class="small muted">같은 분야·주제로 여러 번 저장하면 아래 목록에서 한데 모여 보여요. 자료가 쌓일 때마다 계속 추가해 보세요.</p>
+      <div class="grid c2">
+        <div class="field"><label>분야 / 과목</label><input id="kbSubject" list="kbSubjectList" placeholder="예: 사회, 과학, 시사 등"><datalist id="kbSubjectList"></datalist></div>
+        <div class="field"><label>주제</label><input id="kbTopic" list="kbTopicList" placeholder="예: 인공지능과 저작권"><datalist id="kbTopicList"></datalist></div>
+      </div>
+      <div class="field"><label>내용 정리</label><textarea id="kbContent" placeholder="개념, 배경, 최근 이슈, 다양한 관점 등을 자유롭게 정리해 보세요."></textarea></div>
+      <div class="grid c2">
+        <div class="field"><label>출처 <span class="tiny muted">(선택)</span></label><input id="kbSource" placeholder="예: OO 뉴스, 책 제목 등"></div>
+        <div class="field"><label>링크 <span class="tiny muted">(선택)</span></label><input id="kbLink" placeholder="예: https://..."></div>
+      </div>
+      <div class="row">
+        <button class="btn primary" id="btnSaveKb" type="button">저장하기</button>
+        <button class="btn" id="btnCancelKb" type="button" hidden>수정 취소</button>
+      </div>
+    </div>
+    <div id="knowledgeList"></div>
   </section>
 
   <!-- 대학·학과 조사 -->
@@ -920,7 +975,7 @@ document.getElementById('btnBackToLanding1').addEventListener('click',()=>show('
 document.getElementById('btnBackToLanding3').addEventListener('click',()=>show('viewLanding'));
 
 // ---------- 학생 로그인 ----------
-let CURRENT=null; // {key, school, number, name, questions:[], schedule:[], debates:[], mockInterviews:[], research:[]}
+let CURRENT=null; // {key, school, number, name, questions:[], schedule:[], debates:[], mockInterviews:[], research:[], presentations:[], knowledge:[]}
 document.getElementById('btnStudentLogin').addEventListener('click', async ()=>{
   showSlMsg('');
   const school=document.getElementById('slSchool').value;
@@ -940,17 +995,17 @@ document.getElementById('btnStudentLogin').addEventListener('click', async ()=>{
       if(!data.passwordHash){
         // 선생님이 미리 등록해둔 계정 — 지금 입력한 비밀번호를 새로 설정하고 이어서 로그인
         await ref.update({passwordHash:hash});
-        CURRENT={key, school:data.school, number:data.number, name:data.name, questions:data.questions||[], schedule:data.schedule||[], debates:data.debates||[], mockInterviews:data.mockInterviews||[], research:data.research||[]};
+        CURRENT={key, school:data.school, number:data.number, name:data.name, questions:data.questions||[], schedule:data.schedule||[], debates:data.debates||[], mockInterviews:data.mockInterviews||[], research:data.research||[], presentations:data.presentations||[], knowledge:data.knowledge||[]};
       } else if(data.passwordHash!==hash){
         showSlMsg('비밀번호가 일치하지 않습니다.','error');return;
       } else {
-        CURRENT={key, school:data.school, number:data.number, name:data.name, questions:data.questions||[], schedule:data.schedule||[], debates:data.debates||[], mockInterviews:data.mockInterviews||[], research:data.research||[]};
+        CURRENT={key, school:data.school, number:data.number, name:data.name, questions:data.questions||[], schedule:data.schedule||[], debates:data.debates||[], mockInterviews:data.mockInterviews||[], research:data.research||[], presentations:data.presentations||[], knowledge:data.knowledge||[]};
       }
     } else {
       const newDoc={school, number, name, schoolNorm:safeSeg(school), numberNorm:safeSeg(number), nameNorm:safeSeg(name),
-        passwordHash:hash, questions:[], schedule:[], debates:[], mockInterviews:[], research:[], updatedAt:Date.now()};
+        passwordHash:hash, questions:[], schedule:[], debates:[], mockInterviews:[], research:[], presentations:[], knowledge:[], updatedAt:Date.now()};
       await ref.set(newDoc);
-      CURRENT={key, school, number, name, questions:[], schedule:[], debates:[], mockInterviews:[], research:[]};
+      CURRENT={key, school, number, name, questions:[], schedule:[], debates:[], mockInterviews:[], research:[], presentations:[], knowledge:[]};
     }
     document.getElementById('studentGreeting').textContent=`${CURRENT.school} · ${CURRENT.number}번 · ${CURRENT.name}님`;
     document.getElementById('slPassword').value='';
@@ -966,7 +1021,7 @@ async function saveCurrent(){
   if(!fbReady||!CURRENT) return;
   const note=document.getElementById('savingNote'); note.textContent='저장 중…';
   try{
-    await db.collection('students').doc(CURRENT.key).update({questions:CURRENT.questions, schedule:CURRENT.schedule, debates:CURRENT.debates, mockInterviews:CURRENT.mockInterviews, research:CURRENT.research, updatedAt:Date.now()});
+    await db.collection('students').doc(CURRENT.key).update({questions:CURRENT.questions, schedule:CURRENT.schedule, debates:CURRENT.debates, mockInterviews:CURRENT.mockInterviews, research:CURRENT.research, presentations:CURRENT.presentations, knowledge:CURRENT.knowledge, updatedAt:Date.now()});
     note.textContent='저장됨 ✓';
     setTimeout(()=>{ if(note.textContent==='저장됨 ✓') note.textContent=''; },1500);
   }catch(e){ console.error(e); note.textContent=''; await uiAlert('저장 중 오류: '+e.message); }
@@ -975,7 +1030,7 @@ async function refreshCurrent(){
   if(!fbReady||!CURRENT) return;
   try{
     const snap=await db.collection('students').doc(CURRENT.key).get();
-    if(snap.exists){ CURRENT.questions=snap.data().questions||[]; CURRENT.schedule=snap.data().schedule||[]; CURRENT.debates=snap.data().debates||[]; CURRENT.mockInterviews=snap.data().mockInterviews||[]; CURRENT.research=snap.data().research||[]; }
+    if(snap.exists){ CURRENT.questions=snap.data().questions||[]; CURRENT.schedule=snap.data().schedule||[]; CURRENT.debates=snap.data().debates||[]; CURRENT.mockInterviews=snap.data().mockInterviews||[]; CURRENT.research=snap.data().research||[]; CURRENT.presentations=snap.data().presentations||[]; CURRENT.knowledge=snap.data().knowledge||[]; }
     renderList();
   }catch(e){ console.error(e); }
 }
@@ -990,6 +1045,7 @@ window.goTab=function(name){
  if(name==='schedule') renderSchedule();
  if(name==='reviews') renderReviews();
  if(name==='debate') renderDebates();
+ if(name==='presentation'){ renderPresentations(); renderKnowledge(); }
  if(name==='research') renderResearch();
  if(name==='mock') renderMockList();
  if(name==='practice') renderPracticeList();
@@ -1732,6 +1788,201 @@ document.getElementById('btnSaveResearch').addEventListener('click', async ()=>{
  renderResearch();
 });
 
+// ---------- 제시문 기출 정리 ----------
+let editingPsId=null;
+function presentationCardHTML(p, editable){
+ return `<div class="item">
+   <div class="head">${p.univField?`<span class="badge acc">${esc(p.univField)}</span>`:''}</div>
+   <h3>제시문 핵심 요약</h3><div class="answerBox">${p.summary?esc(p.summary).replace(/\n/g,'<br>'):'<span class="muted">-</span>'}</div>
+   <h3>문제(질문) 요지</h3><div class="answerBox">${p.question?esc(p.question).replace(/\n/g,'<br>'):'<span class="muted">-</span>'}</div>
+   <h3>답변 구상 (주장 → 근거 → 예시)</h3><div class="answerBox">${p.answer?esc(p.answer).replace(/\n/g,'<br>'):'<span class="muted">-</span>'}</div>
+   <h3>예상 꼬리질문</h3><div class="answerBox">${p.followup?esc(p.followup).replace(/\n/g,'<br>'):'<span class="muted">-</span>'}</div>
+   <h3>스스로 피드백</h3><div class="answerBox">${p.feedback?esc(p.feedback).replace(/\n/g,'<br>'):'<span class="muted">-</span>'}</div>
+   ${editable?`<div class="row" style="margin-top:8px">
+     <button class="btn sm" data-act="editPs" data-id="${p.id}">수정</button>
+     <button class="btn sm danger" data-act="delPs" data-id="${p.id}">삭제</button>
+   </div>`:''}
+ </div>`;
+}
+function renderPresentations(){
+ if(!CURRENT) return;
+ const wrap=document.getElementById('presentationList');
+ const list=CURRENT.presentations||[];
+ wrap.innerHTML = list.length ? list.map(p=>presentationCardHTML(p,true)).join('') : '<div class="empty">아직 정리한 제시문 기출이 없습니다.</div>';
+ wrap.querySelectorAll('button[data-act="editPs"]').forEach(b=>b.addEventListener('click',()=>{
+   const p=(CURRENT.presentations||[]).find(x=>x.id===b.dataset.id); if(!p)return;
+   editingPsId=p.id;
+   document.getElementById('psUnivField').value=p.univField||'';
+   document.getElementById('psSummary').value=p.summary||'';
+   document.getElementById('psQuestion').value=p.question||'';
+   document.getElementById('psAnswer').value=p.answer||'';
+   document.getElementById('psFollowup').value=p.followup||'';
+   document.getElementById('psFeedback').value=p.feedback||'';
+   document.getElementById('psFormTitle').textContent='제시문 기출 정리 수정';
+   document.getElementById('btnCancelPs').hidden=false;
+ }));
+ wrap.querySelectorAll('button[data-act="delPs"]').forEach(b=>b.addEventListener('click', async ()=>{
+   if(!(await uiConfirm('이 기출 정리를 삭제할까요?')))return;
+   CURRENT.presentations=(CURRENT.presentations||[]).filter(x=>x.id!==b.dataset.id);
+   await saveCurrent(); renderPresentations();
+ }));
+}
+function resetPsForm(){
+ editingPsId=null;
+ ['psUnivField','psSummary','psQuestion','psAnswer','psFollowup','psFeedback'].forEach(id=>document.getElementById(id).value='');
+ document.getElementById('psFormTitle').textContent='제시문 기출 정리 추가';
+ document.getElementById('btnCancelPs').hidden=true;
+}
+document.getElementById('btnCancelPs').addEventListener('click', resetPsForm);
+document.getElementById('btnSavePs').addEventListener('click', async ()=>{
+ if(!CURRENT){await uiAlert('로그인이 필요합니다.');return;}
+ const summary=document.getElementById('psSummary').value.trim();
+ const question=document.getElementById('psQuestion').value.trim();
+ if(!summary && !question){await uiAlert('제시문 요약이나 문제 요지 중 하나는 입력해 주세요.');return;}
+ const item={
+   univField:document.getElementById('psUnivField').value.trim(),
+   summary, question,
+   answer:document.getElementById('psAnswer').value.trim(),
+   followup:document.getElementById('psFollowup').value.trim(),
+   feedback:document.getElementById('psFeedback').value.trim()
+ };
+ CURRENT.presentations=CURRENT.presentations||[];
+ if(editingPsId){
+   const idx=CURRENT.presentations.findIndex(x=>x.id===editingPsId);
+   if(idx>-1) CURRENT.presentations[idx]={...item, id:editingPsId};
+ } else {
+   item.id=uid(); CURRENT.presentations.push(item);
+ }
+ await saveCurrent();
+ resetPsForm();
+ renderPresentations();
+});
+
+// ---------- 제시문 기출 자료 검색 (미리 넣어둔 자료) ----------
+let PRES_GUIDE_CACHE=null;
+async function loadPresGuideCache(){
+ if(PRES_GUIDE_CACHE) return PRES_GUIDE_CACHE;
+ try{
+   const res=await fetch('./presentation-data.json');
+   PRES_GUIDE_CACHE = await res.json();
+ }catch(e){ console.error(e); PRES_GUIDE_CACHE=[]; }
+ return PRES_GUIDE_CACHE;
+}
+function presGuideCardHTML(r){
+ return `<div class="item">
+   <div class="head">
+     ${r.univ?`<span class="badge acc">${esc(r.univ)}</span>`:''}
+     ${r.year?`<span class="badge">${esc(r.year)}</span>`:''}
+   </div>
+   <div class="qtext" style="font-size:14px">${esc(r.title||'')}</div>
+   <div class="reviewContent">${r.content?formatReviewContent(r.content):'<span class="muted">-</span>'}</div>
+   ${r.source?`<p class="tiny muted" style="margin-top:6px">출처: ${esc(r.source)}</p>`:''}
+ </div>`;
+}
+async function renderPresGuide(list){
+ const wrap=document.getElementById('presGuideList');
+ wrap.innerHTML='<p class="muted small">불러오는 중…</p>';
+ const all = list || await loadPresGuideCache();
+ if(!all.length){ wrap.innerHTML='<div class="empty">등록된 기출 자료가 없습니다.</div>'; return; }
+ wrap.innerHTML = all.map(presGuideCardHTML).join('');
+}
+document.getElementById('btnSearchPresGuide').addEventListener('click', async ()=>{
+ const q=safeSeg(document.getElementById('pgSearchText').value);
+ const all=await loadPresGuideCache();
+ if(!q){ renderPresGuide(all); return; }
+ const filtered=all.filter(r=> safeSeg(r.univ||'').includes(q) || safeSeg(r.title||'').includes(q) || safeSeg(r.content||'').includes(q));
+ renderPresGuide(filtered);
+});
+document.getElementById('btnAllPresGuide').addEventListener('click', async ()=>{
+ document.getElementById('pgSearchText').value='';
+ renderPresGuide(await loadPresGuideCache());
+});
+
+// ---------- 배경지식 정리 (분야·주제별로 여러 자료를 모아서) ----------
+let editingKbId=null;
+function populateKbDatalists(){
+ const list=CURRENT.knowledge||[];
+ const subjects=[...new Set(list.map(k=>k.subject).filter(Boolean))];
+ const topics=[...new Set(list.map(k=>k.topic).filter(Boolean))];
+ document.getElementById('kbSubjectList').innerHTML=subjects.map(s=>`<option value="${esc(s)}">`).join('');
+ document.getElementById('kbTopicList').innerHTML=topics.map(t=>`<option value="${esc(t)}">`).join('');
+}
+function renderKnowledge(){
+ if(!CURRENT) return;
+ populateKbDatalists();
+ const wrap=document.getElementById('knowledgeList');
+ const list=CURRENT.knowledge||[];
+ if(!list.length){ wrap.innerHTML='<div class="empty">아직 정리한 배경지식이 없습니다.</div>'; return; }
+ const groups={};
+ const order=[];
+ list.forEach(k=>{
+   const key=(k.subject||'미분류')+'|||'+(k.topic||'미분류');
+   if(!groups[key]){ groups[key]=[]; order.push(key); }
+   groups[key].push(k);
+ });
+ wrap.innerHTML = order.map(key=>{
+   const [subject, topic]=key.split('|||');
+   const items=groups[key];
+   return `<div class="kbGroup">
+     <div class="kbGroupHeader"><span class="badge acc">${esc(subject)}</span><b>${esc(topic)}</b><span class="tiny muted">자료 ${items.length}건</span></div>
+     ${items.map(k=>`<div class="kbEntry">
+       <div class="answerBox">${k.content?esc(k.content).replace(/\n/g,'<br>'):'<span class="muted">-</span>'}</div>
+       ${(k.source||k.link)?`<p class="tiny muted" style="margin-top:6px">${k.source?esc(k.source):''}${k.source&&k.link?' · ':''}${k.link?`<a href="${esc(k.link)}" target="_blank" rel="noopener">${esc(k.link)}</a>`:''}</p>`:''}
+       <div class="row" style="margin-top:6px">
+         <button class="btn sm" data-act="editKb" data-id="${k.id}">수정</button>
+         <button class="btn sm danger" data-act="delKb" data-id="${k.id}">삭제</button>
+       </div>
+     </div>`).join('')}
+   </div>`;
+ }).join('');
+ wrap.querySelectorAll('button[data-act="editKb"]').forEach(b=>b.addEventListener('click',()=>{
+   const k=(CURRENT.knowledge||[]).find(x=>x.id===b.dataset.id); if(!k)return;
+   editingKbId=k.id;
+   document.getElementById('kbSubject').value=k.subject||'';
+   document.getElementById('kbTopic').value=k.topic||'';
+   document.getElementById('kbContent').value=k.content||'';
+   document.getElementById('kbSource').value=k.source||'';
+   document.getElementById('kbLink').value=k.link||'';
+   document.getElementById('kbFormTitle').textContent='배경지식 정리 수정';
+   document.getElementById('btnCancelKb').hidden=false;
+ }));
+ wrap.querySelectorAll('button[data-act="delKb"]').forEach(b=>b.addEventListener('click', async ()=>{
+   if(!(await uiConfirm('이 자료를 삭제할까요?')))return;
+   CURRENT.knowledge=(CURRENT.knowledge||[]).filter(x=>x.id!==b.dataset.id);
+   await saveCurrent(); renderKnowledge();
+ }));
+}
+function resetKbForm(){
+ editingKbId=null;
+ ['kbSubject','kbTopic','kbContent','kbSource','kbLink'].forEach(id=>document.getElementById(id).value='');
+ document.getElementById('kbFormTitle').textContent='배경지식 정리 추가';
+ document.getElementById('btnCancelKb').hidden=true;
+}
+document.getElementById('btnCancelKb').addEventListener('click', resetKbForm);
+document.getElementById('btnSaveKb').addEventListener('click', async ()=>{
+ if(!CURRENT){await uiAlert('로그인이 필요합니다.');return;}
+ const subject=document.getElementById('kbSubject').value.trim();
+ const topic=document.getElementById('kbTopic').value.trim();
+ const content=document.getElementById('kbContent').value.trim();
+ if(!subject || !topic){await uiAlert('분야(과목)와 주제를 입력해 주세요.');return;}
+ if(!content){await uiAlert('정리할 내용을 입력해 주세요.');return;}
+ const item={
+   subject, topic, content,
+   source:document.getElementById('kbSource').value.trim(),
+   link:document.getElementById('kbLink').value.trim()
+ };
+ CURRENT.knowledge=CURRENT.knowledge||[];
+ if(editingKbId){
+   const idx=CURRENT.knowledge.findIndex(x=>x.id===editingKbId);
+   if(idx>-1) CURRENT.knowledge[idx]={...item, id:editingKbId};
+ } else {
+   item.id=uid(); CURRENT.knowledge.push(item);
+ }
+ await saveCurrent();
+ resetKbForm();
+ renderKnowledge();
+});
+
 // ---------- 면접 후기 (제작 시 미리 넣어둔 자료 · 검색 전용) ----------
 let REVIEWS_CACHE=null;
 async function loadReviewsCache(){
@@ -1866,7 +2117,7 @@ document.getElementById('btnTeacherSearch').addEventListener('click', async ()=>
            const exist=await ref.get();
            if(exist.exists){ openTeacherWork(key); return; }
            await ref.set({school, number, name, schoolNorm:safeSeg(school), numberNorm:safeSeg(number), nameNorm:safeSeg(name),
-             passwordHash:null, questions:[], schedule:[], debates:[], mockInterviews:[], research:[], updatedAt:Date.now()});
+             passwordHash:null, questions:[], schedule:[], debates:[], mockInterviews:[], research:[], presentations:[], knowledge:[], updatedAt:Date.now()});
            await uiAlert('학생을 미리 등록했습니다. 이 학생이 나중에 처음 로그인할 때 지금 남기는 평가를 바로 볼 수 있어요.');
            openTeacherWork(key);
          }catch(e){ console.error(e); await uiAlert('등록 중 오류: '+e.message); }
@@ -2268,7 +2519,7 @@ function renderTeacherQList(){
       if(snap.exists){
         const data = snap.data();
         CURRENT = {key:savedStudentKey, school:data.school, number:data.number, name:data.name,
-          questions:data.questions||[], schedule:data.schedule||[], debates:data.debates||[], mockInterviews:data.mockInterviews||[], research:data.research||[]};
+          questions:data.questions||[], schedule:data.schedule||[], debates:data.debates||[], mockInterviews:data.mockInterviews||[], research:data.research||[], presentations:data.presentations||[], knowledge:data.knowledge||[]};
         document.getElementById('studentGreeting').textContent = `${CURRENT.school} · ${CURRENT.number}번 · ${CURRENT.name}님`;
         show('viewStudentApp');
         goTab('guide');

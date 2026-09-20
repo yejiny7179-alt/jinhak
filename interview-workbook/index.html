@@ -69,6 +69,9 @@ textarea{resize:vertical;min-height:70px}
 .fbBox{margin-top:12px;padding-top:12px;border-top:1px dashed var(--line2)}
 .fbEntry{background:#fffbea;border:1px solid #fde68a;border-radius:10px;padding:10px 14px;margin-top:8px;font-size:13.5px}
 .fbEntry .who{font-weight:700;color:#92400e;font-size:12.5px;margin-bottom:4px}
+.fbReplies{margin-top:8px;padding-top:8px;border-top:1px dashed #fcd34d}
+.fbReply{background:#fff;border:1px solid #fde68a;border-radius:8px;padding:6px 10px;margin-bottom:6px;font-size:12.5px}
+.fbReply b{color:#7c2d12}
 .followWrap{margin-top:12px;padding:12px 14px;background:#f8fafc;border:1px dashed var(--line2);border-radius:10px}
 .followItem{border:1px solid var(--line);background:#fff;border-radius:10px;padding:10px 12px;margin-bottom:8px}
 .followItem .fhead{display:flex;align-items:flex-start;gap:8px}
@@ -147,6 +150,7 @@ table.tbl th{background:var(--surface2);color:var(--muted);font-weight:700;font-
 .revisedText{color:#1d4ed8;background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:10px 14px;font-size:14px;line-height:1.85;white-space:pre-wrap;overflow-wrap:anywhere}
 .ddayBadge{display:inline-block;background:#fee2e2;color:#b91c1c;border-radius:999px;padding:1px 8px;font-size:11px;font-weight:800;margin-left:6px}
 .mockQRow{border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:10px;background:var(--surface2)}
+.mockSubField{margin-left:16px;padding-left:12px;border-left:3px solid var(--primary-3);margin-bottom:8px}
 .mockQRow .mockQNum{font-weight:800;color:var(--primary);margin-bottom:6px;font-size:12.5px}
 .mockQRow textarea, .mockQRow input{margin-bottom:8px}
 .practiceCard{max-width:640px;margin:0 auto;text-align:center;padding:36px 30px}
@@ -238,18 +242,22 @@ table.tbl th{background:var(--surface2);color:var(--muted);font-weight:700;font-
     <button data-tab="practice" type="button">연습하기</button>
     <button data-tab="mock" type="button">모의 면접</button>
     <button data-tab="debate" type="button">토론면접 준비</button>
+    <button data-tab="research" type="button">대학·학과 조사</button>
     <button data-tab="reviews" type="button">면접 후기</button>
   </nav>
 
   <!-- 가이드 -->
   <section id="view-guide" class="view on">
     <div class="card">
-      <h2>① 생기부를 세 가지로 나누어 읽기</h2>
-      <p class="muted small">학생부를 처음부터 끝까지 읽으며 아래 세 영역으로 형광펜을 표시해 보세요.</p>
+      <h2>① 생기부 항목별로 나누어 읽기</h2>
+      <p class="muted small">학생부를 처음부터 끝까지 읽으며 아래 항목별로 형광펜을 표시해 보세요. "질문 만들기"에서 질문을 저장할 때도 같은 항목을 선택하게 됩니다.</p>
       <div class="grid c3">
-        <div class="guideBox"><b class="tag">학업·탐구</b>교과 세특, 탐구, 실험, 발표, 보고서, 독서, 심화학습</div>
-        <div class="guideBox"><b class="tag" style="background:var(--accent)">진로·전공</b>지원 전공과 관련된 과목·활동, 관심의 변화와 확장</div>
-        <div class="guideBox"><b class="tag" style="background:#b45309">공동체·인성</b>동아리, 자율활동, 협업, 리더십, 갈등 해결, 봉사 등</div>
+        <div class="guideBox"><b class="tag">교과세특</b>과목별 세부능력 및 특기사항 — 탐구, 실험, 발표, 보고서, 심화학습</div>
+        <div class="guideBox"><b class="tag" style="background:#0ea5e9">자율활동</b>학급·학년 행사, 특색활동 등 자율적으로 참여한 활동</div>
+        <div class="guideBox"><b class="tag" style="background:var(--accent)">동아리활동</b>동아리에서 진행한 프로젝트, 역할, 배운 점</div>
+        <div class="guideBox"><b class="tag" style="background:#b45309">진로활동</b>진로 탐색·체험 활동, 전공에 대한 관심의 변화와 확장</div>
+        <div class="guideBox"><b class="tag" style="background:#16a34a">봉사활동</b>봉사 계기, 과정에서 느낀 점과 배운 점</div>
+        <div class="guideBox"><b class="tag" style="background:#7c3aed">행동특성 및 종합의견</b>선생님이 기록한 장점·인성, 공동체 안에서의 모습</div>
       </div>
       <p class="small muted" style="margin-top:10px">각 활동 옆에 준비 상태도 표시해 보세요 — <b>○</b> 자신 있게 설명 가능 / <b>△</b> 다시 확인 필요 / <b>×</b> 질문받으면 곤란함.</p>
     </div>
@@ -300,8 +308,9 @@ table.tbl th{background:var(--surface2);color:var(--muted);font-weight:700;font-
       <h2 id="schFormTitle">면접 보는 대학 추가</h2>
       <div class="grid c2">
         <div class="field"><label>대학</label><input id="schUniv" placeholder="예: ○○대학교"></div>
-        <div class="field"><label>전형</label><input id="schTrack" placeholder="예: 학생부종합전형"></div>
+        <div class="field"><label>학과 <span class="tiny muted">(선택)</span></label><input id="schDept" placeholder="예: 컴퓨터공학과"></div>
       </div>
+      <div class="field"><label>전형</label><input id="schTrack" placeholder="예: 학생부종합전형"></div>
       <div class="grid c3">
         <div class="field"><label>1단계 발표일</label><input id="schStage1" type="date"></div>
         <div class="field"><label>면접일</label><input id="schInterview" type="date"></div>
@@ -368,9 +377,12 @@ table.tbl th{background:var(--surface2);color:var(--muted);font-weight:700;font-
         <div class="grid c2">
           <div class="field"><label>생기부 영역</label>
             <select id="qArea">
-              <option value="학업·탐구">학업·탐구</option>
-              <option value="진로·전공">진로·전공</option>
-              <option value="공동체·인성">공동체·인성</option>
+              <option value="교과세특">교과세특</option>
+              <option value="자율활동">자율활동</option>
+              <option value="동아리활동">동아리활동</option>
+              <option value="진로활동">진로활동</option>
+              <option value="봉사활동">봉사활동</option>
+              <option value="행동특성및종합의견">행동특성 및 종합의견</option>
             </select>
           </div>
           <div class="field"><label>지원 대학 <span class="tiny muted">(대학마다 학과·질문이 다르면 선택)</span></label>
@@ -404,6 +416,15 @@ table.tbl th{background:var(--surface2);color:var(--muted);font-weight:700;font-
             <button class="chip" data-f="basic" type="button">기본질문</button>
             <button class="chip" data-f="record" type="button">생기부 기반</button>
           </div>
+          <select id="listAreaFilter">
+            <option value="all">모든 영역</option>
+            <option value="교과세특">교과세특</option>
+            <option value="자율활동">자율활동</option>
+            <option value="동아리활동">동아리활동</option>
+            <option value="진로활동">진로활동</option>
+            <option value="봉사활동">봉사활동</option>
+            <option value="행동특성및종합의견">행동특성 및 종합의견</option>
+          </select>
           <select id="listUnivFilter"><option value="all">모든 대학</option></select>
           <button class="btn sm" id="btnRefreshList" type="button">↻ 새로고침(피드백 확인)</button>
         </div>
@@ -443,9 +464,12 @@ table.tbl th{background:var(--surface2);color:var(--muted);font-weight:700;font-
           </div>
           <select id="cardAreaFilter" class="selectPill">
             <option value="all">모든 영역</option>
-            <option value="학업·탐구">학업·탐구</option>
-            <option value="진로·전공">진로·전공</option>
-            <option value="공동체·인성">공동체·인성</option>
+            <option value="교과세특">교과세특</option>
+            <option value="자율활동">자율활동</option>
+            <option value="동아리활동">동아리활동</option>
+            <option value="진로활동">진로활동</option>
+            <option value="봉사활동">봉사활동</option>
+            <option value="행동특성및종합의견">행동특성 및 종합의견</option>
           </select>
         </div>
         <div class="row between" style="margin-bottom:10px;margin-top:4px">
@@ -504,6 +528,30 @@ table.tbl th{background:var(--surface2);color:var(--muted);font-weight:700;font-
       </div>
     </div>
     <div id="debateList"></div>
+  </section>
+
+  <!-- 대학·학과 조사 -->
+  <section id="view-research" class="view">
+    <div class="notice">지원하려는 대학·학과에 대해 조사한 내용을 정리해 두면, 지원동기나 학과 이해도를 묻는 질문에 훨씬 구체적으로 답할 수 있어요.</div>
+    <div class="card">
+      <h2 id="rsFormTitle">대학·학과 조사 추가</h2>
+      <div class="grid c2">
+        <div class="field"><label>대학</label>
+          <select id="rsUniv"><option value="공통">공통 (모든 대학에 해당)</option></select>
+        </div>
+        <div class="field"><label>학과 <span class="tiny muted">(선택)</span></label><input id="rsDept" placeholder="예: 컴퓨터공학과"></div>
+      </div>
+      <div class="field"><label>조사 내용</label><textarea id="rsContent" placeholder="인재상, 교육과정, 주요 연구·시설, 최근 이슈, 커리큘럼 등 자유롭게 정리해 보세요."></textarea></div>
+      <div class="grid c2">
+        <div class="field"><label>출처 <span class="tiny muted">(선택)</span></label><input id="rsSource" placeholder="예: 학과 홈페이지"></div>
+        <div class="field"><label>링크 <span class="tiny muted">(선택)</span></label><input id="rsLink" placeholder="예: https://..."></div>
+      </div>
+      <div class="row">
+        <button class="btn primary" id="btnSaveResearch" type="button">저장하기</button>
+        <button class="btn" id="btnCancelResearch" type="button" hidden>수정 취소</button>
+      </div>
+    </div>
+    <div id="researchList"></div>
   </section>
 
   <!-- 면접 후기 -->
@@ -568,6 +616,30 @@ table.tbl th{background:var(--surface2);color:var(--muted);font-weight:700;font-
   <div id="teacherScheduleWrap"></div>
   <div id="teacherMockWrap"></div>
   <div class="card">
+    <h2>선생님이 질문 추가하기 <span class="hint">학생의 질문 목록에 바로 추가되어, 학생이 답변을 작성할 수 있습니다</span></h2>
+    <div class="grid c2">
+      <div class="field"><label>질문 유형</label>
+        <select id="tqType">
+          <option value="basic">기본질문</option>
+          <option value="record">생기부 기반 질문</option>
+        </select>
+      </div>
+      <div class="field" id="tqAreaWrap" hidden><label>생기부 영역</label>
+        <select id="tqArea">
+          <option value="교과세특">교과세특</option>
+          <option value="자율활동">자율활동</option>
+          <option value="동아리활동">동아리활동</option>
+          <option value="진로활동">진로활동</option>
+          <option value="봉사활동">봉사활동</option>
+          <option value="행동특성및종합의견">행동특성 및 종합의견</option>
+        </select>
+      </div>
+    </div>
+    <div class="field"><label>지원 대학</label><select id="tqUniv"><option value="공통">공통 (모든 대학에 해당)</option></select></div>
+    <div class="field"><label>질문 내용</label><textarea id="tqText" placeholder="예: 이 활동에서 겪은 어려움은 무엇이었나요?"></textarea></div>
+    <button class="btn primary" id="btnAddTeacherQ" type="button">질문 추가하기</button>
+  </div>
+  <div class="card">
     <div class="row between">
       <h2 style="margin:0">학생 질문 목록</h2>
       <div class="row">
@@ -576,7 +648,17 @@ table.tbl th{background:var(--surface2);color:var(--muted);font-weight:700;font-
           <button class="chip" data-f="basic" type="button">기본질문</button>
           <button class="chip" data-f="record" type="button">생기부 기반</button>
           <button class="chip" data-f="debate" type="button">토론면접</button>
+          <button class="chip" data-f="research" type="button">대학·학과 조사</button>
         </div>
+        <select id="tQAreaFilter">
+          <option value="all">모든 영역</option>
+          <option value="교과세특">교과세특</option>
+          <option value="자율활동">자율활동</option>
+          <option value="동아리활동">동아리활동</option>
+          <option value="진로활동">진로활동</option>
+          <option value="봉사활동">봉사활동</option>
+          <option value="행동특성및종합의견">행동특성 및 종합의견</option>
+        </select>
         <select id="tQUnivFilter"><option value="all">모든 대학</option></select>
       </div>
     </div>
@@ -662,20 +744,35 @@ const ANGLE_TEMPLATES=[
  {label:'⑤판단·근거', text:'왜 그 방법을 선택했나요? 다른 대안은 없었나요?'}
 ];
 const AREA_TEMPLATES={
- '학업·탐구':[
-   '[과목] 수업에서 [탐구활동]을 하며 배운 점은 무엇인가요?',
+ '교과세특':[
+   '[과목] 세특에 적힌 [탐구활동]을 하며 배운 점은 무엇인가요?',
    '탐구 과정에서 어려웠던 점과 그것을 해결한 방법은 무엇인가요?',
    '이 탐구 결과를 스스로 어떻게 해석했나요?'
  ],
- '진로·전공':[
+ '자율활동':[
+   '자율활동에서 맡았던 역할은 무엇이었고, 어떤 점을 배웠나요?',
+   '학급(학년) 행사를 기획·참여하며 기억에 남는 경험은 무엇인가요?',
+   '자율활동을 통해 이전과 달라진 점이 있다면 무엇인가요?'
+ ],
+ '동아리활동':[
+   '동아리에서 어떤 프로젝트(활동)를 했고, 본인의 역할은 무엇이었나요?',
+   '동아리 활동 중 힘들었던 점과 극복 방법은 무엇인가요?',
+   '동아리 활동이 진로(전공)에 대한 생각에 어떤 영향을 주었나요?'
+ ],
+ '진로활동':[
    '[전공]에 관심을 갖게 된 계기는 무엇인가요?',
-   '관련 활동을 통해 전공에 대한 이해가 어떻게 달라졌나요?',
+   '진로 관련 활동을 통해 전공에 대한 이해가 어떻게 달라졌나요?',
    '진학 후 이 분야에서 이루고 싶은 목표는 무엇인가요?'
  ],
- '공동체·인성':[
-   '조별 활동에서 갈등이 생겼을 때 어떻게 해결했나요?',
-   '리더(또는 구성원) 역할을 맡으며 힘들었던 점은 무엇인가요?',
-   '함께한 활동에서 자신의 기여는 무엇이었다고 생각하나요?'
+ '봉사활동':[
+   '봉사활동을 하게 된 계기와 그 과정에서 느낀 점은 무엇인가요?',
+   '봉사활동에서 어려웠던 점과 그것을 대한 태도는 어땠나요?',
+   '봉사활동이 자신에게 어떤 의미가 있었다고 생각하나요?'
+ ],
+ '행동특성및종합의견':[
+   '선생님이 기록해주신 본인의 장점(강점)은 무엇이고, 실제 사례를 들어 설명해 주세요.',
+   '공동체 생활에서 갈등이 생겼을 때 어떻게 해결했나요?',
+   '리더(또는 구성원) 역할을 맡으며 힘들었던 점은 무엇인가요?'
  ]
 };
 
@@ -823,7 +920,7 @@ document.getElementById('btnBackToLanding1').addEventListener('click',()=>show('
 document.getElementById('btnBackToLanding3').addEventListener('click',()=>show('viewLanding'));
 
 // ---------- 학생 로그인 ----------
-let CURRENT=null; // {key, school, number, name, questions:[], schedule:[], debates:[], mockInterviews:[]}
+let CURRENT=null; // {key, school, number, name, questions:[], schedule:[], debates:[], mockInterviews:[], research:[]}
 document.getElementById('btnStudentLogin').addEventListener('click', async ()=>{
   showSlMsg('');
   const school=document.getElementById('slSchool').value;
@@ -843,17 +940,17 @@ document.getElementById('btnStudentLogin').addEventListener('click', async ()=>{
       if(!data.passwordHash){
         // 선생님이 미리 등록해둔 계정 — 지금 입력한 비밀번호를 새로 설정하고 이어서 로그인
         await ref.update({passwordHash:hash});
-        CURRENT={key, school:data.school, number:data.number, name:data.name, questions:data.questions||[], schedule:data.schedule||[], debates:data.debates||[], mockInterviews:data.mockInterviews||[]};
+        CURRENT={key, school:data.school, number:data.number, name:data.name, questions:data.questions||[], schedule:data.schedule||[], debates:data.debates||[], mockInterviews:data.mockInterviews||[], research:data.research||[]};
       } else if(data.passwordHash!==hash){
         showSlMsg('비밀번호가 일치하지 않습니다.','error');return;
       } else {
-        CURRENT={key, school:data.school, number:data.number, name:data.name, questions:data.questions||[], schedule:data.schedule||[], debates:data.debates||[], mockInterviews:data.mockInterviews||[]};
+        CURRENT={key, school:data.school, number:data.number, name:data.name, questions:data.questions||[], schedule:data.schedule||[], debates:data.debates||[], mockInterviews:data.mockInterviews||[], research:data.research||[]};
       }
     } else {
       const newDoc={school, number, name, schoolNorm:safeSeg(school), numberNorm:safeSeg(number), nameNorm:safeSeg(name),
-        passwordHash:hash, questions:[], schedule:[], debates:[], mockInterviews:[], updatedAt:Date.now()};
+        passwordHash:hash, questions:[], schedule:[], debates:[], mockInterviews:[], research:[], updatedAt:Date.now()};
       await ref.set(newDoc);
-      CURRENT={key, school, number, name, questions:[], schedule:[], debates:[], mockInterviews:[]};
+      CURRENT={key, school, number, name, questions:[], schedule:[], debates:[], mockInterviews:[], research:[]};
     }
     document.getElementById('studentGreeting').textContent=`${CURRENT.school} · ${CURRENT.number}번 · ${CURRENT.name}님`;
     document.getElementById('slPassword').value='';
@@ -869,7 +966,7 @@ async function saveCurrent(){
   if(!fbReady||!CURRENT) return;
   const note=document.getElementById('savingNote'); note.textContent='저장 중…';
   try{
-    await db.collection('students').doc(CURRENT.key).update({questions:CURRENT.questions, schedule:CURRENT.schedule, debates:CURRENT.debates, mockInterviews:CURRENT.mockInterviews, updatedAt:Date.now()});
+    await db.collection('students').doc(CURRENT.key).update({questions:CURRENT.questions, schedule:CURRENT.schedule, debates:CURRENT.debates, mockInterviews:CURRENT.mockInterviews, research:CURRENT.research, updatedAt:Date.now()});
     note.textContent='저장됨 ✓';
     setTimeout(()=>{ if(note.textContent==='저장됨 ✓') note.textContent=''; },1500);
   }catch(e){ console.error(e); note.textContent=''; await uiAlert('저장 중 오류: '+e.message); }
@@ -878,7 +975,7 @@ async function refreshCurrent(){
   if(!fbReady||!CURRENT) return;
   try{
     const snap=await db.collection('students').doc(CURRENT.key).get();
-    if(snap.exists){ CURRENT.questions=snap.data().questions||[]; CURRENT.schedule=snap.data().schedule||[]; CURRENT.debates=snap.data().debates||[]; CURRENT.mockInterviews=snap.data().mockInterviews||[]; }
+    if(snap.exists){ CURRENT.questions=snap.data().questions||[]; CURRENT.schedule=snap.data().schedule||[]; CURRENT.debates=snap.data().debates||[]; CURRENT.mockInterviews=snap.data().mockInterviews||[]; CURRENT.research=snap.data().research||[]; }
     renderList();
   }catch(e){ console.error(e); }
 }
@@ -893,6 +990,7 @@ window.goTab=function(name){
  if(name==='schedule') renderSchedule();
  if(name==='reviews') renderReviews();
  if(name==='debate') renderDebates();
+ if(name==='research') renderResearch();
  if(name==='mock') renderMockList();
  if(name==='practice') renderPracticeList();
 };
@@ -990,18 +1088,32 @@ document.getElementById('btnSaveQ').addEventListener('click', async ()=>{
 // ---------- 목록 (학생) ----------
 let listFilter='all';
 let listUnivFilter='all';
+let listAreaFilter='all';
 document.querySelectorAll('#view-list .chip').forEach(c=>{
  c.addEventListener('click',()=>{document.querySelectorAll('#view-list .chip').forEach(x=>x.classList.remove('on'));c.classList.add('on');listFilter=c.dataset.f;renderList();});
 });
 document.getElementById('listUnivFilter').addEventListener('change',(e)=>{ listUnivFilter=e.target.value; renderList(); });
+document.getElementById('listAreaFilter').addEventListener('change',(e)=>{ listAreaFilter=e.target.value; renderList(); });
 document.getElementById('btnRefreshList').addEventListener('click', refreshCurrent);
 
-function renderFeedbackBlock(fbs, followups){
+function renderFeedbackBlock(fbs, followups, qid, role){
  const mainFbs=fbs.filter(f=>!f.followupId);
- return mainFbs.length? `<div class="fbBox">${mainFbs.map(fbHtml).join('')}</div>` : '';
+ return mainFbs.length? `<div class="fbBox">${mainFbs.map(f=>fbHtml(f,qid,role)).join('')}</div>` : '';
 }
-function fbHtml(f){
- return `<div class="fbEntry"><div class="who">${esc(f.teacherName||'선생님')}${f.teacherSchool?(' · '+esc(f.teacherSchool)):''} · ${formatDateTime(f.at)}</div>${f.tags&&f.tags.length?`<div class="chips" style="margin-bottom:6px">${f.tags.map(t=>`<span class="badge">${esc(t)}</span>`).join(' ')}</div>`:''}${esc(f.comment)}</div>`;
+function fbHtml(f, qid, role){
+ const canEdit = role==='teacher' && typeof TEACHER_SESSION!=='undefined' && TEACHER_SESSION &&
+   (f.teacherKey ? f.teacherKey===TEACHER_SESSION.key : f.teacherName===TEACHER_SESSION.displayName);
+ const replies=(f.replies||[]).map(r=>`<div class="fbReply"><b>${esc(r.author)}</b><span class="tiny muted"> · ${r.role==='teacher'?'선생님':'학생'} · ${formatDateTime(r.at)}</span><div>${esc(r.text)}</div></div>`).join('');
+ return `<div class="fbEntry">
+   <div class="who">${esc(f.teacherName||'선생님')}${f.teacherSchool?(' · '+esc(f.teacherSchool)):''} · ${formatDateTime(f.at)}${f.editedAt?' <span class="tiny muted">(수정됨)</span>':''}</div>
+   ${f.tags&&f.tags.length?`<div class="chips" style="margin-bottom:6px">${f.tags.map(t=>`<span class="badge">${esc(t)}</span>`).join(' ')}</div>`:''}
+   ${esc(f.comment)}
+   ${replies?`<div class="fbReplies">${replies}</div>`:''}
+   <div class="row" style="margin-top:6px">
+     ${canEdit?`<button class="btn sm" data-act="editfb" data-qid="${qid}" data-fid="${f.id}">수정</button>`:''}
+     <button class="btn sm" data-act="replyfb" data-qid="${qid}" data-fid="${f.id}">💬 답글</button>
+   </div>
+ </div>`;
 }
 
 function renderList(){
@@ -1013,7 +1125,7 @@ function renderList(){
  univSel.innerHTML='<option value="all">모든 대학</option><option value="공통">공통만</option>'+univsInQ.filter(u=>u!=='공통').map(u=>`<option value="${esc(u)}">${esc(u)}</option>`).join('');
  univSel.value = [...univSel.options].some(o=>o.value===prevVal) ? prevVal : 'all';
  listUnivFilter = univSel.value;
- const list=(CURRENT.questions||[]).filter(q=>(listFilter==='all'||q.type===listFilter) && (listUnivFilter==='all'|| (q.univ||'공통')===listUnivFilter));
+ const list=(CURRENT.questions||[]).filter(q=>(listFilter==='all'||q.type===listFilter) && (listUnivFilter==='all'|| (q.univ||'공통')===listUnivFilter) && (listAreaFilter==='all'|| q.area===listAreaFilter));
  const wrap=document.getElementById('qList');
  document.getElementById('cntQ').textContent=(CURRENT.questions||[]).length;
  if(!list.length){wrap.innerHTML='<div class="empty">아직 만든 질문이 없습니다. "질문 만들기" 탭에서 시작해 보세요.</div>';return;}
@@ -1024,6 +1136,7 @@ function renderList(){
    el.innerHTML=`
     <div class="head">
       ${q.type==='basic'?'<span class="badge">기본질문</span>':`<span class="badge acc">생기부 기반</span><span class="badge gray">${esc(q.area)}</span>${q.univ && q.univ!=="공통"?`<span class="badge warn">${esc(q.univ)}</span>`:`<span class="badge gray">공통</span>`}`}
+      ${q.createdBy==='teacher'?`<span class="badge" style="background:#ede9fe;color:#6d28d9">👩‍🏫 ${esc(q.teacherName||'선생님')}이(가) 낸 질문</span>`:''}
       ${fbs.length?`<span class="badge warn">선생님 피드백 ${fbs.length}건</span>`:''}
       ${wasRevisedSinceFeedback(q.answerHtml, fbs, null)?`<span class="badge" style="background:#dbeafe;color:#1e3a8a">✏ 답변 수정됨</span>`:''}
     </div>
@@ -1033,7 +1146,7 @@ function renderList(){
       <button class="btn sm" data-act="edit" data-id="${q.id}">수정</button>
       <button class="btn sm danger" data-act="del" data-id="${q.id}">삭제</button>
     </div>
-    ${renderFeedbackBlock(fbs, followups)}
+    ${renderFeedbackBlock(fbs, followups, q.id, 'student')}
     <div class="followWrap">
       <div class="row between"><b class="small">↳ 꼬리질문</b><button class="btn sm" data-act="addfollow" data-id="${q.id}">+ 꼬리질문 추가</button></div>
       ${followups.map(fu=>{
@@ -1049,7 +1162,7 @@ function renderList(){
                 <button class="btn sm" data-act="editfollow" data-qid="${q.id}" data-fid="${fu.id}">수정</button>
                 <button class="btn sm danger" data-act="delfollow" data-qid="${q.id}" data-fid="${fu.id}">삭제</button>
               </div>
-              ${fufbs.length?`<div class="fbBox">${fufbs.map(fbHtml).join('')}</div>`:''}
+              ${fufbs.length?`<div class="fbBox">${fufbs.map(f=>fbHtml(f,q.id,'student')).join('')}</div>`:''}
             </div>
           </div>
         </div>`;
@@ -1063,7 +1176,14 @@ function renderList(){
    editingId=q.id;
    goTab('build');
    document.getElementById('qType').value=q.type; toggleRecordFields();
-   if(q.type==='record'){document.getElementById('qArea').value=q.area; populateQUnivSelect(q.univ);}
+   if(q.type==='record'){
+     const areaSel=document.getElementById('qArea');
+     if(q.area && ![...areaSel.options].some(o=>o.value===q.area)){
+       areaSel.innerHTML += `<option value="${esc(q.area)}">${esc(q.area)} (이전 분류)</option>`;
+     }
+     areaSel.value=q.area;
+     populateQUnivSelect(q.univ);
+   }
    document.getElementById('qText').value=q.text;
    document.getElementById('qAnswer').innerHTML=q.answerHtml||'';
    document.getElementById('editingNote').textContent='✏ 이 질문을 수정하고 있습니다.';
@@ -1097,6 +1217,14 @@ function renderList(){
    const q=CURRENT.questions.find(x=>x.id===b.dataset.qid);
    q.followups=(q.followups||[]).filter(x=>x.id!==b.dataset.fid);
    q.feedback=(q.feedback||[]).filter(f=>f.followupId!==b.dataset.fid);
+   await saveCurrent(); renderList();
+ }));
+ wrap.querySelectorAll('button[data-act="replyfb"]').forEach(b=>b.addEventListener('click', async ()=>{
+   const text=await uiPrompt('답글을 입력하세요.'); if(!text||!text.trim())return;
+   const q=CURRENT.questions.find(x=>x.id===b.dataset.qid); if(!q)return;
+   const f=(q.feedback||[]).find(x=>x.id===b.dataset.fid); if(!f)return;
+   f.replies=f.replies||[];
+   f.replies.push({id:uid(), author:CURRENT.name, role:'student', text:text.trim(), at:Date.now()});
    await saveCurrent(); renderList();
  }));
 }
@@ -1136,8 +1264,8 @@ function calendarHTML(events, year, month){
 function scheduleTableHTML(list, editable){
  if(!list.length) return '<p class="empty small">등록된 일정이 없습니다.</p>';
  const rows=list.slice().sort((a,b)=>(a.interviewDate||'9999').localeCompare(b.interviewDate||'9999'));
- return `<table class="tbl"><thead><tr><th>대학</th><th>전형</th><th>1단계 발표일</th><th>면접일</th><th>디데이</th><th>최종 발표일</th><th>면접 유형</th>${editable?'<th></th>':''}</tr></thead><tbody>${rows.map(it=>`<tr>
-   <td>${esc(it.univ)}</td><td>${esc(it.track||'-')}</td><td>${esc(it.stage1Date||'-')}</td>
+ return `<table class="tbl"><thead><tr><th>대학</th><th>학과</th><th>전형</th><th>1단계 발표일</th><th>면접일</th><th>디데이</th><th>최종 발표일</th><th>면접 유형</th>${editable?'<th></th>':''}</tr></thead><tbody>${rows.map(it=>`<tr>
+   <td>${esc(it.univ)}</td><td>${esc(it.dept||'-')}</td><td>${esc(it.track||'-')}</td><td>${esc(it.stage1Date||'-')}</td>
    <td>${esc(it.interviewDate||'-')}</td><td>${it.interviewDate?`<span class="ddayBadge">${esc(ddayLabel(it.interviewDate))}</span>`:'-'}</td><td>${esc(it.finalDate||'-')}</td><td>${esc(it.type||'-')}</td>
    ${editable?`<td><button class="btn sm" data-act="editSch" data-id="${it.id}">수정</button> <button class="btn sm danger" data-act="delSch" data-id="${it.id}">삭제</button></td>`:''}
  </tr>`).join('')}</tbody></table>`;
@@ -1158,6 +1286,7 @@ function renderSchedule(){
    const it=(CURRENT.schedule||[]).find(x=>x.id===b.dataset.id); if(!it)return;
    editingSchId=it.id;
    document.getElementById('schUniv').value=it.univ||'';
+   document.getElementById('schDept').value=it.dept||'';
    document.getElementById('schTrack').value=it.track||'';
    document.getElementById('schStage1').value=it.stage1Date||'';
    document.getElementById('schInterview').value=it.interviewDate||'';
@@ -1182,7 +1311,7 @@ function renderSchedule(){
 }
 function resetSchForm(){
  editingSchId=null;
- ['schUniv','schTrack','schStage1','schInterview','schFinal','schType','schTypeOther'].forEach(id=>document.getElementById(id).value='');
+ ['schUniv','schDept','schTrack','schStage1','schInterview','schFinal','schType','schTypeOther'].forEach(id=>document.getElementById(id).value='');
  document.getElementById('schTypeOtherWrap').hidden=true;
  document.getElementById('schFormTitle').textContent='면접 보는 대학 추가';
  document.getElementById('btnCancelSch').hidden=true;
@@ -1193,7 +1322,7 @@ document.getElementById('btnSaveSch').addEventListener('click', async ()=>{
  const univ=document.getElementById('schUniv').value.trim();
  if(!univ){await uiAlert('대학명을 입력해 주세요.');return;}
  const item={
-   univ, track:document.getElementById('schTrack').value.trim(),
+   univ, dept:document.getElementById('schDept').value.trim(), track:document.getElementById('schTrack').value.trim(),
    stage1Date:document.getElementById('schStage1').value,
    interviewDate:document.getElementById('schInterview').value,
    finalDate:document.getElementById('schFinal').value,
@@ -1254,6 +1383,7 @@ function mockCardHTML(m, editable){
    <div class="mockQRow">
      <div class="mockQNum">질문 ${i+1}</div>
      <div style="white-space:pre-wrap;margin-bottom:6px;font-weight:600">${esc(q.question||'-')}</div>
+     ${q.followup?`<div class="mockSubField" style="white-space:pre-wrap;padding-top:2px;padding-bottom:2px"><span class="tiny muted">↳ 꼬리질문</span><div>${esc(q.followup)}</div></div>`:''}
      ${q.keywords?`<div class="tiny muted" style="margin-bottom:6px"><b>답변 키워드</b> ${esc(q.keywords)}</div>`:''}
      ${q.feedback?`<div class="fbEntry" style="margin-top:0">${esc(q.feedback)}</div>`:''}
    </div>`).join('');
@@ -1522,6 +1652,86 @@ document.getElementById('btnSaveDb').addEventListener('click', async ()=>{
  renderDebates();
 });
 
+// ---------- 대학·학과 조사 ----------
+let editingRsId=null;
+function populateRsUnivSelect(selected){
+ const sel=document.getElementById('rsUniv');
+ const univs=(CURRENT&&CURRENT.schedule||[]).map(it=>it.univ).filter(Boolean);
+ const unique=[...new Set(univs)];
+ sel.innerHTML='<option value="공통">공통 (모든 대학에 해당)</option>'+unique.map(u=>`<option value="${esc(u)}">${esc(u)}</option>`).join('');
+ if(selected && selected!=='공통' && !unique.includes(selected)){
+   sel.innerHTML += `<option value="${esc(selected)}">${esc(selected)} (일정에서 삭제됨)</option>`;
+ }
+ sel.value = selected || '공통';
+}
+function researchCardHTML(r, editable){
+ return `<div class="item">
+   <div class="head">
+     ${r.univ && r.univ!=='공통'?`<span class="badge warn">${esc(r.univ)}</span>`:`<span class="badge gray">공통</span>`}
+     ${r.dept?`<span class="badge gray">${esc(r.dept)}</span>`:''}
+   </div>
+   <div class="answerBox">${r.content?esc(r.content).replace(/\n/g,'<br>'):'<span class="muted">-</span>'}</div>
+   ${(r.source||r.link)?`<p class="tiny muted" style="margin-top:6px">${r.source?esc(r.source):''}${r.source&&r.link?' · ':''}${r.link?`<a href="${esc(r.link)}" target="_blank" rel="noopener">${esc(r.link)}</a>`:''}</p>`:''}
+   ${editable?`<div class="row" style="margin-top:8px">
+     <button class="btn sm" data-act="editRs" data-id="${r.id}">수정</button>
+     <button class="btn sm danger" data-act="delRs" data-id="${r.id}">삭제</button>
+   </div>`:''}
+ </div>`;
+}
+function renderResearch(){
+ if(!CURRENT) return;
+ populateRsUnivSelect(document.getElementById('rsUniv').value);
+ const wrap=document.getElementById('researchList');
+ const list=CURRENT.research||[];
+ wrap.innerHTML = list.length ? list.map(r=>researchCardHTML(r,true)).join('') : '<div class="empty">아직 조사한 내용이 없습니다.</div>';
+ wrap.querySelectorAll('button[data-act="editRs"]').forEach(b=>b.addEventListener('click',()=>{
+   const r=(CURRENT.research||[]).find(x=>x.id===b.dataset.id); if(!r)return;
+   editingRsId=r.id;
+   populateRsUnivSelect(r.univ||'공통');
+   document.getElementById('rsDept').value=r.dept||'';
+   document.getElementById('rsContent').value=r.content||'';
+   document.getElementById('rsSource').value=r.source||'';
+   document.getElementById('rsLink').value=r.link||'';
+   document.getElementById('rsFormTitle').textContent='대학·학과 조사 수정';
+   document.getElementById('btnCancelResearch').hidden=false;
+ }));
+ wrap.querySelectorAll('button[data-act="delRs"]').forEach(b=>b.addEventListener('click', async ()=>{
+   if(!(await uiConfirm('이 조사 내용을 삭제할까요?')))return;
+   CURRENT.research=(CURRENT.research||[]).filter(x=>x.id!==b.dataset.id);
+   await saveCurrent(); renderResearch();
+ }));
+}
+function resetResearchForm(){
+ editingRsId=null;
+ ['rsDept','rsContent','rsSource','rsLink'].forEach(id=>document.getElementById(id).value='');
+ populateRsUnivSelect('공통');
+ document.getElementById('rsFormTitle').textContent='대학·학과 조사 추가';
+ document.getElementById('btnCancelResearch').hidden=true;
+}
+document.getElementById('btnCancelResearch').addEventListener('click', resetResearchForm);
+document.getElementById('btnSaveResearch').addEventListener('click', async ()=>{
+ if(!CURRENT){await uiAlert('로그인이 필요합니다.');return;}
+ const content=document.getElementById('rsContent').value.trim();
+ if(!content){await uiAlert('조사한 내용을 입력해 주세요.');return;}
+ const item={
+   univ:document.getElementById('rsUniv').value,
+   dept:document.getElementById('rsDept').value.trim(),
+   content,
+   source:document.getElementById('rsSource').value.trim(),
+   link:document.getElementById('rsLink').value.trim()
+ };
+ CURRENT.research=CURRENT.research||[];
+ if(editingRsId){
+   const idx=CURRENT.research.findIndex(x=>x.id===editingRsId);
+   if(idx>-1) CURRENT.research[idx]={...item, id:editingRsId};
+ } else {
+   item.id=uid(); CURRENT.research.push(item);
+ }
+ await saveCurrent();
+ resetResearchForm();
+ renderResearch();
+});
+
 // ---------- 면접 후기 (제작 시 미리 넣어둔 자료 · 검색 전용) ----------
 let REVIEWS_CACHE=null;
 async function loadReviewsCache(){
@@ -1592,6 +1802,7 @@ document.querySelectorAll('#tQFilterChips .chip').forEach(c=>{
  c.addEventListener('click',()=>{document.querySelectorAll('#tQFilterChips .chip').forEach(x=>x.classList.remove('on'));c.classList.add('on');tQTypeFilter=c.dataset.f;renderTeacherQList();});
 });
 document.getElementById('tQUnivFilter').addEventListener('change',(e)=>{ tQUnivFilter=e.target.value; renderTeacherQList(); });
+document.getElementById('tQAreaFilter').addEventListener('change',(e)=>{ tQAreaFilter=e.target.value; renderTeacherQList(); });
 
 document.getElementById('btnTeacherLogin').addEventListener('click', async ()=>{
  const msgBox=document.getElementById('tlMsg');
@@ -1647,15 +1858,22 @@ document.getElementById('btnTeacherSearch').addEventListener('click', async ()=>
    if(snap.empty){
      if(norm(number) && norm(name)){
        resultsWrap.innerHTML=`<div class="empty small">일치하는 학생이 없습니다.<br>아직 로그인한 적 없는 학생이라면, 미리 등록해서 모의 면접 평가를 먼저 남길 수 있어요.</div>
-         <button class="btn sm primary" id="btnPreRegister" type="button" style="margin-top:10px">"${esc(school)} ${esc(number)}번 ${esc(name)}" 학생 미리 등록하기</button>`;
+         <div class="grid c2" style="margin-top:10px">
+           <div class="field"><label>지원 대학 <span class="tiny muted">(선택)</span></label><input id="preRegUniv" placeholder="예: ○○대학교"></div>
+           <div class="field"><label>학과 <span class="tiny muted">(선택)</span></label><input id="preRegDept" placeholder="예: 컴퓨터공학과"></div>
+         </div>
+         <button class="btn sm primary" id="btnPreRegister" type="button">"${esc(school)} ${esc(number)}번 ${esc(name)}" 학생 미리 등록하기</button>`;
        document.getElementById('btnPreRegister').addEventListener('click', async ()=>{
          const key=makeKey(school, number, name);
+         const preUniv=document.getElementById('preRegUniv').value.trim();
+         const preDept=document.getElementById('preRegDept').value.trim();
          try{
            const ref=db.collection('students').doc(key);
            const exist=await ref.get();
            if(exist.exists){ openTeacherWork(key); return; }
+           const schedule = preUniv ? [{id:uid(), univ:preUniv, dept:preDept, track:'', stage1Date:'', interviewDate:'', finalDate:'', type:''}] : [];
            await ref.set({school, number, name, schoolNorm:safeSeg(school), numberNorm:safeSeg(number), nameNorm:safeSeg(name),
-             passwordHash:null, questions:[], schedule:[], debates:[], mockInterviews:[], updatedAt:Date.now()});
+             passwordHash:null, questions:[], schedule, debates:[], mockInterviews:[], research:[], updatedAt:Date.now()});
            await uiAlert('학생을 미리 등록했습니다. 이 학생이 나중에 처음 로그인할 때 지금 남기는 평가를 바로 볼 수 있어요.');
            openTeacherWork(key);
          }catch(e){ console.error(e); await uiAlert('등록 중 오류: '+e.message); }
@@ -1684,10 +1902,39 @@ async function openTeacherWork(key){
  document.getElementById('teacherStudentTitle').textContent=`${TCUR.data.name} 학생 (${TCUR.data.school} · ${TCUR.data.number}번)`;
  show('viewTeacherWork');
  teacherCalState=null;
+ populateTqUnivSelect();
  renderTeacherSchedule();
  renderTeacherMock();
  renderTeacherQList();
 }
+function populateTqUnivSelect(){
+ const sel=document.getElementById('tqUniv');
+ const univs=((TCUR&&TCUR.data.schedule)||[]).map(it=>it.univ).filter(Boolean);
+ const unique=[...new Set(univs)];
+ sel.innerHTML='<option value="공통">공통 (모든 대학에 해당)</option>'+unique.map(u=>`<option value="${esc(u)}">${esc(u)}</option>`).join('');
+}
+document.getElementById('tqType').addEventListener('change',()=>{
+ document.getElementById('tqAreaWrap').hidden = document.getElementById('tqType').value!=='record';
+});
+document.getElementById('btnAddTeacherQ').addEventListener('click', async ()=>{
+ if(!TCUR){await uiAlert('학생 정보가 없습니다.');return;}
+ const text=document.getElementById('tqText').value.trim();
+ if(!text){await uiAlert('질문 내용을 입력해 주세요.');return;}
+ const type=document.getElementById('tqType').value;
+ const newQ={
+   id:uid(), type, area: type==='record'?document.getElementById('tqArea').value:null,
+   univ:document.getElementById('tqUniv').value,
+   text, answerHtml:'', followups:[], feedback:[],
+   createdBy:'teacher', teacherName:TEACHER_SESSION?TEACHER_SESSION.displayName:'선생님',
+   createdAt:Date.now(), updatedAt:Date.now()
+ };
+ TCUR.data.questions=TCUR.data.questions||[];
+ TCUR.data.questions.unshift(newQ);
+ await saveTeacherQuestions();
+ document.getElementById('tqText').value='';
+ await uiAlert('질문을 추가했습니다. 학생이 "내 질문 목록"에서 확인하고 답변할 수 있어요.');
+ renderTeacherQList();
+});
 let teacherCalState=null;
 function renderTeacherSchedule(){
  if(!teacherCalState){ const now=new Date(); teacherCalState={year:now.getFullYear(), month:now.getMonth()}; }
@@ -1770,11 +2017,14 @@ function renderTeacherMock(){
 function renumberMockQRows(){
  document.querySelectorAll('#mockQRows .mockQRow .mockQNum').forEach((el,i)=>{ el.textContent='질문 '+(i+1); });
 }
-function addMockQRow(question,keywords,feedback){
+function addMockQRow(question,keywords,feedback,followup){
  const rowsWrap=document.getElementById('mockQRows');
  const div=document.createElement('div'); div.className='mockQRow';
  div.innerHTML=`<div class="mockQNum">질문</div>
-   <div class="field"><label>질문 (메인 질문·꼬리 질문 함께 적어도 됩니다)</label><textarea class="mqQuestion" rows="2">${esc(question||'')}</textarea></div>
+   <div class="field"><label>메인 질문</label><textarea class="mqQuestion" rows="2">${esc(question||'')}</textarea></div>
+   <div class="mockSubField">
+     <div class="field"><label>↳ 꼬리질문 <span class="tiny muted">(선택)</span></label><textarea class="mqFollowup" rows="2" placeholder="메인 질문에 이어서 추가로 물어본 꼬리질문을 적어주세요.">${esc(followup||'')}</textarea></div>
+   </div>
    <div class="field"><label>답변 키워드</label><input class="mqKeywords" value="${esc(keywords||'')}" placeholder="학생 답변에서 나온 핵심 키워드"></div>
    <div class="field"><label>이 질문에 대한 피드백</label><textarea class="mqFeedback" rows="2">${esc(feedback||'')}</textarea></div>
    <button class="btn sm danger" type="button" data-act="delMockQRow">이 질문 삭제</button>`;
@@ -1814,7 +2064,7 @@ function renderTeacherMockList(){
    document.querySelectorAll('#mockContentChips .chip').forEach(c=>c.classList.toggle('on', (m.contentGood||[]).includes(c.dataset.t)));
    document.getElementById('mockQRows').innerHTML='';
    if(m.questions && m.questions.length){
-     m.questions.forEach(q=>addMockQRow(q.question, q.keywords, q.feedback));
+     m.questions.forEach(q=>addMockQRow(q.question, q.keywords, q.feedback, q.followup));
    } else {
      addMockQRow();
    }
@@ -1840,9 +2090,10 @@ async function saveMockEntry(){
  const contentGood=[...document.querySelectorAll('#mockContentChips .chip.on')].map(c=>c.dataset.t);
  const questions=[...document.querySelectorAll('#mockQRows .mockQRow')].map(row=>({
    question: row.querySelector('.mqQuestion').value.trim(),
+   followup: row.querySelector('.mqFollowup').value.trim(),
    keywords: row.querySelector('.mqKeywords').value.trim(),
    feedback: row.querySelector('.mqFeedback').value.trim()
- })).filter(q=>q.question||q.keywords||q.feedback);
+ })).filter(q=>q.question||q.followup||q.keywords||q.feedback);
  const item={
    date, teacherName:resolvedName, teacherSchool:tschool,
    type:document.getElementById('mockType').value,
@@ -1856,25 +2107,33 @@ async function saveMockEntry(){
    mission:document.getElementById('mockMission').value.trim()
  };
  TCUR.data.mockInterviews=TCUR.data.mockInterviews||[];
+ let savedId;
  if(editingMockId){
    const idx=TCUR.data.mockInterviews.findIndex(x=>x.id===editingMockId);
    if(idx>-1) TCUR.data.mockInterviews[idx]={...item, id:editingMockId};
+   savedId=editingMockId;
  } else {
    item.id=uid(); TCUR.data.mockInterviews.push(item);
+   savedId=item.id;
  }
  await saveTeacherMock();
- resetMockForm();
+ // 저장 후에도 폼을 그대로 두어, 이어서 질문을 추가하거나 내용을 계속 수정할 수 있도록 함
+ editingMockId=savedId;
+ document.getElementById('mockFormTitle').textContent='모의 면접 평가 수정 중 (이어서 계속 작성할 수 있어요)';
+ document.getElementById('btnCancelMock').hidden=false;
  renderTeacherMockList();
- await uiAlert('저장되었습니다.');
+ await uiAlert('저장되었습니다. 이 화면에서 계속 이어서 작성할 수 있어요. 새 평가를 시작하려면 "수정 취소"를 눌러주세요.');
 }
 let tQTypeFilter='all';
 let tQUnivFilter='all';
+let tQAreaFilter='all';
 function renderTeacherQList(){
  const wrap=document.getElementById('teacherQList');
  const allQ=TCUR.data.questions||[];
  const allD=TCUR.data.debates||[];
+ const allR=TCUR.data.research||[];
  const univSel=document.getElementById('tQUnivFilter');
- const univsInQ=[...new Set([...allQ.map(q=>q.univ), ...allD.map(d=>d.univ)].filter(Boolean))];
+ const univsInQ=[...new Set([...allQ.map(q=>q.univ), ...allD.map(d=>d.univ), ...allR.map(r=>r.univ)].filter(Boolean))];
  const prevVal=univSel.value;
  univSel.innerHTML='<option value="all">모든 대학</option><option value="공통">공통만</option>'+univsInQ.filter(u=>u!=='공통').map(u=>`<option value="${esc(u)}">${esc(u)}</option>`).join('');
  univSel.value = [...univSel.options].some(o=>o.value===prevVal) ? prevVal : 'all';
@@ -1882,14 +2141,17 @@ function renderTeacherQList(){
 
  const showQuestions = tQTypeFilter==='all' || tQTypeFilter==='basic' || tQTypeFilter==='record';
  const showDebates = tQTypeFilter==='all' || tQTypeFilter==='debate';
- const qTypeMatch = (q)=> tQTypeFilter==='all' ? true : (tQTypeFilter==='debate' ? false : q.type===tQTypeFilter);
+ const showResearch = tQTypeFilter==='all' || tQTypeFilter==='research';
+ const qTypeMatch = (q)=> tQTypeFilter==='all' ? true : (tQTypeFilter==='debate'||tQTypeFilter==='research' ? false : q.type===tQTypeFilter);
  const univMatch = (u)=> tQUnivFilter==='all' || (u||'공통')===tQUnivFilter;
+ const areaMatch = (q)=> tQAreaFilter==='all' || q.area===tQAreaFilter;
 
- const list = showQuestions ? allQ.filter(q=>qTypeMatch(q) && univMatch(q.univ)) : [];
+ const list = showQuestions ? allQ.filter(q=>qTypeMatch(q) && univMatch(q.univ) && areaMatch(q)) : [];
  const dlist = showDebates ? allD.filter(d=>univMatch(d.univ)) : [];
+ const rlist = showResearch ? allR.filter(r=>univMatch(r.univ)) : [];
 
- if(!allQ.length && !allD.length){wrap.innerHTML='<div class="card"><div class="empty">이 학생이 아직 만든 질문이 없습니다.</div></div>';return;}
- if(!list.length && !dlist.length){wrap.innerHTML='<div class="card"><div class="empty">조건에 맞는 질문이 없습니다.</div></div>';return;}
+ if(!allQ.length && !allD.length && !allR.length){wrap.innerHTML='<div class="card"><div class="empty">이 학생이 아직 만든 질문이 없습니다.</div></div>';return;}
+ if(!list.length && !dlist.length && !rlist.length){wrap.innerHTML='<div class="card"><div class="empty">조건에 맞는 항목이 없습니다.</div></div>';return;}
  wrap.innerHTML='';
  list.forEach(q=>{
    const fbs=q.feedback||[]; const followups=q.followups||[];
@@ -1902,7 +2164,7 @@ function renderTeacherQList(){
     </div>
     <div class="qtext">Q. ${esc(q.text)}</div>
     ${answerWithRevision(q.answerHtml, fbs, null, q.updatedAt)}
-    ${renderFeedbackBlock(fbs, followups)}
+    ${renderFeedbackBlock(fbs, followups, q.id, 'teacher')}
     ${followups.length?`<div class="followWrap"><b class="small">↳ 꼬리질문</b>${followups.map(fu=>{
       const fufbs=fbs.filter(f=>f.followupId===fu.id);
       const fuAnswerHtml = fu.answerHtml!=null ? fu.answerHtml : (fu.answerText?esc(fu.answerText):'');
@@ -1910,7 +2172,7 @@ function renderTeacherQList(){
         <div class="fhead"><input type="checkbox" disabled ${fu.checked?'checked':''}>
         <div style="flex:1"><div class="ftext">${esc(fu.text)} ${wasRevisedSinceFeedback(fuAnswerHtml, fbs, fu.id)?`<span class="badge" style="background:#dbeafe;color:#1e3a8a">✏ 답변 수정됨</span>`:''}</div>
         ${answerWithRevision(fuAnswerHtml, fbs, fu.id, fu.updatedAt)}
-        ${fufbs.length?`<div class="fbBox">${fufbs.map(fbHtml).join('')}</div>`:''}
+        ${fufbs.length?`<div class="fbBox">${fufbs.map(f=>fbHtml(f,q.id,'teacher')).join('')}</div>`:''}
         </div></div></div>`;
     }).join('')}</div>`:''}
     <div class="fbBox">
@@ -1940,6 +2202,19 @@ function renderTeacherQList(){
    `;
    wrap.appendChild(el);
  });
+ rlist.forEach(r=>{
+   const el=document.createElement('div'); el.className='item';
+   el.innerHTML=`
+    <div class="head">
+      <span class="badge acc">대학·학과 조사</span>
+      ${r.univ && r.univ!=='공통'?`<span class="badge warn">${esc(r.univ)}</span>`:`<span class="badge gray">공통</span>`}
+      ${r.dept?`<span class="badge gray">${esc(r.dept)}</span>`:''}
+    </div>
+    <div class="answerBox">${r.content?esc(r.content).replace(/\n/g,'<br>'):'<span class="muted">-</span>'}</div>
+    ${(r.source||r.link)?`<p class="tiny muted" style="margin-top:6px">${r.source?esc(r.source):''}${r.source&&r.link?' · ':''}${r.link?`<a href="${esc(r.link)}" target="_blank" rel="noopener">${esc(r.link)}</a>`:''}</p>`:''}
+   `;
+   wrap.appendChild(el);
+ });
  wrap.querySelectorAll('.fbtags .chip').forEach(c=>c.addEventListener('click',()=>c.classList.toggle('on')));
  wrap.querySelectorAll('button[data-act="savefb"]').forEach(b=>b.addEventListener('click', async ()=>{
    const qid=b.dataset.qid;
@@ -1956,10 +2231,25 @@ function renderTeacherQList(){
    const q=TCUR.data.questions.find(x=>x.id===qid);
    const targetAnswerSnapshot = followupId ? (()=>{ const fu=(q.followups||[]).find(x=>x.id===followupId); return fu ? (fu.answerHtml!=null?fu.answerHtml:(fu.answerText?esc(fu.answerText):'')) : ''; })() : (q.answerHtml||'');
    q.feedback=q.feedback||[];
-   q.feedback.push({id:uid(), teacherName:resolvedName, teacherSchool:tschool, tags, comment, followupId, answerSnapshot:targetAnswerSnapshot, at:Date.now()});
+   q.feedback.push({id:uid(), teacherKey:TEACHER_SESSION?TEACHER_SESSION.key:null, teacherName:resolvedName, teacherSchool:tschool, tags, comment, followupId, answerSnapshot:targetAnswerSnapshot, at:Date.now()});
    await saveTeacherQuestions();
    await uiAlert('피드백이 저장되었습니다.');
    renderTeacherQList();
+ }));
+ wrap.querySelectorAll('button[data-act="editfb"]').forEach(b=>b.addEventListener('click', async ()=>{
+   const q=TCUR.data.questions.find(x=>x.id===b.dataset.qid); if(!q)return;
+   const f=(q.feedback||[]).find(x=>x.id===b.dataset.fid); if(!f)return;
+   const newText=await uiPrompt('피드백 내용 수정', f.comment); if(newText===null)return;
+   f.comment=newText.trim(); f.editedAt=Date.now();
+   await saveTeacherQuestions(); renderTeacherQList();
+ }));
+ wrap.querySelectorAll('button[data-act="replyfb"]').forEach(b=>b.addEventListener('click', async ()=>{
+   const text=await uiPrompt('답글을 입력하세요.'); if(!text||!text.trim())return;
+   const q=TCUR.data.questions.find(x=>x.id===b.dataset.qid); if(!q)return;
+   const f=(q.feedback||[]).find(x=>x.id===b.dataset.fid); if(!f)return;
+   f.replies=f.replies||[];
+   f.replies.push({id:uid(), author:TEACHER_SESSION?TEACHER_SESSION.displayName:'선생님', role:'teacher', text:text.trim(), at:Date.now()});
+   await saveTeacherQuestions(); renderTeacherQList();
  }));
 }
 
@@ -1973,7 +2263,7 @@ function renderTeacherQList(){
       if(snap.exists){
         const data = snap.data();
         CURRENT = {key:savedStudentKey, school:data.school, number:data.number, name:data.name,
-          questions:data.questions||[], schedule:data.schedule||[], debates:data.debates||[], mockInterviews:data.mockInterviews||[]};
+          questions:data.questions||[], schedule:data.schedule||[], debates:data.debates||[], mockInterviews:data.mockInterviews||[], research:data.research||[]};
         document.getElementById('studentGreeting').textContent = `${CURRENT.school} · ${CURRENT.number}번 · ${CURRENT.name}님`;
         show('viewStudentApp');
         goTab('guide');

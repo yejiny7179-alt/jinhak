@@ -1966,7 +1966,7 @@ let editingMockId=null;
 function renderTeacherMock(){
  const wrap=document.getElementById('teacherMockWrap');
  const univs=(TCUR.data.schedule||[]).map(it=>it.univ).filter(Boolean);
- const univOptions='<option value="">(직접 입력 또는 미지정)</option>'+[...new Set(univs)].map(u=>`<option value="${esc(u)}">${esc(u)}</option>`).join('');
+ const univDatalist='<datalist id="mockUnivList">'+[...new Set(univs)].map(u=>`<option value="${esc(u)}">`).join('')+'</datalist>';
  wrap.innerHTML=`<div class="card">
    <h2 id="mockFormTitle">모의 면접 평가표 작성</h2>
    <p class="small muted">1:1 모의 면접을 본 뒤 그날의 평가를 남겨주세요. 면접위원 이름은 위 "선생님 정보"에 입력한 성함이 사용됩니다.</p>
@@ -1985,7 +1985,7 @@ function renderTeacherMock(){
      </div>
    </div>
    <div class="grid c3">
-     <div class="field"><label>지원 대학 <span class="tiny muted">(선택)</span></label><select id="mockUniv">${univOptions}</select></div>
+     <div class="field"><label>지원 대학 <span class="tiny muted">(직접 입력 가능)</span></label><input id="mockUniv" list="mockUnivList" placeholder="예: ○○대학교">${univDatalist}</div>
      <div class="field"><label>학과 <span class="tiny muted">(선택)</span></label><input id="mockDept" placeholder="예: 컴퓨터공학과"></div>
      <div class="field"><label>전형 <span class="tiny muted">(선택)</span></label><input id="mockTrack" placeholder="예: 학생부종합전형"></div>
    </div>
@@ -2005,12 +2005,23 @@ function renderTeacherMock(){
      <button class="btn" id="btnCancelMock" type="button" hidden>수정 취소</button>
    </div>
  </div>
- <div id="teacherMockListWrap"></div>`;
+ <div class="card">
+   <div class="row between">
+     <h3 style="margin:0;color:var(--text)">이전 평가 목록 <span class="badge" id="mockHistoryCount">0건</span></h3>
+     <button class="btn sm" id="btnToggleMockHistory" type="button">참고하려면 펼치기 ▾</button>
+   </div>
+   <div id="teacherMockListWrap" hidden></div>
+ </div>`;
  document.getElementById('mockDeliveryChips').querySelectorAll('.chip').forEach(c=>c.addEventListener('click',()=>c.classList.toggle('on')));
  document.getElementById('mockContentChips').querySelectorAll('.chip').forEach(c=>c.addEventListener('click',()=>c.classList.toggle('on')));
  document.getElementById('btnAddMockQ').addEventListener('click',()=>addMockQRow());
  document.getElementById('btnCancelMock').addEventListener('click', resetMockForm);
  document.getElementById('btnSaveMock').addEventListener('click', saveMockEntry);
+ document.getElementById('btnToggleMockHistory').addEventListener('click',()=>{
+   const box=document.getElementById('teacherMockListWrap');
+   box.hidden = !box.hidden;
+   document.getElementById('btnToggleMockHistory').textContent = box.hidden ? '참고하려면 펼치기 ▾' : '접기 ▴';
+ });
  addMockQRow();
  renderTeacherMockList();
 }
@@ -2046,6 +2057,7 @@ function resetMockForm(){
 function renderTeacherMockList(){
  const wrap=document.getElementById('teacherMockListWrap');
  const list=(TCUR.data.mockInterviews||[]).slice().sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+ document.getElementById('mockHistoryCount').textContent=list.length+'건';
  if(!list.length){ wrap.innerHTML='<p class="empty small">아직 등록된 평가가 없습니다.</p>'; return; }
  wrap.innerHTML=list.map(m=>mockCardHTML(m,true)).join('');
  wrap.querySelectorAll('button[data-act="editMock"]').forEach(b=>b.addEventListener('click',()=>{

@@ -24,7 +24,7 @@ header.top{display:flex;align-items:center;gap:12px;padding:18px 0 10px;flex-wra
 header.top .brand h1{font-size:20px}
 header.top .brand small{display:block;color:var(--muted);font-size:12.5px;margin-top:2px}
 header.top .spacer{flex:1}
-nav.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:18px;overflow-x:auto;scrollbar-width:none;padding-right:16px}
+nav.tabs{display:flex;flex-wrap:wrap;gap:4px;border-bottom:1px solid var(--line);margin-bottom:18px}
 nav.tabs button{background:none;border:0;padding:11px 14px;color:var(--muted);font-weight:600;font-size:14px;border-bottom:2px solid transparent;margin-bottom:-1px;cursor:pointer;white-space:nowrap;flex-shrink:0}
 nav.tabs button:hover{color:var(--text);background:var(--surface2)}
 nav.tabs button.on{color:var(--primary);border-color:var(--primary)}
@@ -166,6 +166,8 @@ table.tbl th{background:var(--surface2);color:var(--muted);font-weight:700;font-
 .practiceSimpleItem{border:1px solid var(--line);border-radius:10px;padding:12px 16px;margin-bottom:8px;background:#fff;font-size:14px}
 .reviewContent{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Courier New",monospace;white-space:pre;overflow-x:auto;font-size:12px;line-height:1.7;background:var(--surface2);border:1px solid var(--line2);border-radius:10px;padding:12px 14px;max-width:100%}
 .reviewContent::-webkit-scrollbar{height:8px}
+.presImgGallery{display:flex;flex-direction:column;gap:8px}
+.presImgGallery img{width:100%;border:1px solid var(--line2);border-radius:8px;cursor:zoom-in}
 .reviewTitle{color:#1d4ed8;background:#e8efff;padding:0 4px;border-radius:4px}
 .reviewQ{color:#0f766e;background:#e6f6f4;padding:0 4px;border-radius:4px}
 .reviewA{color:#b45309;background:#fff4e0;padding:0 4px;border-radius:4px}
@@ -1869,13 +1871,16 @@ async function loadPresGuideCache(){
  return PRES_GUIDE_CACHE;
 }
 function presGuideCardHTML(r){
+ const body = (r.images && r.images.length)
+   ? `<div class="presImgGallery">${r.images.map(src=>`<img src="${esc(src)}" loading="lazy" alt="원본 페이지" onclick="window.open('${esc(src)}','_blank')">`).join('')}</div>`
+   : `<div class="reviewContent">${r.content?formatReviewContent(r.content):'<span class="muted">-</span>'}</div>`;
  return `<div class="item">
    <div class="head">
      ${r.univ?`<span class="badge acc">${esc(r.univ)}</span>`:''}
      ${r.year?`<span class="badge">${esc(r.year)}</span>`:''}
    </div>
    <div class="qtext" style="font-size:14px">${esc(r.title||'')}</div>
-   <div class="reviewContent">${r.content?formatReviewContent(r.content):'<span class="muted">-</span>'}</div>
+   ${body}
    ${r.source?`<p class="tiny muted" style="margin-top:6px">출처: ${esc(r.source)}</p>`:''}
  </div>`;
 }

@@ -816,14 +816,18 @@
         const s = cl ? cl.students.find(x=>x.ban===ban) : null;
         if(!s) return;
         const val = e.target.value.trim();
-        const avail = DATA.teacherAvail && DATA.teacherAvail[val];
         const oldT1 = s.teacher1, oldT2 = s.teacher2;
-        s.teacher1 = (!val) ? '' : (!avail || avail[s.d1]) ? val : '';
-        s.teacher2 = (!val) ? '' : (!avail || avail[s.d2]) ? val : '';
-        resequenceGroupTimes(s.d1, oldT1); resequenceGroupTimes(s.d1, s.teacher1);
-        resequenceGroupTimes(s.d2, oldT2); resequenceGroupTimes(s.d2, s.teacher2);
+        const becameJesimun = applyJesimunAutoDetect(s, val);
+        if(!becameJesimun){
+          const avail = DATA.teacherAvail && DATA.teacherAvail[val];
+          s.teacher1 = (!val) ? '' : (!avail || avail[s.d1]) ? val : '';
+          s.teacher2 = (!val) ? '' : (!avail || avail[s.d2]) ? val : '';
+          resequenceGroupTimes(s.d1, oldT1); resequenceGroupTimes(s.d1, s.teacher1);
+          resequenceGroupTimes(s.d2, oldT2); resequenceGroupTimes(s.d2, s.teacher2);
+        }
         markDirty(); rerenderCurrentTab();
-        const note = (val && (!s.teacher1 || !s.teacher2)) ? ' ⚠️ 이틀 중 하루는 그 선생님이 못 나오셔서 미배정 처리했습니다.' : '';
+        const note = becameJesimun ? ' 📜 제시문(발표면접)으로 자동 전환되어 4일 모두 19:00~21:00으로 배정됩니다.'
+          : (val && (!s.teacher1 || !s.teacher2)) ? ' ⚠️ 이틀 중 하루는 그 선생님이 못 나오셔서 미배정 처리했습니다.' : '';
         showToast(`${s.name} 학생의 담당쌤을 ${val||'미배정'}(으)로 설정했습니다${note}`);
       });
     });
@@ -900,6 +904,20 @@
       s.time = formatTimeRange(cur, dur);
     });
   }
+  function applyJesimunAutoDetect(s, chosenTeacher){
+    if(chosenTeacher === '송두리'){
+      s.isJesimun = true;
+      s.teacher1 = '송두리';
+      s.teacher2 = '송두리';
+      s.time = '19:00~21:00';
+      return true; // 제시문으로 전환됨
+    } else if(s.isJesimun && chosenTeacher !== '송두리'){
+      s.isJesimun = false;
+      s.time = '';
+      return false;
+    }
+    return s.isJesimun;
+  }
   function wireTeacherInputs(root){
     root.querySelectorAll('[data-stu-teacher]').forEach(inp => {
       inp.addEventListener('click', e => e.stopPropagation());
@@ -916,20 +934,24 @@
             const theDate = key === 'teacher1' ? s.d1 : s.d2;
             const oldTeacher = s[key];
             s[key] = val;
-            if(s.isJesimun){ s.teacher1 = s[key]; s.teacher2 = s[key]; } // 제시문은 항상 동일 담당쌤 유지
-            else if(doSync){
-              const d = s[otherKey === 'teacher1' ? 'd1' : 'd2'];
-              const avail = DATA.teacherAvail && DATA.teacherAvail[val];
-              const otherDate = otherKey === 'teacher1' ? s.d1 : s.d2;
-              const oldOtherTeacher = s[otherKey];
-              if(!val){ s[otherKey] = ''; }
-              else if(!avail){ s[otherKey] = val; } // 정보 없는(추가된) 선생님은 항상 가능으로 간주
-              else { s[otherKey] = avail[d] ? val : ''; }
-              resequenceGroupTimes(otherDate, oldOtherTeacher);
-              resequenceGroupTimes(otherDate, s[otherKey]);
+            const becameJesimun = applyJesimunAutoDetect(s, val);
+            if(becameJesimun){
+              // 제시문이 되면 항상 19:00~21:00 고정이므로 시간 재계산(캐스케이드)은 건너뜀
+            } else {
+              if(doSync){
+                const d = s[otherKey === 'teacher1' ? 'd1' : 'd2'];
+                const avail = DATA.teacherAvail && DATA.teacherAvail[val];
+                const otherDate = otherKey === 'teacher1' ? s.d1 : s.d2;
+                const oldOtherTeacher = s[otherKey];
+                if(!val){ s[otherKey] = ''; }
+                else if(!avail){ s[otherKey] = val; } // 정보 없는(추가된) 선생님은 항상 가능으로 간주
+                else { s[otherKey] = avail[d] ? val : ''; }
+                resequenceGroupTimes(otherDate, oldOtherTeacher);
+                resequenceGroupTimes(otherDate, s[otherKey]);
+              }
+              resequenceGroupTimes(theDate, oldTeacher);
+              resequenceGroupTimes(theDate, s[key]);
             }
-            resequenceGroupTimes(theDate, oldTeacher);
-            resequenceGroupTimes(theDate, s[key]);
           }
         });
         markDirty(); rerenderCurrentTab();

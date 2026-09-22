@@ -1,0 +1,1341 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>2027 대입면접대비특강 - 날짜별 배정 및 일정</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  :root{
+    --bg:#ffffff; --card:#ffffff; --text:#1a1d29; --muted:#6b7280;
+    --border:#e5e7eb; --accent:#4f46e5; --accent-weak:#eef0ff;
+    --danger:#dc2626; --danger-weak:#fee2e2;
+    --success:#16a34a; --success-weak:#dcfce7;
+    --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+    padding-top: env(safe-area-inset-top,0px);
+    padding-bottom: env(safe-area-inset-bottom,0px);
+    box-sizing: border-box;
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0; background:#ffffff; color:var(--text);
+    font-family: -apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic","Segoe UI",Roboto,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  html{scroll-padding-top: env(safe-area-inset-top,0px);}
+  .wrap{max-width:1080px; margin:0 auto; padding:16px 16px 64px;}
+
+  header.top{
+    position:sticky; top:env(safe-area-inset-top,0px); z-index:20;
+    background:#ffffff; padding:14px 16px 10px; border-bottom:1px solid var(--border);
+  }
+  header.top .inner{max-width:1080px; margin:0 auto;}
+  h1{font-size:18px; margin:0 0 2px; letter-spacing:-0.2px;}
+  .sub{color:var(--muted); font-size:13px; margin:0 0 12px;}
+
+  .adminbar{display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:10px;}
+  .adminbar input[type="password"]{
+    flex:1; min-width:120px; padding:8px 10px; border-radius:8px; border:1px solid var(--border);
+    background:#ffffff; color:var(--text); font-size:13px;
+  }
+  button{
+    font-family:inherit; cursor:pointer; border:none; border-radius:8px;
+    padding:8px 14px; font-size:13px; font-weight:600; transition:opacity .15s;
+  }
+  button:active{opacity:.7;}
+  .btn-primary{background:var(--accent); color:#fff;}
+  .btn-ghost{background:var(--accent-weak); color:var(--accent);}
+  .btn-danger{background:var(--danger-weak); color:var(--danger);}
+  .btn-excel{background:var(--success-weak); color:var(--success);}
+  .btn-feedback{
+    background:linear-gradient(135deg,#ec4899,#f472b6); color:#ffffff; font-weight:700;
+    padding:8px 14px; border-radius:8px; font-size:13px; box-shadow:0 2px 8px rgba(236,72,153,0.35);
+  }
+  .btn-feedback:hover{ filter:brightness(1.05); }
+  .btn-sm{padding:5px 10px; font-size:12px; border-radius:6px;}
+  .pill{
+    display:inline-flex; align-items:center; gap:4px; padding:3px 9px; border-radius:999px;
+    font-size:11px; font-weight:700;
+  }
+  .pill-admin-on{background:var(--success-weak); color:var(--success);}
+  .pill-admin-off{background:var(--border); color:var(--muted);}
+  .pill-warn{background:#fef3c7; color:#92400e;}
+
+  nav.tabs{display:flex; gap:6px; overflow-x:auto; padding-bottom:2px;}
+  nav.tabs button{
+    background:transparent; color:var(--muted); white-space:nowrap; padding:8px 12px;
+    border-bottom:2px solid transparent; border-radius:0;
+  }
+  nav.tabs button.active{color:var(--accent); border-bottom:2px solid var(--accent); font-weight:700;}
+
+  main{padding-top:10px;}
+  .datehead{display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:14px; padding:10px 12px; background:#f7f7fb; border-radius:10px;}
+  .datehead .datelabel{font-weight:800; font-size:14px;}
+
+  .toprow{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px; align-items:center;}
+  .searchbox{display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap;}
+  .teacher-tabs{display:flex; gap:6px; overflow-x:auto; padding-bottom:8px; margin-bottom:14px;}
+  .teacher-tabs button{
+    background:#f7f7fb; border:1px solid var(--border); color:var(--text); white-space:nowrap;
+    padding:8px 14px; border-radius:999px; font-size:13px;
+  }
+  .teacher-tabs button.active{background:var(--accent); color:#fff; border-color:var(--accent); font-weight:700;}
+  .searchbox input{
+    flex:1; min-width:180px; padding:10px 12px; border-radius:10px; border:1px solid var(--border);
+    background:#ffffff; color:var(--text); font-size:14px;
+  }
+  select{
+    padding:7px 8px; border-radius:8px; border:1px solid var(--border); background:#ffffff; color:var(--text);
+    font-size:13px; font-family:inherit;
+  }
+
+  .grid{display:grid; grid-template-columns: repeat(auto-fill, minmax(300px,1fr)); gap:12px;}
+
+  .card{
+    background:#ffffff; border:1px solid var(--border); border-radius:14px; padding:14px;
+    box-shadow:var(--shadow);
+  }
+  .card.tue{border-top:4px solid #4f46e5;}
+  .card.wed{border-top:4px solid #ea580c;}
+  .card.unassigned-card{border-top:4px solid var(--danger); background:#fff8f8;}
+  .card.empty-avail-card{border-top:4px dashed var(--success); opacity:0.85;}
+  .empty-slot{list-style:none; padding:14px 10px; text-align:center; font-size:12px; color:var(--success); background:#f0fdf4; border-radius:8px;}
+  .card-head{display:flex; justify-content:space-between; align-items:flex-start; gap:8px; margin-bottom:8px;}
+  .jo-title{font-size:15px; font-weight:800;}
+  .jo-title .title-input{
+    font-size:15px; font-weight:800; border:1px dashed var(--border); border-radius:6px;
+    padding:2px 6px; background:#fbfbff; color:var(--text); width:auto; max-width:180px;
+  }
+  .jo-title .title-input:focus{ border-style:solid; border-color:var(--accent); outline:none; }
+  .room-input{
+    font-size:12.5px; font-weight:700; border:1px dashed var(--border); border-radius:6px;
+    padding:2px 6px; background:#fbfbff; color:var(--text); width:auto; max-width:140px;
+  }
+  .room-input:focus{ border-style:solid; border-color:var(--accent); outline:none; }
+  .jo-field{color:var(--muted); font-size:12.5px; margin-top:2px;}
+  .badge-team{font-size:11px; font-weight:800; padding:3px 8px; border-radius:6px;}
+  .badge-tue{background:#eef2ff; color:#4f46e5;}
+  .badge-wed{background:#fff7ed; color:#ea580c;}
+
+  .meta-row{display:flex; flex-wrap:wrap; gap:6px 14px; font-size:12.5px; color:var(--muted); margin:8px 0 10px; padding:8px 10px; background:#f7f7fb; border-radius:8px;}
+  .meta-row b{color:var(--text); font-weight:700;}
+  .meta-missing{color:var(--danger);}
+
+  .stulist{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:6px;}
+  .stu{ display:flex; flex-direction:column; gap:2px; font-size:13px; padding:6px 8px; border-radius:8px; background:#f7f7fb; }
+  .stu[draggable="true"]{ cursor:grab; }
+  .stu.dragging{ opacity:0.4; }
+  .stu.drag-over{ outline:2px dashed var(--accent); outline-offset:-2px; }
+  .drag-handle{ color:var(--muted); margin-right:4px; cursor:grab; user-select:none; }
+  .stu-row{display:flex; justify-content:space-between; align-items:center; gap:8px; cursor:pointer; flex-wrap:wrap;}
+  .stu .nm{font-weight:700; text-decoration:underline dotted; text-underline-offset:3px;}
+  .stu .fld{color:var(--muted); font-size:11.5px; text-align:right;}
+  .date-changed-dot{display:inline-block; width:7px; height:7px; border-radius:50%; background:#2563eb; margin-left:4px; vertical-align:middle;}
+  .custom-date-badge{background:#fef9c3; color:#854d0e; font-size:10.5px; font-weight:800; padding:2px 7px; border-radius:6px; margin-left:4px;}
+  .stu .time-badge{background:#e0f2fe; color:#075985; font-weight:800; font-size:11px; padding:2px 8px; border-radius:6px; white-space:nowrap;}
+  .stu .time-input{width:108px; padding:3px 6px; border-radius:6px; border:1px solid var(--border); font-size:11.5px;}
+  .tag-jesimun{background:#fef3c7; color:#92400e; font-size:10.5px; font-weight:800; padding:1px 6px; border-radius:5px; margin-left:4px;}
+  .apps-panel{display:none; margin-top:6px; padding-top:6px; border-top:1px dashed var(--border); font-size:11.5px; color:var(--text);}
+  .apps-panel.open{display:block;}
+  .apps-panel ul{margin:4px 0 0; padding-left:16px;}
+  .apps-panel li{margin-bottom:3px; color:var(--muted);}
+
+  .edit-panel{margin-top:10px; padding-top:10px; border-top:1px dashed var(--border); display:none;}
+  .edit-panel.open{display:block;}
+  .edit-grid{display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px;}
+  .edit-grid label{font-size:11px; color:var(--muted); display:block; margin-bottom:3px;}
+  .edit-grid input, .edit-grid select{
+    width:100%; padding:7px 8px; border-radius:7px; border:1px solid var(--border);
+    background:#f7f7fb; color:var(--text); font-size:13px;
+  }
+  .stu-edit-row{display:flex; gap:6px; align-items:center; background:#f7f7fb; padding:6px 8px; border-radius:8px; margin-bottom:6px; flex-wrap:wrap;}
+  .stu-edit-row .nm{min-width:64px; font-weight:700; font-size:12.5px;}
+  .stu-edit-row input[type="text"]{flex:1; min-width:60px; padding:5px 7px; border-radius:6px; border:1px solid var(--border); background:#ffffff; color:var(--text); font-size:12px;}
+  .stu-edit-row select{flex:1; min-width:100px; padding:5px 7px; border-radius:6px; border:1px solid var(--border); background:#ffffff; color:var(--text); font-size:12px;}
+  .stu-edit-row .lbl{font-size:10.5px; color:var(--muted); min-width:34px;}
+
+  .empty{text-align:center; color:var(--muted); padding:40px 10px; font-size:13.5px;}
+  .savebar{
+    position:sticky; bottom:env(safe-area-inset-bottom,0px); z-index:20; margin-top:16px;
+    display:flex; justify-content:center; gap:10px; padding:12px; background:linear-gradient(transparent, #ffffff 30%);
+  }
+  .savebar.hidden{display:none;}
+  .toast{
+    position:fixed; left:50%; transform:translateX(-50%); bottom:24px; z-index:50;
+    background:var(--text); color:#fff; padding:10px 18px; border-radius:999px; font-size:13px;
+    box-shadow:var(--shadow); opacity:0; pointer-events:none; transition:opacity .25s, bottom .25s;
+  }
+  .toast.show{opacity:1; bottom:calc(24px + env(safe-area-inset-bottom,0px));}
+
+  .footer-note{font-size:11.5px; color:var(--muted); text-align:center; margin-top:30px; line-height:1.6;}
+
+  .modal-overlay{
+    position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:100;
+    display:flex; align-items:center; justify-content:center; padding:20px;
+  }
+  .modal-box{
+    background:#ffffff; border-radius:14px; padding:20px; width:100%; max-width:320px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+  }
+  .modal-title{font-size:15px; font-weight:800; margin-bottom:12px; color:var(--text);}
+  .modal-input{
+    width:100%; padding:10px 12px; border-radius:8px; border:1px solid var(--border);
+    font-size:14px; margin-bottom:14px; box-sizing:border-box;
+  }
+  .modal-actions{display:flex; justify-content:flex-end; gap:8px;}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="inner">
+    <h1>🎓 2027 대입면접대비특강 - 날짜별 배정 &amp; 일정 확인</h1>
+    <p class="sub">학생 · 외부강사 · 본교교사 공용 확인 페이지 (열람 전용)</p>
+    <div class="adminbar">
+      <a href="https://yejiny7179-alt.github.io/jinhak/interview-workbook/" target="_blank" rel="noopener" class="btn-feedback" style="text-decoration:none; display:inline-flex; align-items:center; gap:5px;">🎤 온라인 면접 워크북</a>
+      <span id="adminPill" class="pill pill-admin-off">🔒 열람 모드</span>
+      <button id="loginBtn" class="btn-ghost btn-sm">🔑 관리자 로그인</button>
+      <button id="logoutBtn" class="btn-ghost btn-sm" style="display:none;">로그아웃</button>
+      <button id="addTeacherBtn" class="btn-ghost btn-sm" style="display:none;">➕ 선생님 추가</button>
+      <button id="excelBtn" class="btn-excel btn-sm">📊 엑셀 다운로드</button>
+    </div>
+    <nav class="tabs" id="tabsNav"></nav>
+  </div>
+</header>
+
+<div class="wrap">
+  <main>
+    <section id="tab-dates"></section>
+
+    <section id="tab-student" style="display:none;">
+      <div class="searchbox">
+        <input id="studentSearch" type="text" placeholder="이름 또는 학번으로 검색">
+        <select id="classSelect"><option value="">-- 학급 선택 --</option></select>
+      </div>
+      <div id="studentResult"></div>
+    </section>
+
+    <section id="tab-teacher" style="display:none;">
+      <div class="searchbox">
+        <input id="teacherSearchInput" type="text" placeholder="선생님 이름으로 검색">
+      </div>
+      <div class="teacher-tabs" id="teacherTabs"></div>
+      <div id="teacherResult"></div>
+    </section>
+  </main>
+
+  <div id="savebar" class="savebar hidden">
+    <button id="saveBtn" class="btn-primary">💾 전체 저장 (모두에게 반영)</button>
+    <button id="discardBtn" class="btn-danger">되돌리기</button>
+  </div>
+
+  <p class="footer-note">제작 박예진</p>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<div id="modalOverlay" class="modal-overlay" style="display:none;">
+  <div class="modal-box">
+    <div id="modalTitle" class="modal-title">제목</div>
+    <input id="modalInput" type="text" class="modal-input">
+    <div class="modal-actions">
+      <button id="modalCancel" class="btn-ghost btn-sm">취소</button>
+      <button id="modalOk" class="btn-primary btn-sm">확인</button>
+    </div>
+  </div>
+</div>
+
+<script type="application/json" id="__DATA__">
+{"clusters": [{"id": "권현석", "name": "간호 · 보건·의공", "teacher": "권현석", "room": "3-1", "students": [{"ban": "30214", "name": "이세한", "team": "수", "d1": "10월 14일", "d2": "11월 4일", "field_raw": "보건·의공", "base_field": "보건·의공", "apps": ["을지대학교 EU면접형, 임상병리학과(11월 21일) (생기부 면접)", "연세대미래캠퍼스 학교생활우수자(면접형)전형, \n임상병리학과(10월 31일) (제시문 면접)", "X"], "grade": "3", "classNo": "02", "seatNo": "14", "isJesimun": false, "teacher1": "권현석", "teacher2": "권현석", "time": "18:00~18:30", "origTeam": "수", "dateChanged": false, "customDate": "", "customTime": ""}, {"ban": "30403", "name": "김가을", "team": "수", "d1": "10월 14일", "d2": "11월 4일", "field_raw": "간호", "base_field": "간호", "apps": ["가천대 바람개비 전형 간호학과", "한림대 학종 간호학과 (11월 22일)"], "grade": "3", "classNo": "04", "seatNo": "03", "isJesimun": false, "teacher1": "권현석", "teacher2": "권현석", "time": "18:30~19:00", "origTeam": "수", "dateChanged": false, "customDate": "", "customTime": ""}]}, {"id": "김기정", "name": "생명·농생명 · 생명과학 · 화학·화공", "teacher": "김기정", "room": "3-2", "students": [{"ban": "30201", "name": "고호준", "team": "화", "d1": "10월 13일", "d2": "11월 3일", "field_raw": "화학·화공", "base_field": "화학·화공", "apps": ["광운대학교 - 학생부종합【광운참빛인재전형Ⅰ-면접형】 \n 화학공학과 - 10월 31일", "숭실대학교 - 학생부종합 [SSU미래인재전형 - 면접형] \n- 화학과 -11월 27일"], "grade": "3", "classNo": "02", "seatNo": "01", "isJesimun": false, "teacher1": "김기정", "teacher2": "김기정", "time": "18:00~18:40", "origTeam": "수", "dateChanged": true, "customDate": "", "customTime": ""}, {"ban": "30318", "name": "이혜나", "team": "화", "d1": "10월 13일", "d2": "11월 3일", "field_raw": "화학·화공", "base_field": "화학·화공", "apps": ["서울시립대 학생부종합1, 화학공학과(11월 29일)", "건국대학교 ku자기추천, 자유전공학부(12월 6일)", "경희대 네오르네상스전형, 융합바이오 신소재학과 (12월 5일)"], "grade": "3", "classNo": "03", "seatNo": "18", "isJesimun": false, "teacher1": "김기정", "teacher2": "김기정", "time": "18:30~19:00", "origTeam": "수", "dateChanged": true, "customDate": "", "customTime": ""}, {"ban": "30120", "name": "최서우", "team": "화", "d1": "10월 13일", "d2": "11월 3일", "field_raw": "생명과학", "base_field": "생명과학", "apps": ["덕성여대 덕성인재2 과학기술대학 (11/22)", "아주대 ace 프런타어과학학부 (11/28)", "인천대 학생부종합 분자의생명 (11/21)"], "grade": "3", "classNo": "01", "seatNo": "20", "isJesimun": false, "teacher1": "김기정", "teacher2": "김기정", "time": "19:00~19:30", "origTeam": "화", "dateChanged": false, "customDate": "", "customTime": ""}, {"ban": "30213", "name": "윤시원", "team": "화", "d1": "10월 13일", "d2": "11월 3일", "field_raw": "생명과학", "base_field": "생명과학", "apps": ["명지대학교 명지인재면접 전형 , \n시스템 생명과학전공(11월 28일)", "가천대학교 교과(지균) , 자유전공 (12월5일)", "경기대학교(KGU전형) , 바이오융합학부 (12월 6)"], "grade": "3", "classNo": "02", "seatNo": "13", "isJesimun": false, "teacher1": "김기정", "teacher2": "김기정", "time": "19:30~20:00", "origTeam": "화", "dateChanged": false, "customDate": "", "customTime": ""}, {"ban": "30220", "name": "정지민", "team": "수", "d1": "10월 14일", "d2": "11월 4일", "field_raw": "생명·농생명", "base_field": "생명·농생명", "apps": ["건국대 글로컬 자기추천전형 , 바이오의약학과 (11.28~11.29)", "연세대 미래 학교생활 우수자 면접형, 자율율헙-자연 (10월31일)", "강원대 미래인재 면접, 생물자원과학부 (11.27)"], "grade": "3", "classNo": "02", "seatNo": "20", "isJesimun": false, "teacher1": "김기정", "teacher2": "김기정", "time": "18:00~18:40", "origTeam": "수", "dateChanged": false, "customDate": "", "customTime": ""}, {"ban": "30313", "name": "양지원", "team": "수", "d1": "10월 14일", "d2": "11월 4일", "field_raw": "생명·농생명", "base_field": "생명·농생명", "apps": ["성신여대 자기주도인재전형 바이오헬스융합부(11월 28일)", "가천대학교 지역균형 전형 , 자유전공(11월 4~5일)", "경기대 KGU학생부종합 바이오융합학부 12월 6일"], "grade": "3", "classNo": "03", "seatNo": "13", "isJesimun": false, "teacher1": "김기정", "teacher2": "김기정", "time": "18:30~19:00", "origTeam": "수", "dateChanged": false, "customDate": "", "customTime": ""}, {"ban": "30411", "name": "손준호", "team": "수", "d1": "10월 14일", "d2": "11월 4일", "field_raw": "생명·농생명", "base_field": "생명·농생명", "apps": ["경희대 네오르네상스 전형 스마트팜과학과(12월 5일)", "서울시립대학교 학생부종합 1 면접형, 환경원예학과(11월 29일)", "동국대학교 Do dream 융합환경과학과(12월 11일)"], "grade": "3", "classNo": "04", "seatNo": "11", "isJesimun": false, "teacher1": "김기정", "teacher2": "김기정", "time": "19:00~19:30", "origTeam": "화", "dateChanged": true, "customDate": "", "customTime": ""}, {"ban": "30502", "name": "김하연", "team": "수", "d1": "10월 14일", "d2": "11월 4일", "field_raw": "식품·보건", "base_field": "식품·보건", "apps": ["건국대학교 글로컬,cogito자기추천 전형, \n식품영양학과(11월 29일)", "연세대학교 미래캠, 학교생활우수자 전형, \n자율융합학부(자연) (10월 31일)"], "grade": "3", "classNo": "05", "seatNo": "02", "isJesimun": false, "teacher1": "김기정", "teacher2": "김기정", "time": "19:30~20:00", "origTeam": "화", "dateChanged": true, "customDate": "", "customTime": ""}], "roomByDate": {"10월 13일": "3-7", "11월 3일": "3-7"}}, {"id": "김종배", "name": "교육·어문 · 유아·예술교육", "teacher": "김종배", "room": "3-3", "students": [{"ban": "30306", "name": "김아린", "team": "화", "d1": "10월 13일", "d2": "11월 3일", "field_raw": "교육·어문", "base_field": "교육·어문", "apps": ["인천대학교 자기추천 전형, 수학교육과(11월 21일)", "단국대학교 DKU인재(면접) 전형, 수학교육과(12월 8일)", "동국대학교 Do Dream 전형, 가정교육과(12월 12일)"], "grade": "3", "classNo": "03", "seatNo": "06", "isJesimun": false, "teacher1": "김종배", "teacher2": "김종배", "time": "18:00~18:40", "origTeam": "화", "dateChanged": true, "customDate": "", "customTime": ""}, {"ban": "30716", "name": "이윤서", "team": "수", "d1": "10월 14일", "d2": "11월 4일", "field_raw": "유아·예술교육", "base_field": "유아·예술교육", "apps": ["가천대학교 지역균형, 유아교육학과(12월5일~12월7일)", "비대면 동영상 제출) 경인교육대학교 교직적성 전형, \n9월21일~9월23일", "비대면 동영상 재출) 광주교육대학교 교직적성우수자 전형, 9월"], "grade": "3", "classNo": "07", "seatNo": "16", "isJesimun": false, "teacher1": "김종배", "teacher2": "김종배", "time": "18:00~18:30", "origTeam": "수", "dateChanged": false, "customDate": "", "customTime": ""}, {"ban": "31001", "name": "권도영", "team": "수", "d1": "10월 14일", "d2": "11월 4일", "field_raw": "유아·예술교육", "base_field": "유아·예술교육", "apps": ["공주대학교 학생부종합전형, 미술교육과(11월 26일)", "백석예술대학교 교과전형, 유아교육과(11월 9일)"], "grade": "3", "classNo": "10", "seatNo": "01", "isJesimun": false, "teacher1": "김종배", "teacher2": "김종배", "time": "18:30~19:00", "origTeam": "화", "dateChanged": true, "customDate": "", "customTime": ""}, {"ban": "31008", "name": "배서인", "team": "수", "d1": "10월 14일", "d2": "11월 4일", "field_raw": "유아·예술교육", "base_field": "유아·예술교육", "apps": ["성신여자대학교, 자기주도인재 전형, 유아교육과 (11/22)", "덕성여자대학교, 덕성인재2 전형, 유아교육학과 (11/21)"], "grade": "3", "classNo": "10", "seatNo": "08", "isJesimun": false, "teacher1": "김종배", "teacher2": "김종배", "time": "19:00~19:30", "origTeam": "수", "dateChanged": false, "customDate": "", "customTime": ""}], "roomByDate": {"10월 13일": "3-8", "11월 3일": "3-8"}}, {"id": "나의영", "name": "기계·모빌리티 · 기계공학 · 식품·보건 · 자연과학·공학", "teacher": "나의영", "room": "3-4", "students": [{"ban": "30109", "name": "신단하", "team": "화", "d1": "10월 13일", "d2": "11월 3일", "field_raw": "기계공학", "base_field": "기계공학", "apps": ["한국기술교육대학교 창의인재 면접형, \n메카트로닉스공학부(10월 31일)", "한국공학대학교 창의인재 전형, \n기계설계공학부 기계설계전공(11월 28일)"], "grade": "3", "classNo": "01", "seatNo": "09", "isJesimun": false, "teacher1": "나의영", "teacher2": "나의영", "time": "18:00~18:40", "origTeam": "화", "dateChanged": false, "customDate": "", "customTime": ""}, {"ban": "30207", "name": "김예강", "team": "화", "d1": "10월 13일", "d2": "11월 3일", "field_raw": "기계공학", "base_field": "기계공학", "apps": ["국민대학교 국민프런티어 전형, 기계공학부(11월 21일)", "숭실대학교 SSU 미래인재 면접형, 기계공학부(11월 27일)", "숙명여자대학교 숙명인재 면접형(11월 29일)"], "grade": "3", "classNo": "02", "seatNo": "07", "isJesimun": false, "teacher1": "나의영", "teacher2": "나의영", "time": "18:30~19:00", "origTeam": "화", "dateChanged": false, "customDate": "", "customTime": ""}, {"ban": "30210", "name": "민준기", "team": "수", "d1": "10월 14일", "d2": "11월 4일", "field_raw": "기계공학", "base_field": "기계공학", "apps": ["국민대학교 학생부종합(국민프런티어전형), 기계공학부", "명지대학교 학생부종합(명지인재면접전형), 기계시스템공학부", "경기대학교 학생부종합(KGU학생부종합전형) 수원캠퍼스, \n기계시스템공학과"], "grade": "3", "classNo": "02", "seatNo": "10", "isJesimun": false, "teacher1": "나의영", "teacher2": "나의영", "time": "18:00~18:40", "origTeam": "수", "dateChanged": true, "customDate": "", "customTime": ""}, {"ban": "30315", "name": "이도언", "team": "화", "d1": "10월 13일", "d2": "11월 3일", "field_raw": "기계·모빌리티", "base_field": "기계·모빌리티", "apps": ["가천대 바람개비 전형, 기계공학과(10.30-11.1)", "아주대학교 ACE전형, 기계공학과(11.22)", "한국공학대 창의인재전형, 기계설계공학 \n지능형모빌리티전공 (11.28) \n명지대학교 명지인재면접전형, 기계시스템공학부(11.28)"], "grade": "3", "classNo": "03", "seatNo": "15", "isJesimun": false, "teacher1": "나의영", "teacher2": "나의영", "time": "19:00~19:30", "origTeam": "화", "dateChanged": true, "customDate": "", "customTime": ""}, {"ban": "30409", "name": "박성현", "team": "수", "d1": "10월 14일", "d2": "11월 4일", "field_raw": "기계·모빌리티", "base_field": "기계·모빌리티", "apps": ["명지대 교과면접 기계시스템 공학부 10월 31일", "아주대 ACE 기계공학과 11월 22일", "가천대 지역균형 방사선학과 12월 5일"], "grade": "3", "classNo": "04", "seatNo": "09", "isJesimun": false, "teacher1": "나의영", "teacher2": "나의영", "time": "18:40~19:20", "origTeam": "화", "dateChanged": true, "customDate": "", "customTime": ""}, {"ban": "30506", "name": "박주형", "team": "수", "d1": "10월 14일", "d2": "11월 4일", "field_raw": "기계·모빌리티", "base_field": "기계·모빌리티", "apps": ["한국기술교육대 학생부종합전형 창의인재(면접형) \n메카트로닉스공학부 (10월 31일)", "건국대학교 글로컬캠퍼스 [학생부종합] Cogito자기추천전형 KU자유전공학부  (11월 28~29일)"], "grade": "3", "classNo": "05", "seatNo": "06", "isJesimun": false, "teacher1": "미배정(공학0)", "teacher2": "이남설", "time": "19:20~20:00", "origTeam": "수", "dateChanged": false, "customDate": "", "customTime": ""}, {"ban": "30517", "name": "전수현", "team": "수", "d1": "10월 14일", "d2": "11월 4일", "field_raw": "식품·보건", "base_field": "식품·보건", "apps": ["가톨릭대학교 잠재능력우수자면접전형, \n식품영양학과(12월 5일)", "서울여자대학교 바롬인재면접전형, 식품영양학과(11월 28일)", "경기대학교 KGU학생부종합전형, 바이오융합학부(12월 6일)"], "grade": "3", "classNo": "05", "seatNo": "17", "isJesimun": false, "teacher1": "나의영", "teacher2": "나의영", "time": "19:20~20:00", "origTeam": "화", "dateChanged": true, "customDate": "", "customTime": ""}], "roomByDate": {"10월 13일": "3-9", "11월 3일": "3-9"}}, {"id": "서기남", "name": "행정·경찰·법", "teacher": "서기남", "room": "3-5", "students": [{"ban": "30608", "name": "나현민", "team": "화", "d1": "10월 13일", "d2": "11월 3일", "field_raw": "행정·경찰·법", "base_field": "행정·경찰·법", "apps": ["동국대학교 Do dream전형 경찰행정학부(12/12)", "서울시립대학교 사회공헌통합전형 행정학과(11/28)"], "grade": "3", "classNo": "06", "seatNo": "08", "isJesimun": false, "teacher1": "정현석", "teacher2": "정현석", "time": "18:00~18:40", "origTeam": "화", "dateChanged": false, "customDate": "", "customTime": ""}, {"ban": "31124", "name": "황경원", "team": "화", "d1": "10월 13일", "d2": "11월 3일", "field_raw": "행정·경찰·법", "base_field": "행정·경찰·법", "apps": ["광운대학교, 광운참빛인재전형 면접형, \n법학과 (10월 31일 ~ 11월 1일)", "성신여대, 자기주도인재전형, 법학부 (11월 21일)", "명지대, 명지인재면접전형, 법학과 (11월 29일)"], "grade": "3", "classNo": "11", "seatNo": "24", "isJesimun": false, "teacher1": "정현석", "teacher2": "정현석", "time": "18:30~19:00", "origTeam": "화", "dateChanged": false, "customDate": "", "customTime": ""}], "roomByDate": {"11월 3일": "3-10"}}, {"id": "송현제", "name": "자유전공·인문사회", "teacher": "송현제", "room": "3-6", "students": [{"ban": "30104", "name": "김민아", "team": "수", "d1": "10월 14일", "d2": "11월 4일", "field_raw": "자유전공·인문사회", "base_field": "자유전공·인문사회", "apps": ["덕성여자대학교 덕성인재전형2, 자유전공학부(11/21)", "가천대학교 지역균형전형, 자유전공(12/5~12/6)"], "grade": "3", "classNo": "01", "seatNo": "04", "isJesimun": false, "teacher1": "송현제", "teacher2": "송현제", "time": "18:00~18:40", "origTeam": "수", "dateChanged": false, "customDate": "", "customTime": ""}, {"ban": "30614", "name": "유현민", "team": "수", "d1": "10월 14일", "d2": "11월 4일", "field_raw": "자유전공·인문사회", "base_field": "자유전공·인문사회", "apps": ["안양대학교 아리학생부면접 전형 \n인문계열자유전공 10월 10~11일", "한신대학교 참인재전형 사회복지학과 10월 3일", "성결대 sku창의전형 사회복지학과 10월 17일"], "grade": "3", "classNo": "06", "seatNo": "14", "isJesimun": false, "teacher1": "송현제", "teacher2": "송현제", "time": "18:40~19:20", "origTeam": "화", "dateChanged": true, "customDate": "", "customTime": ""}, {"ban": "31024", "name": "조창희", "team": "수", "d1": "10월 14일", "d2": "11월 4일", "field_raw": "자유전공·인문사회", "base_field": "자유전공·인문사회", "apps": ["한국외국어대학교 면접형, 철학과", "숭실대학교 SSU미래인재 전형, 철학과"], "grade": "3", "classNo": "10", "seatNo": "24", "isJesimun": false, "teacher1": "송현제", "teacher2": "송현제", "time": "19:20~20:00", "origTeam": "수", "dateChanged": false, "customDate": "", "customTime": ""}]}, {"id": "이남설", "name": "건설·환경 · 공학·항공 · 환경·도시", "teacher": "이남설", "room": "3-7", "students": [{"ban": "30118", "name": "조성민", "team": "수", "d1": "10월 14일", "d2": "11월 4일", "field_raw": "건설·환경", "base_field": "건설·환경", "apps": ["가천대학교 바람개비 전형,기계공학부(10/31)", "서울과학기술대학교 학교생활우수자 전형 건설시스템공학과 11.28", "인하대학교 인하미래인재 면접형 사회인프라공학과,11.21"], "grade": "3", "classNo": "01", "seatNo": "18", "isJesimun": false, "teacher1": "미배정(공학1)", "teacher2": "이남설", "time": "18:00~18:40", "origTeam": "화", "dateChanged": true, "customDate": "", "customTime": ""}, {"ban": "30418", "name": "정예원", "team": "수", "d1": "10월 14일", "d2": "11월 4일", "field_raw": "환경·도시", "base_field": "환경·도시", "apps": ["인천대학교 학생부종합 자기추천전형, \n도시환경공학부 환경공학전공(11월 21일)", "강원대학교 학생부종합 미래인재면접전형, 환경공학과(11월 27일)"], "grade": "3", "classNo": "04", "seatNo": "18", "isJesimun": false, "teacher1": "정현석", "teacher2": "이남설", "time": "18:00~18:40", "origTeam": "화", "dateChanged": true, "customDate": "", "customTime": ""}, {"ban": "30507", "name": "박지은", "team": "수", "d1": "10월 14일", "d2": "11월 4일", "field_raw": "환경·도시", "base_field": "환경·도시", "apps": ["강원대학교,미래인재 면접전형,\n산림환경보호학과(10월14일 수)", "충남대학교,학종면접,해양환경과학과(11월4일 수)", "×"], "grade": "3", "classNo": "05", "seatNo": "07", "isJesimun": false, "teacher1": "미배정(공학1)", "teacher2": "이남설", "time": "18:40~19:20", "origTeam": "수", "dateChanged": false, "customDate": "", "customTime": ""}, {"ban": "30206", "name": "김신후", "team": "수", "d1": "10월 14일", "d2": "11월 4일", "field_raw": "건설·환경", "base_field": "건설·환경", "apps": ["서울시립대학교 면접형, 조경학과 (11월 29일)", "건국대학교 KU자기추천, 사회환경공학부 (12월 5일)", "동국대학교 DoDream,건설환경공학과 (12월 11일~12월 13일)"], "grade": "3", "classNo": "02", "seatNo": "06", "isJesimun": false, "teacher1": "정현석", "teacher2": "정현석", "time": "18:30~19:00", "origTeam": "화", "dateChanged": false, "customDate": "", "customTime": ""}]}, {"id": "이정수", "name": "AI·전자 · AI·컴퓨터", "teacher": "이정수", "room": "3-8", "students": [{"ban": "30119", "name": "채정훈", "team": "화", "d1": "10월 13일", "d2": "11월 3일", "field_raw": "AI·컴퓨터", "base_field": "AI·컴퓨터", "apps": ["성결대학교 SKU창의전형, ICT공학과(10월17일)", "한신대 참인재, 빅데이터융합학(10월3일)"], "grade": "3", "classNo": "01", "seatNo": "19", "isJesimun": false, "teacher1": "미배정(공학0)", "teacher2": "이정수", "time": "18:00~18:40", "origTeam": "화", "dateChanged": false, "customDate": "", "customTime": ""}, {"ban": "30122", "name": "한유림", "team": "화", "d1": "10월 13일", "d2": "11월 3일", "field_raw": "AI·컴퓨터", "base_field": "AI·컴퓨터", "apps": ["GIST 일반전형, 도전탐색과정(10월22일~23일)", "중앙대, 탐구형, 산업보안학과(자연) (12월 6일)", "서울시립대, 학생부종합전형I, 인공지능학과 (11월 29일)"], "grade": "3", "classNo": "01", "seatNo": "22", "isJesimun": false, "teacher1": "박예진", "teacher2": "이정수", "time": "18:00~18:30", "origTeam": "화", "dateChanged": false, "customDate": "", "customTime": "", "order": 1}, {"ban": "30303", "name": "김민준", "team": "화", "d1": "10월 13일", "d2": "11월 3일", "field_raw": "AI·컴퓨터, 제시문", "base_field": "AI·컴퓨터", "apps": ["고려대학교 다문화전형,컴퓨터학과(10월 31일)", "KAIST 고른기회전형,무학과(11월 26일)"], "grade": "3", "classNo": "03", "seatNo": "03", "isJesimun": false, "teacher1": "나의영", "teacher2": "이정수", "time": "19:30~20:00", "origTeam": "화", "dateChanged": false, "customDate": "", "customTime": ""}, {"ban": "30417", "name": "이효주", "team": "수", "d1": "10월 14일", "d2": "11월 4일", "field_raw": "AI·전자", "base_field": "AI·전자", "apps": ["한신대 참인재 전형, AISW학과(10월3일 )", "1"], "grade": "3", "classNo": "04", "seatNo": "17", "isJesimun": false, "teacher1": "미배정(공학0)", "teacher2": "이정수", "time": "18:00~18:40", "origTeam": "화", "dateChanged": true, "customDate": "", "customTime": ""}], "roomByDate": {"11월 3일": "3-11"}}, {"id": "정현석", "name": "제과제빵", "teacher": "정현석", "room": "3-9", "students": [{"ban": "30922", "name": "정은율", "team": "화", "d1": "10월 13일", "d2": "11월 3일", "field_raw": "행정·경찰·법", "base_field": "행정·경찰·법", "apps": ["연성대학교 종합 일반고전형, 경찰경호보안과(10월 25일)"], "grade": "3", "classNo": "09", "seatNo": "22", "isJesimun": false, "teacher1": "정현석", "teacher2": "정현석", "time": "19:00~19:30", "origTeam": "수", "dateChanged": true, "customDate": "", "customTime": ""}, {"ban": "31114", "name": "윤지우", "team": "화", "d1": "10월 13일", "d2": "11월 3일", "field_raw": "패션·디자인·\n소비자", "base_field": "패션·디자인·소비자", "apps": ["성신여자대학교 자기주도인재전형, \n소비자산업학과(2026.11.21.(토) ~ 11.22.(일),\n2026.11.28.(토) ~ 11.29.(일))"], "grade": "3", "classNo": "11", "seatNo": "14", "isJesimun": false, "teacher1": "정현석", "teacher2": "정현석", "time": "19:30~20:00", "origTeam": "수", "dateChanged": false, "customDate": "", "customTime": ""}, {"ban": "30405", "name": "김민채", "team": "수", "d1": "10월 14일", "d2": "11월 4일", "field_raw": "건설·환경", "base_field": "건설·환경", "apps": ["강원대학교 학생부종합 미래인재면접전형, \n환경공학과(11월 27일)", "강원대학교 학생부종합 미래인재면접전형, 환경공학과(11월 27일)", "강원대학교 학생부종합 미래인재면접전형, 환경공학과(11월 27일)"], "grade": "3", "classNo": "04", "seatNo": "05", "isJesimun": false, "teacher1": "정현석", "teacher2": "정현석", "time": "19:00~19:30", "origTeam": "수", "dateChanged": true, "customDate": "", "customTime": ""}, {"ban": "30309", "name": "마지민", "team": "수", "d1": "10월 14일", "d2": "11월 4일", "field_raw": "화학·화공", "base_field": "화학·화공", "apps": ["서울과학기술대학교 학교생활우수자전형, \n화공생명공학과( 11월 28일", "가천대학교 바람개비 전형, 화공생명배터리공학부(10월 31일 ~ 11월 1일)"], "grade": "3", "classNo": "03", "seatNo": "09", "isJesimun": false, "teacher1": "정현석", "teacher2": "정현석", "time": "19:30~20:00", "origTeam": "화", "dateChanged": false, "customDate": "", "customTime": ""}], "roomByDate": {"10월 13일": "3-10", "11월 3일": "3-1", "10월 14일": "3-7"}}, {"id": "채무철", "name": "경영 · 경영·사회", "teacher": "채무철", "room": "3-10", "students": [{"ban": "30514", "name": "이승윤", "team": "화", "d1": "10월 13일", "d2": "11월 3일", "field_raw": "경영", "base_field": "경영", "apps": ["국민대 학종, 경영학과(11월22일)"], "grade": "3", "classNo": "05", "seatNo": "14", "isJesimun": false, "teacher1": "채무철", "teacher2": "채무철", "time": "18:00~18:40", "origTeam": "화", "dateChanged": false, "customDate": "", "customTime": ""}, {"ban": "30713", "name": "이나연", "team": "수", "d1": "10월 14일", "d2": "11월 4일", "field_raw": "경영", "base_field": "경영", "apps": ["국민대학교 ,국민프런티어전형, \n경영학부 경영학전공 (11월 22일)", "성신여자대학교, 자기주도인재, 경영학과 (11월 22일)"], "grade": "3", "classNo": "07", "seatNo": "13", "isJesimun": false, "teacher1": "채무철", "teacher2": "채무철", "time": "18:40~19:20", "origTeam": "수", "dateChanged": true, "customDate": "", "customTime": ""}, {"ban": "30801", "name": "구소연", "team": "화", "d1": "10월 13일", "d2": "11월 3일", "field_raw": "경영", "base_field": "경영", "apps": ["국민대 국민프런티어 경영학과 11/22", "인하대 인하미래인재 경영학과 11/21"], "grade": "3", "classNo": "08", "seatNo": "01", "isJesimun": false, "teacher1": "채무철", "teacher2": "채무철", "time": "18:40~19:20", "origTeam": "화", "dateChanged": false, "customDate": "", "customTime": ""}, {"ban": "31020", "name": "이채은", "team": "화", "d1": "10월 13일", "d2": "11월 3일", "field_raw": "경영·사회", "base_field": "경영·사회", "apps": ["숙명여자대학교 숙명인재(면접형)전형, \n소비자 경제학과(11월 28일)", "국민대학교 국민프런티어전형, 경영학과(11월 22일)", "인하대학교 인하미래인재(면접형)전형, 소비자학과(11월 21일)"], "grade": "3", "classNo": "10", "seatNo": "20", "isJesimun": false, "teacher1": "채무철", "teacher2": "채무철", "time": "19:20~20:00", "origTeam": "화", "dateChanged": true, "customDate": "", "customTime": ""}, {"ban": "31116", "name": "이서림", "team": "수", "d1": "10월 14일", "d2": "11월 4일", "field_raw": "경영·사회", "base_field": "경영·사회", "apps": ["남서울대학교 교과+면접전형 휴먼케어학과 9월 19일", "백석대학교 백석인재전형 10월 16일", "협성대학교 미래창의인재전형 세무회계학과 10월 17일~18일"], "grade": "3", "classNo": "11", "seatNo": "16", "isJesimun": false, "teacher1": "채무철", "teacher2": "채무철", "time": "18:40~19:20", "origTeam": "수", "dateChanged": false, "customDate": "", "customTime": ""}, {"ban": "31118", "name": "이채원", "team": "수", "d1": "10월 14일", "d2": "11월 4일", "field_raw": "경영·사회", "base_field": "경영·사회", "apps": ["성결대학교 SKU창의전형, 항공경영학과(10월 17일)", "한세대학교 면접우수자전형, 인문사회학부(10월 25일)", "안양대학교 아리학생부면접전형, \n러시아언어문화학과(10월 10~11일)"], "grade": "3", "classNo": "11", "seatNo": "18", "isJesimun": false, "teacher1": "채무철", "teacher2": "채무철", "time": "19:20~20:00", "origTeam": "화", "dateChanged": true, "customDate": "", "customTime": ""}], "roomByDate": {"10월 13일": "3-11", "11월 3일": "3-2", "10월 14일": "3-8"}}, {"id": "최형심", "name": "미디어 · 어문·미디어 · 패션·디자인·소비자", "teacher": "최형심", "room": "3-11", "students": [{"ban": "30806", "name": "노채연", "team": "화", "d1": "10월 13일", "d2": "11월 3일", "field_raw": "미디어", "base_field": "미디어", "apps": ["가천대 바람개비 전형, 미디어커뮤니케이션(11월 7,8일)", "광운대 광운참빛인재전형,미디어커뮤니케이션(10.31,11.1)", "서울여대 바롬인재면접전형,언론영상학부(11.28)"], "grade": "3", "classNo": "08", "seatNo": "06", "isJesimun": false, "teacher1": "최형심", "teacher2": "최형심", "time": "18:00~18:40", "origTeam": "화", "dateChanged": false, "customDate": "", "customTime": ""}, {"ban": "30825", "name": "허윤진", "team": "화", "d1": "10월 13일", "d2": "11월 3일", "field_raw": "미디어", "base_field": "미디어", "apps": ["동덕여대 동덕창의리더형, 커뮤니케이션 콘텐츠학과(11월1일)", "서울여대 바롬인재형 ,언론영상학부-디지털 미디어학과 희망(11월28일)", "경기대 KGU종합 전형,미디어 영상학과(12월5일)"], "grade": "3", "classNo": "08", "seatNo": "25", "isJesimun": false, "teacher1": "최형심", "teacher2": "최형심", "time": "18:40~19:20", "origTeam": "화", "dateChanged": false, "customDate": "", "customTime": ""}, {"ban": "31119", "name": "이현우", "team": "화", "d1": "10월 13일", "d2": "11월 3일", "field_raw": "미디어", "base_field": "미디어", "apps": ["가천대학교 바람개비 전형, 미디어커뮤니케이션학과(11월 7일)", "명지대 명지인재면접전형, 디지털미디어학과(11월 29일)", "경기대 KGU학생부종합,미디어영상학과(12월 5일)"], "grade": "3", "classNo": "11", "seatNo": "19", "isJesimun": false, "teacher1": "최형심", "teacher2": "최형심", "time": "19:20~20:00", "origTeam": "화", "dateChanged": false, "customDate": "", "customTime": ""}, {"ban": "30809", "name": "박찬비", "team": "수", "d1": "10월 14일", "d2": "11월 4일", "field_raw": "어문·미디어", "base_field": "어문·미디어", "apps": ["동국대학교 do dream 전형, 영어영문학과(12월 12일)", "숭실대학교 ssu 미래인재(면접형), 영어영문학과( 11월 27일)", "국민대학교 국민프런티어, 영어영문학과, (11월 22일)"], "grade": "3", "classNo": "08", "seatNo": "09", "isJesimun": false, "teacher1": "최형심", "teacher2": "최형심", "time": "18:00~18:40", "origTeam": "화", "dateChanged": true, "customDate": "", "customTime": ""}, {"ban": "30821", "name": "정리나", "team": "수", "d1": "10월 14일", "d2": "11월 4일", "field_raw": "어문·미디어", "base_field": "어문·미디어", "apps": ["가천대학교 가천바람개비 전형, AI인문대학(11월 1일)", "동덕여자학교 동덕창의리더전형, 일어일본학전공(10월 31일)", "경기대학교 KGU학생부종합전형, 글로벌어분학부(12월 5일)"], "grade": "3", "classNo": "08", "seatNo": "21", "isJesimun": false, "teacher1": "최형심", "teacher2": "최형심", "time": "18:40~19:20", "origTeam": "수", "dateChanged": false, "customDate": "", "customTime": ""}, {"ban": "31104", "name": "권민솔", "team": "수", "d1": "10월 14일", "d2": "11월 4일", "field_raw": "어문·미디어", "base_field": "어문·미디어", "apps": ["서울시립대학교 학생부종합전형1, 영어영문학과(11월 28일)", "국민대학교 국민프론티어, 미디어학부(11월 22일)", "동국대학교 불교추천인재, 미디어커뮤니케이션학과(12월 13일)"], "grade": "3", "classNo": "11", "seatNo": "04", "isJesimun": false, "teacher1": "최형심", "teacher2": "최형심", "time": "19:20~20:00", "origTeam": "화", "dateChanged": true, "customDate": "", "customTime": ""}, {"ban": "31005", "name": "김소민", "team": "수", "d1": "10월 14일", "d2": "11월 4일", "field_raw": "패션·디자인·\n소비자", "base_field": "패션·디자인·소비자", "apps": ["한양대 에리카 학생부종합(면접형) \nLions자율전공학부(전계열) (11월 21일)", "아주대학교 ACE전형, 문화콘텐츠학과 (11월 29일)", "경기대(수원캠퍼스) 학생부종합(KGU학생부종합전형) \n디자인학부 (11월 29일)"], "grade": "3", "classNo": "10", "seatNo": "05", "isJesimun": false, "teacher1": "서기남", "teacher2": "서기남", "time": "18:00~21:20", "origTeam": "화", "dateChanged": true, "customDate": "", "customTime": ""}], "roomByDate": {"10월 13일": "3-1", "11월 3일": "3-3", "10월 14일": "3-9"}}, {"id": "박예진", "name": "반도체·전자 · 전기·전자", "teacher": "박예진", "room": "신관 다목적실", "students": [{"ban": "30105", "name": "김민하", "team": "화", "d1": "10월 13일", "d2": "11월 3일", "field_raw": "반도체·전자", "base_field": "반도체·전자", "apps": ["가천대학교 기회균형 전형, 반도체 물리학과,(9월 30일)", "가천대학교 조기취업형 계약학과 전형, 반도체 디스플레이 학과[(주)\n앰플리튜드코리아],(11월 4~5일)", "한양대 에리카 조기취업형 계약학과 전형, 스마트융합공학부\n(소재•부품융합전공 [파크시스템스(주)],(10월 29~31일)"], "grade": "3", "classNo": "01", "seatNo": "05", "isJesimun": false, "teacher1": "김종배", "teacher2": "김종배", "time": "18:40~19:20", "origTeam": "화", "dateChanged": false, "customDate": "", "customTime": ""}, {"ban": "30212", "name": "오승진", "team": "화", "d1": "10월 13일", "d2": "11월 3일", "field_raw": "반도체·전자", "base_field": "반도체·전자", "apps": ["가천대학교 바람개비 전형 , 반도체물리학과(11월 7~8일", "수원대학교 고교추천전형 전자전기공학부(11월 27일~29일)"], "grade": "3", "classNo": "02", "seatNo": "12", "isJesimun": false, "teacher1": "박예진", "teacher2": "박예진", "time": "18:30~19:00", "origTeam": "수", "dateChanged": true, "customDate": "", "customTime": "", "order": 2}, {"ban": "30219", "name": "장규성", "team": "수", "d1": "10월 14일", "d2": "11월 4일", "field_raw": "전기·전자", "base_field": "전기·전자", "apps": ["광운대학교 광운참빛인재1 전자공학과(11월 1일)", "인하대학교 인하미래인재(면접) 전자전기공학부(11월 22일)", "숭실대학교 SSU미래인재(면접) 지능전자공학부(11월 27일)"], "grade": "3", "classNo": "02", "seatNo": "19", "isJesimun": false, "teacher1": "박예진", "teacher2": "박예진", "time": "18:00~18:40", "origTeam": "수", "dateChanged": false, "customDate": "", "customTime": ""}, {"ban": "30308", "name": "김희철", "team": "화", "d1": "10월 13일", "d2": "11월 3일", "field_raw": "전기·전자", "base_field": "전기·전자", "apps": ["아주대학교 ACE전형, 전자공학과(11월 22일)", "전북대학교 큰사람 전형, 공학계열 1(11월 26일)", "한양대학교 ERICA(학생부종합), LIONS자율전공학부(전계열)"], "grade": "3", "classNo": "03", "seatNo": "08", "isJesimun": false, "teacher1": "박예진", "teacher2": "박예진", "time": "19:00~19:30", "origTeam": "화", "dateChanged": true, "customDate": "", "customTime": "", "order": 3}, {"ban": "30402", "name": "강준서", "team": "수", "d1": "10월 14일", "d2": "11월 4일", "field_raw": "전기·전자", "base_field": "전기·전자", "apps": ["숭실대학교, SSU 미래 인재 전형, 전기공학부(11월27일)", "아주대학교, ACE전형, 전자공학과(11월 22일)", "서울과기대, 학교생활우수자전형, 전기정보학부(11월28일)"], "grade": "3", "classNo": "04", "seatNo": "02", "isJesimun": false, "teacher1": "박예진", "teacher2": "박예진", "time": "18:30~19:00", "origTeam": "수", "dateChanged": false, "customDate": "", "customTime": ""}, {"ban": "30422", "name": "허유찬", "team": "수", "d1": "10월 14일", "d2": "11월 4일", "field_raw": "AI·전자", "base_field": "AI·전자", "apps": ["국민대학교 국민 프런티어전형, \n전자공학부 지능형ict융합전공(11월21일)", "단국대학교 dku인재 전형,전자공학부(12월6일)", "명지대학교(명지 인재 면접전형),전자공학부(11월28일)"], "grade": "3", "classNo": "04", "seatNo": "22", "isJesimun": false, "teacher1": "박예진", "teacher2": "박예진", "time": "19:00~19:30", "origTeam": "수", "dateChanged": false, "customDate": "", "customTime": ""}, {"ban": "30310", "name": "박재은", "team": "수", "d1": "10월 14일", "d2": "11월 4일", "field_raw": "자연과학·공학, 제시문", "base_field": "자연과학·공학", "apps": ["지스트 학교장추천전형, 무학과 (10월 22일)", "카이스트 고른기회전형, 무학과 (11월 26일)"], "grade": "3", "classNo": "03", "seatNo": "10", "isJesimun": false, "teacher1": "박예진", "teacher2": "박예진", "time": "19:30~20:00", "origTeam": "화", "dateChanged": true, "customDate": "", "customTime": ""}, {"ban": "30420", "name": "조호원", "team": "화", "d1": "10월 13일", "d2": "11월 3일", "field_raw": "공학·항공", "base_field": "공학·항공", "apps": ["숭실대학교 학생부종합 (SSU미래인재전형-면접형) \n전형,전기공학부 (11월 27일)", "충남대학교 학생부종합 면접전형,전기공학과 (12월 3일)"], "grade": "3", "classNo": "04", "seatNo": "20", "isJesimun": false, "teacher1": "박예진", "teacher2": "박예진", "time": "17:30~18:10", "origTeam": "화", "dateChanged": false, "customDate": "", "customTime": "", "order": 0}], "roomByDate": {"10월 13일": "3-2", "11월 3일": "3-4", "11월 4일": "정보실", "10월 14일": "정보실"}}, {"id": "jesimun", "name": "제시문", "teacher": "송두리", "room": "정보실", "students": [{"ban": "30222", "name": "황찬하", "team": "화", "d1": "10월 13일", "d2": "11월 3일", "field_raw": "반도체·전자, 제시문", "base_field": "반도체·전자", "apps": ["서울대학교 지역균형전형, 재료공학부(12월 4일)", "연세대학교 활동우수형, 시스템반도체공학과(11월 22일)", "고려대학교 계열적합전형, 전기전자공학부(11월 8일)"], "grade": "3", "classNo": "02", "seatNo": "22", "isJesimun": true, "teacher1": "송두리", "teacher2": "송두리", "time": "19:00~21:00", "dateChanged": false, "customDate": "", "customTime": ""}, {"ban": "30114", "name": "이하영", "team": "화", "d1": "10월 13일", "d2": "11월 3일", "field_raw": "생명과학", "base_field": "생명과학", "apps": ["서울대학교 지역균형 전형, 바이오시스템소재학부(12월 4일)", "연세대학교 활동우수형, 화공생명공학과(11월 22일)", "연세대학교 국제형(국내고), 융합과학공학부(11월 29일)"], "grade": "3", "classNo": "01", "seatNo": "14", "isJesimun": true, "teacher1": "송두리", "teacher2": "송두리", "time": "19:00~21:00", "dateChanged": false, "customDate": "", "customTime": ""}, {"ban": "30407", "name": "김지후", "team": "수", "d1": "10월 14일", "d2": "11월 4일", "field_raw": "자연과학·공학, 제시문", "base_field": "자연과학·공학", "apps": ["연세대학교 활동우수형, 화학과(11월 22일)"], "grade": "3", "classNo": "04", "seatNo": "07", "isJesimun": true, "teacher1": "송두리", "teacher2": "송두리", "time": "19:00~21:00", "dateChanged": false, "customDate": "", "customTime": ""}], "roomByDate": {"10월 13일": "신관 다목적실", "11월 3일": "신관 다목적실", "11월 4일": "신관 다목적실", "10월 14일": "신관 다목적실"}}, {"id": "extra_미배정(생명,보건)_1789979380590", "name": "미배정(생명,보건) (신규)", "teacher": "미배정(공학1)", "room": "", "students": [{"ban": "30520", "name": "최수아", "team": "수", "d1": "10월 14일", "d2": "11월 4일", "field_raw": "간호", "base_field": "간호", "apps": ["가천대(가천바람개비 전형), 간호학과(10/31, 11/1, 11/7)", "국민대(국민프런티어 전형), 융합바이오공학과(11/21)", "성신여대(자기주도인재전형), 바이오헬스융합학부(11/28)"], "grade": "3", "classNo": "05", "seatNo": "20", "isJesimun": false, "teacher1": "권현석", "teacher2": "권현석", "time": "19:00~19:30", "origTeam": "화", "dateChanged": true, "customDate": "", "customTime": ""}, {"ban": "30524", "name": "표지은", "team": "수", "d1": "10월 14일", "d2": "11월 4일", "field_raw": "간호", "base_field": "간호", "apps": ["경동대학교 자기추천제 전형, 간호학과 (10월 17일)", "남서울대학교 면접전형, 간호학과 (11월 7일)", "동국대WISE 참사람전형, 간호학과 (12월 5일)"], "grade": "3", "classNo": "05", "seatNo": "24", "isJesimun": false, "teacher1": "권현석", "teacher2": "권현석", "time": "19:30~20:00", "origTeam": "화", "dateChanged": true, "customDate": "", "customTime": ""}, {"ban": "30902", "name": "강준서", "team": "수", "d1": "10월 14일", "d2": "11월 4일", "field_raw": "식품·보건", "base_field": "식품·보건", "apps": ["부산카톨릭댜학교,자기추천 전형,물리치료학과(10월25일)", "경운대학교,교과면접 전형, 물리치료학과", "동의대학교, 학교생활우수자(면접)전형,물리치료학과"], "grade": "3", "classNo": "09", "seatNo": "02", "isJesimun": false, "teacher1": "서기남", "teacher2": "서기남", "time": "18:40~19:20", "origTeam": "수", "dateChanged": false, "customDate": "", "customTime": ""}, {"ban": "30906", "name": "김현우", "team": "화", "d1": "10월 13일", "d2": "11월 3일", "field_raw": "보건·의공", "base_field": "보건·의공", "apps": ["안산대 일반, 임상병리학과 (10/10~10/11)", "안산대 일반, 방사선학과 (10/10~10/11)", "수원여대 일반, 물리치료학과 (10/16~10/17)"], "grade": "3", "classNo": "09", "seatNo": "06", "isJesimun": false, "teacher1": "미배정(생명, 보건)", "teacher2": "서기남", "time": "18:00~18:40", "origTeam": "화", "dateChanged": false, "customDate": "", "customTime": ""}]}, {"id": "extra_미배정(일반)_1789979659864", "name": "미배정(일반) (신규)", "teacher": "미배정(일반)", "room": "", "students": [{"ban": "30715", "name": "이소윤", "team": "수", "d1": "10월 14일", "d2": "11월 4일", "field_raw": "교육·어문", "base_field": "교육·어문", "apps": ["서울신학대학교 기독교 전형 , 기독교교육과(10월17일)", "총신대학교 목회자추천 전형 , 기독교교육과(11월 7일)"], "grade": "3", "classNo": "07", "seatNo": "15", "isJesimun": false, "teacher1": "김종배", "teacher2": "김종배", "time": "19:30~20:00", "origTeam": "화", "dateChanged": true, "customDate": "", "customTime": ""}, {"ban": "30602", "name": "권민하", "team": "화", "d1": "10월 13일", "d2": "11월 3일", "field_raw": "제과제빵", "base_field": "제과제빵", "apps": ["연성대 특별전형, 카페 베이커리과(10월 25일)", "대림대 특별전형, 재과제빵과 (10월 10일)", "백석예대 일반전형, 호텔조리·제과제빵학부 (10월 20~23일)"], "grade": "3", "classNo": "06", "seatNo": "02", "isJesimun": false, "teacher1": "미배정(일반)", "teacher2": "미배정(일반)", "time": "18:00~18:40", "origTeam": "수", "dateChanged": true, "customDate": "", "customTime": ""}, {"ban": "30723", "name": "조아영", "team": "화", "d1": "10월 13일", "d2": "11월 3일", "field_raw": "제과제빵", "base_field": "제과제빵", "apps": ["백석대-백석인재 (면접) 전형외식조리서비스학부 \n제과제빵과 (10월 15일)", "성결대 -SKU창의적인재 글로벌물류학과 (10월 17일)", "연성대-정원내 일반전형 (면접) 카페베이커리학과 (10월 25일)"], "grade": "3", "classNo": "07", "seatNo": "23", "isJesimun": false, "teacher1": "미배정(일반)", "teacher2": "미배정(일반)", "time": "18:40~19:20", "origTeam": "화", "dateChanged": false, "customDate": "", "customTime": ""}, {"ban": "30915", "name": "윤주하", "team": "화", "d1": "10월 13일", "d2": "11월 3일", "field_raw": "제과제빵", "base_field": "제과제빵", "apps": ["연성대, 일반전형, 제과제빵 (10.25)", "백석예술대, 일반전형, 제과제빵 (10.20)", "서울한영대, 특교자전형, 아동보윤(10.16)"], "grade": "3", "classNo": "09", "seatNo": "15", "isJesimun": false, "teacher1": "미배정(일반)", "teacher2": "미배정(일반)", "time": "19:20~20:00", "origTeam": "화", "dateChanged": false, "customDate": "", "customTime": ""}, {"ban": "30811", "name": "심예서", "team": "수", "d1": "10월 14일", "d2": "11월 4일", "field_raw": "패션·디자인·\n소비자", "base_field": "패션·디자인·소비자", "apps": ["가천대 바람개비 전형 패션산업 학괴 (11월1일)", "가톨릭대 학생부종합(잠재능력우수자면접전형)12월5일"], "grade": "3", "classNo": "08", "seatNo": "11", "isJesimun": false, "teacher1": "서기남", "teacher2": "서기남", "time": "19:20~20:00", "origTeam": "화", "dateChanged": true, "customDate": "", "customTime": ""}]}, {"id": "extra_미배정(공학)_1789980655241", "name": "미배정(공학) (신규)", "teacher": "미배정(공학0)", "room": "", "students": [{"ban": "30924", "name": "황진하", "team": "화", "d1": "10월 13일", "d2": "11월 3일", "field_raw": "보건·의공", "base_field": "보건·의공", "apps": ["연세대 미래캠 학생부 종합 전형, 의공학부(10월 31일)"], "grade": "3", "classNo": "09", "seatNo": "24", "isJesimun": false, "teacher1": "미배정(생명, 보건)", "teacher2": "서기남", "time": "18:40~19:20", "origTeam": "화", "dateChanged": false, "customDate": "", "customTime": ""}, {"ban": "30604", "name": "김나경", "team": "수", "d1": "10월 14일", "d2": "11월 4일", "field_raw": "환경·도시", "base_field": "환경·도시", "apps": ["성결대학교 sku 창의 전형, 스마트 공학과 (10월 17일)", "안양대학교 아리학부면접 도시정보공학과(야) (10월 10일-11일)"], "grade": "3", "classNo": "06", "seatNo": "04", "isJesimun": false, "teacher1": "미배정(공학1)", "teacher2": "이정수", "time": "18:40~19:20", "origTeam": "화", "dateChanged": true, "customDate": "", "customTime": ""}, {"ban": "30112", "name": "이시호", "team": "수", "d1": "10월 14일", "d2": "11월 4일", "field_raw": "자연과학·공학", "base_field": "자연과학·공학", "apps": ["한국항공대. 미래인재 전형. 공과대학.(11월7일)", "없다", "없다"], "grade": "3", "classNo": "01", "seatNo": "12", "isJesimun": false, "teacher1": "미배정(공학0)", "teacher2": "이정수", "time": "19:20~20:00", "origTeam": "화", "dateChanged": true, "customDate": "", "customTime": ""}, {"ban": "30709", "name": "남현수", "team": "화", "d1": "10월 13일", "d2": "11월 3일", "field_raw": "반도체·전자", "base_field": "반도체·전자", "apps": ["대진대학교 학생부우수자전형, 반도체융합공학과(11월21일)"], "grade": "3", "classNo": "07", "seatNo": "09", "isJesimun": false, "teacher1": "미배정(공학0)", "teacher2": "박예진", "time": "18:40~19:20", "origTeam": "화", "dateChanged": false, "customDate": "", "customTime": ""}, {"ban": "30605", "name": "김도윤", "team": "화", "d1": "10월 13일", "d2": "11월 3일", "field_raw": "공학·항공", "base_field": "공학·항공", "apps": ["극동대학교 면접전형,항공정비학과(10월 15일)"], "grade": "3", "classNo": "06", "seatNo": "05", "isJesimun": false, "teacher1": "미배정(공학0)", "teacher2": "서기남", "time": "19:20~20:00", "origTeam": "화", "dateChanged": false, "customDate": "", "customTime": ""}, {"ban": "30406", "name": "김준영", "team": "화", "d1": "10월 13일", "d2": "11월 3일", "field_raw": "AI·전자", "base_field": "AI·전자", "apps": ["가천대학교 조기취업형 계약학과, 미래자동차학과(11월 4~5일)", "한국공학대학교 조기취업형 계약학과, AI소프트웨어학과(11월 25~26일)", "X"], "grade": "3", "classNo": "04", "seatNo": "06", "isJesimun": false, "teacher1": "김종배", "teacher2": "김종배", "time": "19:20~20:00", "origTeam": "화", "dateChanged": true, "customDate": "", "customTime": ""}]}, {"id": "extra_미배정(생명, 보건)_1790008038414", "name": "미배정(생명, 보건) (신규)", "teacher": "미배정(생명, 보건)", "room": "", "students": []}], "dateOrder": ["10월 13일", "10월 14일", "11월 3일", "11월 4일"], "classes": ["3학년 1반", "3학년 2반", "3학년 3반", "3학년 4반", "3학년 5반", "3학년 6반", "3학년 7반", "3학년 8반", "3학년 9반", "3학년 10반", "3학년 11반"], "teacherAvail": {"권현석": {"10월 13일": false, "10월 14일": true, "11월 3일": false, "11월 4일": true}, "김기정": {"10월 13일": true, "10월 14일": true, "11월 3일": true, "11월 4일": true}, "김종배": {"10월 13일": true, "10월 14일": true, "11월 3일": true, "11월 4일": true}, "나의영": {"10월 13일": true, "10월 14일": true, "11월 3일": true, "11월 4일": true}, "서기남": {"10월 13일": false, "10월 14일": true, "11월 3일": true, "11월 4일": true}, "송두리": {"10월 13일": true, "10월 14일": true, "11월 3일": true, "11월 4일": true}, "송현제": {"10월 13일": false, "10월 14일": true, "11월 3일": false, "11월 4일": true}, "이남설": {"10월 13일": false, "10월 14일": false, "11월 3일": false, "11월 4일": true}, "이정수": {"10월 13일": false, "10월 14일": false, "11월 3일": true, "11월 4일": true}, "정현석": {"10월 13일": true, "10월 14일": true, "11월 3일": true, "11월 4일": true}, "채무철": {"10월 13일": true, "10월 14일": true, "11월 3일": true, "11월 4일": true}, "최형심": {"10월 13일": true, "10월 14일": true, "11월 3일": true, "11월 4일": true}, "박예진": {"10월 13일": true, "10월 14일": true, "11월 3일": true, "11월 4일": true}}}
+</script>
+
+<script>
+(function(){
+  "use strict";
+  const PRISTINE_HTML = document.documentElement.outerHTML;
+  const ADMIN_PASSWORD = "202603";
+
+  let DATA = JSON.parse(document.getElementById('__DATA__').textContent);
+  let isAdmin = false;
+  let artifactApi = null, downloadsApi = null;
+  let currentTab = DATA.dateOrder[0];
+
+  try { if (sessionStorage.getItem('sq_admin') === '1') isAdmin = true; } catch(e){}
+
+  function escapeHtml(s){
+    return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+  function teamOfDate(date){ return (date === '10월 13일' || date === '11월 3일') ? '화' : '수'; }
+  function shortDate(date){ return date.replace('월 ', '/').replace('일',''); }
+  function isFirstDate(date){ return date === '10월 13일' || date === '10월 14일'; }
+  function showToast(msg){
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    setTimeout(()=>t.classList.remove('show'), 2200);
+  }
+  function markDirty(){ document.getElementById('savebar').classList.remove('hidden'); }
+
+  // ---------- 공용 모달 (비밀번호 입력 / 선생님 이름 입력 등) ----------
+  function openModal({title, placeholder, isPassword, onConfirm}){
+    const overlay = document.getElementById('modalOverlay');
+    const titleEl = document.getElementById('modalTitle');
+    const inputEl = document.getElementById('modalInput');
+    const okBtn = document.getElementById('modalOk');
+    const cancelBtn = document.getElementById('modalCancel');
+    titleEl.textContent = title;
+    inputEl.value = '';
+    inputEl.type = isPassword ? 'password' : 'text';
+    inputEl.placeholder = placeholder || '';
+    overlay.style.display = 'flex';
+    setTimeout(() => inputEl.focus(), 50);
+
+    let composing = false;
+    function onCompStart(){ composing = true; }
+    function onCompEnd(){ composing = false; }
+
+    function cleanup(){
+      overlay.style.display = 'none';
+      okBtn.removeEventListener('click', onOk);
+      cancelBtn.removeEventListener('click', onCancel);
+      inputEl.removeEventListener('keydown', onKey);
+      inputEl.removeEventListener('compositionstart', onCompStart);
+      inputEl.removeEventListener('compositionend', onCompEnd);
+    }
+    function onOk(){ const v = inputEl.value; cleanup(); onConfirm(v); }
+    function onCancel(){ cleanup(); }
+    function onKey(e){
+      if(e.key === 'Enter'){
+        // 한글(IME) 입력 조합 중에 Enter가 눌리면 완성되지 않은 글자로 제출되는 것을 방지
+        if(composing || e.isComposing || e.keyCode === 229) return;
+        onOk();
+      } else if(e.key === 'Escape'){ onCancel(); }
+    }
+    okBtn.addEventListener('click', onOk);
+    cancelBtn.addEventListener('click', onCancel);
+    inputEl.addEventListener('keydown', onKey);
+    inputEl.addEventListener('compositionstart', onCompStart);
+    inputEl.addEventListener('compositionend', onCompEnd);
+  }
+  function syncDataScript(){ document.getElementById('__DATA__').textContent = JSON.stringify(DATA); }
+  function uniqueTeachers(){
+    const set = new Set();
+    DATA.clusters.forEach(c => c.students.forEach(s => { if(s.teacher1) set.add(s.teacher1); if(s.teacher2) set.add(s.teacher2); }));
+    return Array.from(set).sort((a,b)=>a.localeCompare(b,'ko'));
+  }
+  function teacherOptionsForDate(date, currentVal){
+    const names = DATA.clusters.map(c=>c.teacher);
+    let html = `<option value="" ${!currentVal?'selected':''}>미배정</option>`;
+    names.forEach(name => {
+      const avail = DATA.teacherAvail && DATA.teacherAvail[name];
+      const mark = avail ? (avail[date] ? '' : ' 🚫불가') : '';
+      html += `<option value="${escapeHtml(name)}" ${name===currentVal?'selected':''}>${escapeHtml(name)}${mark}</option>`;
+    });
+    return html;
+  }
+  function allClusterOptions(currentId){
+    const unassignedOpt = `<option value="__unassigned__">⚠️ 미배정으로 보내기</option>`;
+    return unassignedOpt + DATA.clusters.map(c => `<option value="${c.id}" ${c.id===currentId?'selected':''}>${escapeHtml(c.teacher)}</option>`).join('');
+  }
+  function studentTeacherLabel(s){
+    if(s.teacher1 === s.teacher2) return teacherOrUnassigned(s.teacher1);
+    return `${teacherOrUnassigned(s.teacher1)}(1회차)/${teacherOrUnassigned(s.teacher2)}(2회차)`;
+  }
+
+  // ---------- nav tabs ----------
+  function isDateChangedNow(s){
+    if(!s.origTeam || s.isJesimun) return false;
+    const nd = teamDates(s.origTeam);
+    return !(s.d1 === nd.d1 && s.d2 === nd.d2);
+  }
+  function dateChangedDot(s){
+    return isDateChangedNow(s) ? '<span class="date-changed-dot" title="원래 신청한 날짜(화/수)와 다르게 배정됨"></span>' : '';
+  }
+  function customScheduleHtml(s){
+    if(!s.customDate && !s.customTime) return '';
+    return `<span class="custom-date-badge">📌 ${escapeHtml(s.customDate||'날짜미정')} ${escapeHtml(s.customTime||'')}</span>`;
+  }
+  function pairedDate(date){
+    const map = {'10월 13일':'11월 3일', '11월 3일':'10월 13일', '10월 14일':'11월 4일', '11월 4일':'10월 14일'};
+    return map[date];
+  }
+  function buildTabsNav(){
+    const nav = document.getElementById('tabsNav');
+    const dateBtns = DATA.dateOrder.map(d => `<button data-tab="${d}">${escapeHtml(shortDate(d))}(${teamOfDate(d)==='화'?'화':'수'})</button>`).join('');
+    nav.innerHTML = dateBtns + `<button data-tab="__student">🔍 학생 찾기</button><button data-tab="__teacher">👩‍🏫 강사별 보기</button>`;
+    nav.querySelectorAll('button').forEach(btn => btn.addEventListener('click', () => selectTab(btn.getAttribute('data-tab'))));
+    updateTabActive();
+  }
+  function updateTabActive(){
+    document.querySelectorAll('#tabsNav button').forEach(b => b.classList.toggle('active', b.getAttribute('data-tab') === currentTab));
+  }
+  function selectTab(tab){
+    currentTab = tab;
+    updateTabActive();
+    document.getElementById('tab-dates').style.display = (tab !== '__student' && tab !== '__teacher') ? '' : 'none';
+    document.getElementById('tab-student').style.display = (tab === '__student') ? '' : 'none';
+    document.getElementById('tab-teacher').style.display = (tab === '__teacher') ? '' : 'none';
+    if(tab === '__student'){ populateClassSelect(); renderStudentSearch(); }
+    else if(tab === '__teacher'){ buildTeacherTabs(); renderTeacherView(); }
+    else { renderDateTab(tab); }
+  }
+
+  // ---------- 날짜별 탭 ----------
+  function getRoomForDate(cluster, date){
+    if(!cluster) return '';
+    if(cluster.roomByDate && cluster.roomByDate[date]) return cluster.roomByDate[date];
+    return cluster.room || '';
+  }
+  function findClusterOfBan(ban){
+    return DATA.clusters.find(c => c.students.some(s => s.ban === ban));
+  }
+  function studentRoleForDate(s, date){
+    if(s.isJesimun) return 'first'; // teacher1===teacher2 항상 동일하므로 role은 편의상 first
+    if(s.d1 === date) return 'first';
+    if(s.d2 === date) return 'second';
+    return null;
+  }
+  function studentsForDate(date){
+    const groups = {};
+    DATA.clusters.forEach(c => {
+      c.students.forEach(s => {
+        const role = studentRoleForDate(s, date);
+        if(!role) return;
+        const key = role === 'first' ? 'teacher1' : 'teacher2';
+        const t = s[key];
+        const gkey = t || '';
+        if(!groups[gkey]) groups[gkey] = { teacherName: t || '', students: [] };
+        groups[gkey].students.push(s);
+      });
+    });
+    const order = DATA.clusters.map(c=>c.teacher);
+    const keys = Object.keys(groups).sort((a,b) => {
+      if(a==='') return 1; if(b==='') return -1;
+      return order.indexOf(a) - order.indexOf(b);
+    });
+    return keys.map(k => groups[k]);
+  }
+
+  function sessionTeacherKey(s, date){
+    return isFirstDate(date) ? 'teacher1' : 'teacher2';
+  }
+  function teacherOrUnassigned(v){
+    return v ? escapeHtml(v) : '<span style="color:var(--danger); font-weight:800;">미배정</span>';
+  }
+  function teamDates(team){ return team === '화' ? {d1:'10월 13일', d2:'11월 3일'} : {d1:'10월 14일', d2:'11월 4일'}; }
+  function studentRow(s, gid, date){
+    const timeHtml = isAdmin
+      ? `<input type="text" class="time-input" data-stu-time="${s.ban}" value="${escapeHtml(s.time||'')}" placeholder="18:00~18:40">`
+      : `<span class="time-badge">${s.time ? escapeHtml(s.time) : '미정'}</span>`;
+    let assignHtml = '';
+    if(isAdmin && date){
+      const isSetMode = (s.d1 === teamDates('화').d1 && s.d2 === teamDates('화').d2 && s.teacher1 === s.teacher2)
+                      || (s.d1 === teamDates('수').d1 && s.d2 === teamDates('수').d2 && s.teacher1 === s.teacher2);
+      const currentSetTeam = teamOfDate(s.d1);
+      const dateOpts = (cur) => DATA.dateOrder.map(d => `<option value="${d}" ${d===cur?'selected':''}>${escapeHtml(shortDate(d))}(${teamOfDate(d)==='화'?'화':'수'})</option>`).join('');
+
+      const setModeHtml = `
+        <div style="margin-top:8px; display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+          <span class="lbl" style="font-size:11px;color:var(--muted);">날짜</span>
+          <select data-stu-dateset="${s.ban}">
+            <option value="화" ${currentSetTeam==='화'?'selected':''}>화요일 세트 (10/13·11/3)</option>
+            <option value="수" ${currentSetTeam==='수'?'selected':''}>수요일 세트 (10/14·11/4)</option>
+          </select>
+          <span class="lbl" style="font-size:11px;color:var(--muted);">선생님</span>
+          <select data-stu-teacherset="${s.ban}">${teacherOptionsForDate(s.d1, s.teacher1||'')}</select>
+        </div>`;
+
+      const separateModeHtml = `
+        <div style="margin-top:8px; display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+          <span class="lbl" style="font-size:11px;color:var(--muted);">1회차 날짜</span>
+          <select data-stu-date1="${s.ban}">${dateOpts(s.d1)}</select>
+          <span class="lbl" style="font-size:11px;color:var(--muted);">선생님</span>
+          <select data-stu-teacher="${s.ban}" data-teacher-key="teacher1">${teacherOptionsForDate(s.d1, s.teacher1||'')}</select>
+        </div>
+        <div style="margin-top:6px; display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+          <span class="lbl" style="font-size:11px;color:var(--muted);">2회차 날짜</span>
+          <select data-stu-date2="${s.ban}">${dateOpts(s.d2)}</select>
+          <span class="lbl" style="font-size:11px;color:var(--muted);">선생님</span>
+          <select data-stu-teacher="${s.ban}" data-teacher-key="teacher2">${teacherOptionsForDate(s.d2, s.teacher2||'')}</select>
+        </div>`;
+
+      assignHtml = `
+        <div style="margin-top:8px; padding-top:8px; border-top:1px dashed var(--border); display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
+          <span class="lbl" style="font-size:11px;color:var(--muted);">이름</span>
+          <input type="text" data-stu-name="${s.ban}" value="${escapeHtml(s.name)}" style="max-width:80px; padding:5px 7px; border-radius:6px; border:1px solid var(--border); font-size:12px;" title="이름 수정">
+        </div>
+        ${s.isJesimun ? '' : `
+        <label style="margin-top:8px; display:flex; align-items:center; gap:5px; cursor:pointer; font-size:12px; color:var(--text);">
+          <input type="checkbox" data-stu-setmode="${s.ban}" ${isSetMode?'checked':''}>
+          🔗 화·수 세트로 함께 이동 (해제하면 1·2회차를 따로 설정)
+        </label>
+        <div data-setmode-block="${s.ban}" style="${isSetMode?'':'display:none;'}">${setModeHtml}</div>
+        <div data-separate-block="${s.ban}" style="${isSetMode?'display:none;':''}">${separateModeHtml}</div>
+        `}
+        <div style="margin-top:6px; padding-top:6px; border-top:1px dashed var(--border); display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+          <span class="lbl" style="font-size:11px;color:var(--muted);">📌 이 4일 외 다른 날짜에 하는 경우</span>
+          <input type="text" data-stu-customdate="${s.ban}" value="${escapeHtml(s.customDate||'')}" placeholder="예: 11월 10일" style="max-width:100px; padding:5px 7px; border-radius:6px; border:1px solid var(--border); font-size:12px;">
+          <input type="text" data-stu-customtime="${s.ban}" value="${escapeHtml(s.customTime||'')}" placeholder="예: 15:00~15:40" style="max-width:110px; padding:5px 7px; border-radius:6px; border:1px solid var(--border); font-size:12px;">
+        </div>`;
+    }
+    const dragHandle = isAdmin ? `<span class="drag-handle" title="드래그해서 순서 변경">⠿</span>` : '';
+    return `
+      <li class="stu" ${isAdmin ? `draggable="true" data-drag-item="${s.ban}"` : ''}>
+        <div class="stu-row">
+          <span data-stu-toggle="${s.ban}-${gid}" style="cursor:pointer;">${dragHandle}<span class="nm">${escapeHtml(s.name)}</span> <span class="fld">(${escapeHtml(s.ban)})</span>${dateChangedDot(s)}${customScheduleHtml(s)}</span>
+          <span style="display:flex; align-items:center; gap:6px;">${timeHtml}${s.isJesimun ? '<span class="tag-jesimun">제시문</span>' : ''}</span>
+        </div>
+        <div class="apps-panel" id="apps-${s.ban}-${gid}">
+          <b>${escapeHtml(s.field_raw)}</b> · ${s.isJesimun ? `제시문 특별진행 (${DATA.dateOrder.map(shortDate).join(', ')}) · 담당:${teacherOrUnassigned(s.teacher1)}` : `${s.team==='화'?'화요일':'수요일'}팀 (${escapeHtml(s.d1)} / ${escapeHtml(s.d2)}) · 1회차:${teacherOrUnassigned(s.teacher1)} / 2회차:${teacherOrUnassigned(s.teacher2)}`}
+          ${(s.customDate || s.customTime) ? `<div style="margin-top:4px;"><span class="custom-date-badge">📌 별도 일정: ${escapeHtml(s.customDate||'날짜미정')} ${escapeHtml(s.customTime||'')}</span></div>` : ''}
+          ${s.apps && s.apps.length ? `<ul>${s.apps.map(a=>`<li>${escapeHtml(a)}</li>`).join('')}</ul>` : '<div style="margin-top:4px;color:var(--muted);">등록된 지원 정보가 없습니다.</div>'}
+          ${assignHtml}
+        </div>
+      </li>`;
+  }
+
+  function renderDateTab(date){
+    const box = document.getElementById('tab-dates');
+    const team = teamOfDate(date);
+    const items = studentsForDate(date);
+    const totalCnt = items.reduce((a,i)=>a+i.students.length,0);
+    const unassignedCnt = (items.find(i=>!i.teacherName) || {students:[]}).students.length;
+    const headHtml = `
+      <div class="datehead">
+        <span class="datelabel">📅 ${escapeHtml(date)} (${team==='화'?'화요일':'수요일'})</span>
+        <span style="color:var(--muted); font-size:12px;">전체 ${totalCnt}명${unassignedCnt ? ` · <span style="color:var(--danger);font-weight:700;">미배정 ${unassignedCnt}명</span>` : ''}</span>
+      </div>
+    `;
+    const gridHtml = `<div class="grid">${items.map(({teacherName,students}) => renderGroupCard(teacherName, students, date)).join('')}</div>`;
+    box.innerHTML = headHtml + (items.length ? gridHtml : '<div class="empty">해당 날짜에 배정된 학생이 없습니다.</div>');
+    items.forEach(({teacherName}) => wireGroupCard(teacherName, date));
+  }
+
+  function renderGroupCard(teacherName, members, date){
+    const isUnassigned = !teacherName;
+    const gid = (isUnassigned ? 'unassigned' : teacherName) + '-' + date;
+    const homeCluster = isUnassigned ? null : DATA.clusters.find(x=>x.teacher===teacherName);
+    const room = getRoomForDate(homeCluster, date);
+    members = members.slice().sort((a,b) => (a.order ?? 0) - (b.order ?? 0));
+    const isEmpty = members.length === 0;
+    const fieldLabel = isEmpty ? '' : Array.from(new Set(members.map(s=>s.base_field))).join(' / ');
+    const studentsHtml = isEmpty
+      ? '<li class="empty-slot">✅ 오늘 가능한데 아직 배정된 학생이 없습니다. 다른 카드에서 "조 이동"으로 데려와보세요.</li>'
+      : members.map(s => studentRow(s, gid, date)).join('');
+    const editBtn = isAdmin ? `<button class="btn-ghost btn-sm" data-edit-toggle="${gid}">✏️ 편집</button>` : '';
+    const canDelete = isAdmin && homeCluster && homeCluster.students.length === 0;
+    const deleteBtn = canDelete ? `<button class="btn-danger btn-sm" data-delete-cluster="${homeCluster.id}">🗑 그룹 삭제</button>` : '';
+
+    const clusterFieldsHtml = (isAdmin && homeCluster) ? `
+        <div style="font-size:11px;color:var(--muted);margin-bottom:8px;">※ 카드 제목(선생님 성함)과 교실은 카드에서 바로 클릭해 수정하세요. 부제목(분야)은 실제 배정된 학생들 기준으로 자동 표시됩니다.</div>` : (isAdmin ? `<div style="font-size:11.5px;color:var(--muted);margin-bottom:8px;">※ 미배정 학생 묶음 카드입니다. 아래에서 학생별로 담당쌤을 지정하거나 다른 조로 이동해주세요.</div>` : '');
+
+    const editPanel = isAdmin ? `
+      <div class="edit-panel" id="edit-${gid}">
+        ${clusterFieldsHtml}
+        <div style="font-size:11px;color:var(--muted);">💡 학생별 담당쌤 배정·이름 수정·조 이동은 아래 목록에서 <b>학생 이름을 눌러</b> 펼친 뒤 거기서 바로 할 수 있습니다.</div>
+      </div>` : '';
+
+    const titleHtml = isUnassigned
+      ? '<span style="color:var(--danger);">⚠️ 미배정</span>'
+      : (isAdmin && homeCluster
+          ? `<input type="text" class="title-input" data-field="teacher" data-cid="${homeCluster.id}" value="${escapeHtml(teacherName)}" title="이름 수정">`
+          : escapeHtml(teacherName));
+
+    return `
+      <div class="card ${teamOfDate(date)==='화'?'tue':'wed'}${isUnassigned?' unassigned-card':''}${isEmpty?' empty-avail-card':''}" data-gid="${gid}">
+        <div class="card-head">
+          <div>
+            <div class="jo-title">${titleHtml}</div>
+            <div class="jo-field">${isEmpty ? '배정된 학생 없음' : escapeHtml(fieldLabel) + ' · ' + members.length + '명'}</div>
+          </div>
+          <span class="badge-team badge-${teamOfDate(date)==='화'?'tue':'wed'}">${isFirstDate(date)?'1회차':'2회차'}</span>
+        </div>
+        <div class="meta-row">
+          <span>🏫 ${(isAdmin && homeCluster)
+            ? `<input type="text" class="room-input" data-cluster-room="${homeCluster.id}" data-room-date="${date}" value="${escapeHtml(room)}" placeholder="교실 입력">`
+            : `<b class="${!room?'meta-missing':''}">${room ? escapeHtml(room) : '미정'}</b>`}</span>
+        </div>
+        <ul class="stulist" data-cascade="1">${studentsHtml}</ul>
+        ${editBtn}
+        ${deleteBtn}
+        ${editPanel}
+      </div>
+    `;
+  }
+
+  function wireStudentToggles(root){
+    root.querySelectorAll('[data-stu-toggle]').forEach(row => {
+      row.addEventListener('click', () => document.getElementById('apps-'+row.getAttribute('data-stu-toggle')).classList.toggle('open'));
+    });
+  }
+  function parseStartMinutes(str){
+    const m = (str||'').match(/(\d{1,2}):(\d{2})/);
+    if(!m) return null;
+    return parseInt(m[1],10)*60 + parseInt(m[2],10);
+  }
+  function formatTimeRange(startMin, durMin){
+    durMin = durMin || 40;
+    const fmt = (t) => `${String(Math.floor((t%1440)/60)).padStart(2,'0')}:${String(t%60).padStart(2,'0')}`;
+    return `${fmt(startMin)}~${fmt(startMin+durMin)}`;
+  }
+  function slotDurationFor(count){
+    return count === 4 ? 30 : 40;
+  }
+  function cascadeToSiblings(li, stulist, startVal){
+    const items = Array.from(stulist.querySelectorAll('li.stu'));
+    const idx = items.indexOf(li);
+    if(idx !== 0) return;
+    const startMin = parseStartMinutes(startVal);
+    if(startMin == null) return;
+    const dur = slotDurationFor(items.length);
+    let cur = startMin;
+    for(let i=1; i<items.length; i++){
+      cur += dur;
+      const nextInput = items[i].querySelector('[data-stu-time]');
+      if(!nextInput) continue;
+      const nextBan = nextInput.getAttribute('data-stu-time');
+      const nextVal = formatTimeRange(cur, dur);
+      nextInput.value = nextVal;
+      DATA.clusters.forEach(c => { const s = c.students.find(x=>x.ban===nextBan); if(s) s.time = nextVal; });
+    }
+  }
+  function wireTimeInputs(root){
+    root.querySelectorAll('[data-stu-time]').forEach(inp => {
+      inp.addEventListener('click', e => e.stopPropagation());
+      // 포커스(탭)하면 기존 값을 전체 선택 -> 기존 값 위에 이어붙여져서 값이 깨지는 것을 방지
+      inp.addEventListener('focus', (e) => { e.target.select(); });
+
+      // 타이핑 중(input): "18:00"처럼 시작시간만 완성되면 즉시 그 학생의 끝나는 시간까지 자동완성 + 형제들도 캐스케이드
+      inp.addEventListener('input', (e) => {
+        const ban = e.target.getAttribute('data-stu-time');
+        let val = e.target.value.trim();
+        const bareMatch = val.match(/^(\d{1,2}):(\d{2})$/);
+        if(bareMatch){
+          const startMin = parseInt(bareMatch[1],10)*60 + parseInt(bareMatch[2],10);
+          const stulistForDur = e.target.closest('ul.stulist[data-cascade="1"]');
+          const cnt = stulistForDur ? stulistForDur.querySelectorAll('li.stu').length : 3;
+          val = formatTimeRange(startMin, slotDurationFor(cnt));
+          e.target.value = val;
+        }
+        DATA.clusters.forEach(c => { const s = c.students.find(x=>x.ban===ban); if(s) s.time = val; });
+        const li = e.target.closest('li.stu');
+        const stulist = e.target.closest('ul.stulist[data-cascade="1"]');
+        if(li && stulist) cascadeToSiblings(li, stulist, val);
+        markDirty();
+      });
+
+      // 입력을 마치고 포커스를 벗어날 때(change): 혹시 남아있는 시작시간만 있는 값을 마무리로 한 번 더 완성
+      inp.addEventListener('change', (e) => {
+        const ban = e.target.getAttribute('data-stu-time');
+        let newVal = e.target.value.trim();
+        const bareMatch = newVal.match(/^(\d{1,2}):(\d{2})$/);
+        if(bareMatch){
+          const startMin = parseInt(bareMatch[1],10)*60 + parseInt(bareMatch[2],10);
+          const stulistForDur = e.target.closest('ul.stulist[data-cascade="1"]');
+          const cnt = stulistForDur ? stulistForDur.querySelectorAll('li.stu').length : 3;
+          newVal = formatTimeRange(startMin, slotDurationFor(cnt));
+          e.target.value = newVal;
+        }
+        DATA.clusters.forEach(c => { const s = c.students.find(x=>x.ban===ban); if(s) s.time = newVal; });
+        const li = e.target.closest('li.stu');
+        const stulist = e.target.closest('ul.stulist[data-cascade="1"]');
+        if(li && stulist) cascadeToSiblings(li, stulist, newVal);
+        markDirty();
+      });
+    });
+  }
+  function wireCustomScheduleInputs(root){
+    root.querySelectorAll('[data-stu-customdate]').forEach(inp => {
+      inp.addEventListener('click', e => e.stopPropagation());
+      inp.addEventListener('change', (e) => {
+        const ban = e.target.getAttribute('data-stu-customdate');
+        const cl = findClusterOfBan(ban);
+        const s = cl ? cl.students.find(x=>x.ban===ban) : null;
+        if(s){ s.customDate = e.target.value.trim(); markDirty(); rerenderCurrentTab(); }
+      });
+    });
+    root.querySelectorAll('[data-stu-customtime]').forEach(inp => {
+      inp.addEventListener('click', e => e.stopPropagation());
+      inp.addEventListener('change', (e) => {
+        const ban = e.target.getAttribute('data-stu-customtime');
+        const cl = findClusterOfBan(ban);
+        const s = cl ? cl.students.find(x=>x.ban===ban) : null;
+        if(s){ s.customTime = e.target.value.trim(); markDirty(); rerenderCurrentTab(); }
+      });
+    });
+  }
+  function recomputeOneSession(s, cl, which){
+    // which: 'd1' or 'd2' -> teacher1/teacher2 각각 재계산
+    const teacherKey = which === 'd1' ? 'teacher1' : 'teacher2';
+    if(!cl){ s[teacherKey] = ''; return; }
+    const avail = DATA.teacherAvail && DATA.teacherAvail[cl.teacher];
+    if(!avail){ s[teacherKey] = cl.teacher; return; }
+    s[teacherKey] = avail[s[which]] ? cl.teacher : '';
+  }
+  function updateTeamLabel(s){
+    // 배지 표시 등 참고용: 1회차 날짜 기준으로 화/수 라벨을 매김 (완전히 정확하진 않을 수 있음)
+    s.team = teamOfDate(s.d1);
+  }
+  function wireSetModeInputs(root){
+    root.querySelectorAll('[data-stu-setmode]').forEach(chk => {
+      chk.addEventListener('click', e => e.stopPropagation());
+      chk.addEventListener('change', (e) => {
+        const ban = e.target.getAttribute('data-stu-setmode');
+        if(e.target.checked){
+          // 세트 모드로 전환: 현재 1회차 날짜 기준 요일로 두 날짜/담당쌤을 정규화
+          const cl = findClusterOfBan(ban);
+          const s = cl ? cl.students.find(x=>x.ban===ban) : null;
+          if(s){
+            const oldD1 = s.d1, oldD2 = s.d2, oldT1 = s.teacher1, oldT2 = s.teacher2;
+            const team = teamOfDate(s.d1);
+            const nd = teamDates(team);
+            s.d1 = nd.d1; s.d2 = nd.d2;
+            const t = s.teacher1;
+            const avail1 = DATA.teacherAvail && DATA.teacherAvail[t];
+            s.teacher1 = (!avail1 || avail1[s.d1]) ? t : '';
+            s.teacher2 = (!avail1 || avail1[s.d2]) ? t : '';
+            updateTeamLabel(s);
+            resequenceGroupTimes(oldD1, oldT1); resequenceGroupTimes(s.d1, s.teacher1);
+            resequenceGroupTimes(oldD2, oldT2); resequenceGroupTimes(s.d2, s.teacher2);
+            markDirty();
+          }
+          rerenderCurrentTab();
+        } else {
+          // 따로 모드로 전환: 데이터는 그대로 두고 화면만 전환
+          const setBlock = root.querySelector(`[data-setmode-block="${ban}"]`);
+          const sepBlock = root.querySelector(`[data-separate-block="${ban}"]`);
+          if(setBlock) setBlock.style.display = 'none';
+          if(sepBlock) sepBlock.style.display = '';
+        }
+      });
+    });
+    root.querySelectorAll('[data-stu-dateset]').forEach(sel => {
+      sel.addEventListener('click', e => e.stopPropagation());
+      sel.addEventListener('change', (e) => {
+        const ban = e.target.getAttribute('data-stu-dateset');
+        const cl = findClusterOfBan(ban);
+        const s = cl ? cl.students.find(x=>x.ban===ban) : null;
+        if(!s) return;
+        const team = e.target.value;
+        const nd = teamDates(team);
+        const oldD1 = s.d1, oldD2 = s.d2, oldT1 = s.teacher1, oldT2 = s.teacher2;
+        s.d1 = nd.d1; s.d2 = nd.d2;
+        const t = s.teacher1;
+        const avail = DATA.teacherAvail && DATA.teacherAvail[t];
+        s.teacher1 = (!avail || avail[s.d1]) ? t : '';
+        s.teacher2 = (!avail || avail[s.d2]) ? t : '';
+        updateTeamLabel(s);
+        resequenceGroupTimes(oldD1, oldT1); resequenceGroupTimes(s.d1, s.teacher1);
+        resequenceGroupTimes(oldD2, oldT2); resequenceGroupTimes(s.d2, s.teacher2);
+        markDirty(); rerenderCurrentTab();
+        const warnNote = (!s.teacher1 || !s.teacher2) ? ` ⚠️ ${t||''} 선생님이 이 세트의 하루는 불가능해서 그날은 미배정 처리했습니다.` : '';
+        showToast(`${s.name} 학생을 ${team==='화'?'화요일 세트':'수요일 세트'}로 옮겼습니다${warnNote}`);
+      });
+    });
+    root.querySelectorAll('[data-stu-teacherset]').forEach(sel => {
+      sel.addEventListener('click', e => e.stopPropagation());
+      sel.addEventListener('change', (e) => {
+        const ban = e.target.getAttribute('data-stu-teacherset');
+        const cl = findClusterOfBan(ban);
+        const s = cl ? cl.students.find(x=>x.ban===ban) : null;
+        if(!s) return;
+        const val = e.target.value.trim();
+        const avail = DATA.teacherAvail && DATA.teacherAvail[val];
+        const oldT1 = s.teacher1, oldT2 = s.teacher2;
+        s.teacher1 = (!val) ? '' : (!avail || avail[s.d1]) ? val : '';
+        s.teacher2 = (!val) ? '' : (!avail || avail[s.d2]) ? val : '';
+        resequenceGroupTimes(s.d1, oldT1); resequenceGroupTimes(s.d1, s.teacher1);
+        resequenceGroupTimes(s.d2, oldT2); resequenceGroupTimes(s.d2, s.teacher2);
+        markDirty(); rerenderCurrentTab();
+        const note = (val && (!s.teacher1 || !s.teacher2)) ? ' ⚠️ 이틀 중 하루는 그 선생님이 못 나오셔서 미배정 처리했습니다.' : '';
+        showToast(`${s.name} 학생의 담당쌤을 ${val||'미배정'}(으)로 설정했습니다${note}`);
+      });
+    });
+  }
+  function wireTeamInputs(root){
+    root.querySelectorAll('[data-stu-date1]').forEach(sel => {
+      sel.addEventListener('click', e => e.stopPropagation());
+      sel.addEventListener('change', (e) => {
+        const ban = e.target.getAttribute('data-stu-date1');
+        const cl = findClusterOfBan(ban);
+        const s = cl ? cl.students.find(x=>x.ban===ban) : null;
+        if(!s) return;
+        const oldDate = s.d1, oldTeacher = s.teacher1;
+        s.d1 = e.target.value;
+        recomputeOneSession(s, cl, 'd1');
+        updateTeamLabel(s);
+        resequenceGroupTimes(oldDate, oldTeacher);
+        resequenceGroupTimes(s.d1, s.teacher1);
+        markDirty(); rerenderCurrentTab();
+        showToast(`${s.name} 학생의 1회차 날짜를 ${shortDate(s.d1)}로 변경했습니다${!s.teacher1 ? ' ⚠️ 그날은 미배정입니다' : ''}`);
+      });
+    });
+    root.querySelectorAll('[data-stu-date2]').forEach(sel => {
+      sel.addEventListener('click', e => e.stopPropagation());
+      sel.addEventListener('change', (e) => {
+        const ban = e.target.getAttribute('data-stu-date2');
+        const cl = findClusterOfBan(ban);
+        const s = cl ? cl.students.find(x=>x.ban===ban) : null;
+        if(!s) return;
+        const oldDate = s.d2, oldTeacher = s.teacher2;
+        s.d2 = e.target.value;
+        recomputeOneSession(s, cl, 'd2');
+        resequenceGroupTimes(oldDate, oldTeacher);
+        resequenceGroupTimes(s.d2, s.teacher2);
+        markDirty(); rerenderCurrentTab();
+        showToast(`${s.name} 학생의 2회차 날짜를 ${shortDate(s.d2)}로 변경했습니다${!s.teacher2 ? ' ⚠️ 그날은 미배정입니다' : ''}`);
+      });
+    });
+    root.querySelectorAll('[data-stu-setteam]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const ban = btn.getAttribute('data-stu-setteam');
+        const newTeam = btn.getAttribute('data-team');
+        const cl = findClusterOfBan(ban);
+        const s = cl ? cl.students.find(x=>x.ban===ban) : null;
+        if(!s) return;
+        const nd = teamDates(newTeam);
+        const oldD1 = s.d1, oldD2 = s.d2, oldT1 = s.teacher1, oldT2 = s.teacher2;
+        s.d1 = nd.d1; s.d2 = nd.d2;
+        recomputeOneSession(s, cl, 'd1');
+        recomputeOneSession(s, cl, 'd2');
+        updateTeamLabel(s);
+        resequenceGroupTimes(oldD1, oldT1); resequenceGroupTimes(s.d1, s.teacher1);
+        resequenceGroupTimes(oldD2, oldT2); resequenceGroupTimes(s.d2, s.teacher2);
+        markDirty(); rerenderCurrentTab();
+        const warnNote = (!s.teacher1 && !s.teacher2) ? ` ⚠️ ${cl?cl.teacher:''} 선생님이 이 요일에 전혀 못 나오셔서 두 날짜 모두 미배정 처리했습니다.` : '';
+        showToast(`${s.name} 학생을 ${newTeam==='화'?'화요일 세트(10/13·11/3)':'수요일 세트(10/14·11/4)'}로 설정했습니다${warnNote}`);
+      });
+    });
+  }
+  function resequenceGroupTimes(date, teacherName){
+    if(date == null) return;
+    const key = teacherName || '';
+    const groups = studentsForDate(date);
+    const grp = groups.find(g => (g.teacherName||'') === key);
+    if(!grp || grp.students.length === 0) return;
+    const members = grp.students.slice().sort((a,b)=>(a.order??0)-(b.order??0));
+    const dur = slotDurationFor(members.length);
+    let startMin = parseStartMinutes(members[0].time);
+    if(startMin == null) startMin = parseStartMinutes('18:00');
+    let cur = startMin;
+    members.forEach((s,i) => {
+      if(i>0) cur += dur;
+      s.time = formatTimeRange(cur, dur);
+    });
+  }
+  function wireTeacherInputs(root){
+    root.querySelectorAll('[data-stu-teacher]').forEach(inp => {
+      inp.addEventListener('click', e => e.stopPropagation());
+      inp.addEventListener('change', (e) => {
+        const ban = e.target.getAttribute('data-stu-teacher');
+        const key = e.target.getAttribute('data-teacher-key');
+        const otherKey = key === 'teacher1' ? 'teacher2' : 'teacher1';
+        const val = e.target.value.trim();
+        const syncEl = root.querySelector(`[data-stu-sync="${ban}"]`);
+        const doSync = syncEl ? syncEl.checked : false;
+        DATA.clusters.forEach(c => {
+          const s = c.students.find(x=>x.ban===ban);
+          if(s){
+            const theDate = key === 'teacher1' ? s.d1 : s.d2;
+            const oldTeacher = s[key];
+            s[key] = val;
+            if(s.isJesimun){ s.teacher1 = s[key]; s.teacher2 = s[key]; } // 제시문은 항상 동일 담당쌤 유지
+            else if(doSync){
+              const d = s[otherKey === 'teacher1' ? 'd1' : 'd2'];
+              const avail = DATA.teacherAvail && DATA.teacherAvail[val];
+              const otherDate = otherKey === 'teacher1' ? s.d1 : s.d2;
+              const oldOtherTeacher = s[otherKey];
+              if(!val){ s[otherKey] = ''; }
+              else if(!avail){ s[otherKey] = val; } // 정보 없는(추가된) 선생님은 항상 가능으로 간주
+              else { s[otherKey] = avail[d] ? val : ''; }
+              resequenceGroupTimes(otherDate, oldOtherTeacher);
+              resequenceGroupTimes(otherDate, s[otherKey]);
+            }
+            resequenceGroupTimes(theDate, oldTeacher);
+            resequenceGroupTimes(theDate, s[key]);
+          }
+        });
+        markDirty(); rerenderCurrentTab();
+      });
+    });
+    root.querySelectorAll('[data-stu-sync]').forEach(chk => {
+      chk.addEventListener('click', e => e.stopPropagation());
+    });
+  }
+  function rerenderCurrentTab(){
+    if(currentTab === '__student'){ renderStudentSearch(); }
+    else if(currentTab === '__teacher'){ renderTeacherView(); }
+    else { renderDateTab(currentTab); }
+  }
+
+  let draggedBan = null;
+  function wireDragReorder(root, date){
+    const items = root.querySelectorAll('li.stu[data-drag-item]');
+    items.forEach(li => {
+      li.addEventListener('dragstart', (e) => {
+        draggedBan = li.getAttribute('data-drag-item');
+        li.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'move';
+      });
+      li.addEventListener('dragend', () => {
+        li.classList.remove('dragging');
+        root.querySelectorAll('li.stu.drag-over').forEach(x => x.classList.remove('drag-over'));
+      });
+      li.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        if(li.getAttribute('data-drag-item') !== draggedBan) li.classList.add('drag-over');
+      });
+      li.addEventListener('dragleave', () => li.classList.remove('drag-over'));
+      li.addEventListener('drop', (e) => {
+        e.preventDefault();
+        li.classList.remove('drag-over');
+        const targetBan = li.getAttribute('data-drag-item');
+        if(!draggedBan || draggedBan === targetBan) return;
+
+        // 현재 이 목록(stulist) 안의 순서를 가져와서 draggedBan을 targetBan 앞으로 이동
+        const stulist = li.closest('ul.stulist');
+        const order = Array.from(stulist.querySelectorAll('li.stu[data-drag-item]')).map(x => x.getAttribute('data-drag-item'));
+        const fromIdx = order.indexOf(draggedBan);
+        if(fromIdx > -1) order.splice(fromIdx, 1);
+        const toIdx = order.indexOf(targetBan);
+        order.splice(toIdx, 0, draggedBan);
+
+        // 새 순서를 각 학생의 order 필드로 저장하고, 첫 학생 시간 기준으로 전체 시간 재계산
+        const orderedStudents = order.map(ban => {
+          const cl = findClusterOfBan(ban);
+          return cl ? cl.students.find(x=>x.ban===ban) : null;
+        }).filter(Boolean);
+        orderedStudents.forEach((s, i) => { s.order = i; });
+        if(orderedStudents.length > 0){
+          const dur = slotDurationFor(orderedStudents.length);
+          let startMin = parseStartMinutes(orderedStudents[0].time);
+          if(startMin == null) startMin = parseStartMinutes('18:00');
+          let cur = startMin;
+          orderedStudents.forEach((s, i) => {
+            if(i>0) cur += dur;
+            s.time = formatTimeRange(cur, dur);
+          });
+        }
+        draggedBan = null;
+        markDirty(); rerenderCurrentTab();
+      });
+    });
+  }
+  function wireGroupCard(teacherName, date){
+    const isUnassigned = !teacherName;
+    const gid = (isUnassigned ? 'unassigned' : teacherName) + '-' + date;
+    const rootEl = document.querySelector(`[data-gid="${gid}"]`);
+    if(!rootEl) return;
+    wireStudentToggles(rootEl);
+    wireTimeInputs(rootEl);
+    wireTeacherInputs(rootEl);
+    wireTeamInputs(rootEl);
+    wireSetModeInputs(rootEl);
+    wireCustomScheduleInputs(rootEl);
+    wireDragReorder(rootEl, date);
+    const toggleBtn = rootEl.querySelector(`[data-edit-toggle="${gid}"]`);
+    if(toggleBtn){ toggleBtn.addEventListener('click', () => document.getElementById(`edit-${gid}`).classList.toggle('open')); }
+    const deleteBtn = rootEl.querySelector(`[data-delete-cluster]`);
+    if(deleteBtn){
+      deleteBtn.addEventListener('click', () => {
+        const cid = deleteBtn.getAttribute('data-delete-cluster');
+        const cl = DATA.clusters.find(x=>x.id===cid);
+        if(!cl) return;
+        if(cl.students.length > 0){
+          showToast('학생이 남아있어 삭제할 수 없습니다. 먼저 모두 다른 조로 이동해주세요.');
+          return;
+        }
+        openModal({
+          title: `"${cl.teacher}" 그룹을 삭제할까요?`,
+          placeholder: '삭제하려면 "삭제"라고 입력',
+          onConfirm: (val) => {
+            if(val !== '삭제'){ showToast('입력이 일치하지 않아 삭제하지 않았습니다'); return; }
+            const idx = DATA.clusters.findIndex(x=>x.id===cid);
+            if(idx > -1) DATA.clusters.splice(idx,1);
+            markDirty(); rerenderCurrentTab();
+            showToast(`"${cl.teacher}" 그룹을 삭제했습니다`);
+          }
+        });
+      });
+    }
+    rootEl.querySelectorAll(`[data-field]`).forEach(inp => {
+      inp.addEventListener('change', (e) => {
+        const field = e.target.getAttribute('data-field');
+        const cid = e.target.getAttribute('data-cid');
+        const cl = DATA.clusters.find(x=>x.id===cid);
+        if(!cl) return;
+        const newVal = e.target.value.trim();
+        if(field === 'teacher' && newVal && newVal !== cl.teacher){
+          const oldName = cl.teacher;
+          DATA.clusters.forEach(c2 => c2.students.forEach(s => {
+            if(s.teacher1 === oldName) s.teacher1 = newVal;
+            if(s.teacher2 === oldName) s.teacher2 = newVal;
+          }));
+          if(DATA.teacherAvail && DATA.teacherAvail[oldName] && !DATA.teacherAvail[newVal]){
+            DATA.teacherAvail[newVal] = DATA.teacherAvail[oldName];
+          }
+        }
+        cl[field] = newVal;
+        markDirty(); renderDateTab(date);
+      });
+    });
+    rootEl.querySelectorAll(`[data-cluster-room]`).forEach(inp => {
+      inp.addEventListener('change', (e) => {
+        const cid = e.target.getAttribute('data-cluster-room');
+        const roomDate = e.target.getAttribute('data-room-date');
+        const cl = DATA.clusters.find(x=>x.id===cid);
+        if(!cl) return;
+        if(!cl.roomByDate) cl.roomByDate = {};
+        cl.roomByDate[roomDate] = e.target.value.trim();
+        markDirty(); renderDateTab(date);
+      });
+    });
+    rootEl.querySelectorAll(`[data-stu-name]`).forEach(inp => {
+      inp.addEventListener('change', (e) => {
+        const ban = e.target.getAttribute('data-stu-name');
+        const cl = findClusterOfBan(ban);
+        const stu = cl ? cl.students.find(s=>s.ban===ban) : null;
+        if(stu) stu.name = e.target.value.trim();
+        markDirty(); renderDateTab(date);
+      });
+    });
+    rootEl.querySelectorAll(`[data-stu-move]`).forEach(sel => {
+      sel.addEventListener('change', (e) => {
+        const ban = e.target.getAttribute('data-stu-move');
+        const fromCl = findClusterOfBan(ban);
+        if(!fromCl) return;
+        const toId = e.target.value;
+
+        if(toId === '__unassigned__'){
+          const stu = fromCl.students.find(s=>s.ban===ban);
+          if(stu){
+            stu.teacher1 = '';
+            stu.teacher2 = '';
+            markDirty(); renderDateTab(date);
+            showToast(`${stu.name} 학생을 미배정으로 전환했습니다`);
+          }
+          return;
+        }
+
+        if(toId === fromCl.id) return;
+        const toCl = DATA.clusters.find(x=>x.id===toId);
+        const stuPreview = fromCl.students.find(s=>s.ban===ban);
+
+        // 실제 존재하는(가용일 정보가 있는) 선생님인데, 그 학생의 두 날짜 모두 못 나오면 애초에 그 조로 이동시키지 않음
+        if(stuPreview && !stuPreview.isJesimun){
+          const avail = DATA.teacherAvail && DATA.teacherAvail[toCl.teacher];
+          if(avail && !avail[stuPreview.d1] && !avail[stuPreview.d2]){
+            e.target.value = fromCl.id; // 원래 값으로 되돌림
+            showToast(`⚠️ ${toCl.teacher} 선생님은 ${stuPreview.name} 학생의 두 날짜 모두 불가능해서 이 조로 이동할 수 없습니다. "미배정으로 보내기"나 다른 선생님을 선택해주세요.`);
+            return;
+          }
+        }
+
+        const idx = fromCl.students.findIndex(s=>s.ban===ban);
+        const [stu] = fromCl.students.splice(idx,1);
+        recomputeTeacherForMove(stu, toCl);
+        toCl.students.push(stu);
+        markDirty(); renderDateTab(date);
+        const t1ok = stu.teacher1, t2ok = stu.teacher2;
+        const note = (!t1ok || !t2ok) ? ' (일부 날짜 미배정 — 해당 선생님이 그 날 불가능)' : '';
+        showToast(`${stu.name} 학생을 [${toCl.name} · ${toCl.teacher}]으로 이동했습니다${note}`);
+      });
+    });
+  }
+
+  // 학생을 새 그룹(toCl)으로 옮길 때, 그 그룹 선생님의 가능일에 맞춰 담당쌤을 다시 계산.
+  // 제시문 학생이거나, 가용일 정보가 없는(수동 추가된) 선생님이면 항상 배정, 그 외에는 불가능한 날은 미배정 처리.
+  function recomputeTeacherForMove(stu, toCl){
+    if(stu.isJesimun){ stu.teacher1 = toCl.teacher; stu.teacher2 = toCl.teacher; return; }
+    const avail = DATA.teacherAvail && DATA.teacherAvail[toCl.teacher];
+    if(!avail){ // 정보 없는(관리자가 새로 추가한) 선생님은 항상 가능하다고 간주
+      stu.teacher1 = toCl.teacher; stu.teacher2 = toCl.teacher; return;
+    }
+    stu.teacher1 = avail[stu.d1] ? toCl.teacher : '';
+    stu.teacher2 = avail[stu.d2] ? toCl.teacher : '';
+  }
+
+  // ---------- 선생님 추가 ----------
+  document.getElementById('addTeacherBtn').addEventListener('click', () => {
+    openModal({
+      title: '➕ 선생님 추가',
+      placeholder: '추가할 선생님 성함',
+      onConfirm: (name) => {
+        if(!name || !name.trim()) return;
+        const trimmed = name.trim();
+        if(DATA.clusters.some(c => c.teacher === trimmed)){
+          showToast(`이미 [${trimmed}] 선생님 그룹이 있습니다`);
+          return;
+        }
+        const id = 'extra_' + trimmed + '_' + Date.now();
+        DATA.clusters.push({ id, name: trimmed + ' (신규)', teacher: trimmed, room: '', students: [] });
+        markDirty();
+        showToast(`[${trimmed}] 선생님을 추가했습니다. 각 학생 카드의 "학생 이동" 메뉴에서 배정해주세요.`);
+        if(currentTab !== '__student' && currentTab !== '__teacher') renderDateTab(currentTab);
+      }
+    });
+  });
+
+  // ---------- 학생 찾기 (학급 필터 포함) ----------
+  function populateClassSelect(){
+    const sel = document.getElementById('classSelect');
+    if(sel.dataset.filled) return;
+    (DATA.classes || []).forEach(cls => {
+      const opt = document.createElement('option');
+      opt.value = cls; opt.textContent = cls;
+      sel.appendChild(opt);
+    });
+    sel.dataset.filled = '1';
+    sel.addEventListener('change', renderStudentSearch);
+  }
+  function classOf(s){
+    if(!s.grade || !s.classNo) return null;
+    return `${s.grade}학년 ${parseInt(s.classNo,10)}반`;
+  }
+  function renderStudentSearch(){
+    const q = document.getElementById('studentSearch').value.trim();
+    const cls = document.getElementById('classSelect').value;
+    const box = document.getElementById('studentResult');
+    if(!q && !cls){ box.innerHTML = '<div class="empty">이름/학번을 입력하거나 학급을 선택하세요.</div>'; return; }
+    const hits = [];
+    DATA.clusters.forEach(c => c.students.forEach(s => {
+      const matchQ = !q || s.name.includes(q) || s.ban.includes(q);
+      const matchCls = !cls || classOf(s) === cls;
+      if(matchQ && matchCls) hits.push({c,s});
+    }));
+    if(hits.length === 0){ box.innerHTML = '<div class="empty">검색 결과가 없습니다.</div>'; return; }
+    box.innerHTML = hits.map(({c,s}) => `
+      <div class="card ${s.team==='화'?'tue':'wed'}" style="margin-bottom:12px;">
+        <div class="card-head">
+          <div>
+            <div class="jo-title">${escapeHtml(s.name)} (${escapeHtml(s.ban)})${dateChangedDot(s)}${customScheduleHtml(s)}</div>
+            <div class="jo-field">${escapeHtml(s.field_raw)} ${s.isJesimun ? '<span class="tag-jesimun">제시문</span>' : ''}</div>
+          </div>
+          <span class="badge-team badge-${s.team==='화'?'tue':'wed'}">${s.team==='화'?'화요일':'수요일'}</span>
+        </div>
+        <div class="meta-row">
+          <span>📚 <b>${escapeHtml(c.name)}</b></span>
+          <span>👩‍🏫 <b>${studentTeacherLabel(s)}</b></span>
+          <span>📅 <b>${escapeHtml(s.d1)}</b> / <b>${escapeHtml(s.d2)}</b></span>
+          <span>⏰ <b>${s.time ? escapeHtml(s.time) : '미정'}</b></span>
+          <span>🏫 <b>1회차:${escapeHtml(getRoomForDate(c,s.d1)||'미정')} / 2회차:${escapeHtml(getRoomForDate(c,s.d2)||'미정')}</b></span>
+        </div>
+        <ul class="stulist">${studentRow(s, 'search')}</ul>
+      </div>
+    `).join('');
+    wireStudentToggles(box);
+    wireTimeInputs(box);
+    wireTeacherInputs(box);
+    wireTeamInputs(box);
+    wireSetModeInputs(box);
+    wireCustomScheduleInputs(box);
+  }
+
+  // ---------- 강사별 보기 ----------
+  let selectedTeacher = '';
+  function buildTeacherTabs(){
+    const box = document.getElementById('teacherTabs');
+    const q = (document.getElementById('teacherSearchInput').value || '').trim();
+    const teachers = uniqueTeachers().filter(t => !q || t.includes(q));
+    if(selectedTeacher && !teachers.includes(selectedTeacher)) selectedTeacher = '';
+    box.innerHTML = teachers.map(t => `<button data-teacher="${escapeHtml(t)}" class="${t===selectedTeacher?'active':''}">${escapeHtml(t)}</button>`).join('')
+      || '<span class="empty" style="padding:8px;">일치하는 선생님이 없습니다.</span>';
+    box.querySelectorAll('button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        selectedTeacher = btn.getAttribute('data-teacher');
+        buildTeacherTabs();
+        renderTeacherView();
+      });
+    });
+  }
+  function renderTeacherView(){
+    const name = selectedTeacher;
+    const box = document.getElementById('teacherResult');
+    if(!name){ box.innerHTML = '<div class="empty">위에서 선생님을 선택하세요.</div>'; return; }
+    const rows = [];
+    DATA.clusters.forEach(c => c.students.forEach(s => {
+      if(s.isJesimun){
+        if(s.teacher1===name || s.teacher2===name){
+          DATA.dateOrder.forEach(d => rows.push({c, s, date:d, when:'제시문'}));
+        }
+        return;
+      }
+      if(s.teacher1===name) rows.push({c, s, date:s.d1, when:'1회차'});
+      if(s.teacher2===name) rows.push({c, s, date:s.d2, when:'2회차'});
+    }));
+    if(rows.length === 0){ box.innerHTML = '<div class="empty">배정된 학생이 없습니다.</div>'; return; }
+
+    const ownCluster = DATA.clusters.find(x=>x.teacher===name);
+    const byDate = {};
+    rows.forEach(r => { (byDate[r.date] = byDate[r.date] || []).push(r); });
+    const dates = Object.keys(byDate).sort((a,b)=> DATA.dateOrder.indexOf(a)-DATA.dateOrder.indexOf(b));
+
+    box.innerHTML = dates.map(date => {
+      const items = byDate[date].slice().sort((a,b) => ((a.s.order ?? 0) - (b.s.order ?? 0)));
+      const room = getRoomForDate(ownCluster, date) || getRoomForDate(items[0].c, date);
+      const fieldLabel = Array.from(new Set(items.map(i=>i.s.base_field))).join(' / ');
+      const gid = 'teacherview-' + name + '-' + date;
+      const studentsHtml = items.map(({s,when}) => studentRow(s, gid, date)).join('');
+      return `
+      <div class="card ${teamOfDate(date)==='화'?'tue':'wed'}" style="margin-bottom:12px;" data-gid="${gid}">
+        <div class="card-head">
+          <div>
+            <div class="jo-title">${escapeHtml(shortDate(date))}</div>
+            <div class="jo-field">${escapeHtml(fieldLabel)} · ${items.length}명</div>
+          </div>
+          <span class="badge-team badge-${teamOfDate(date)==='화'?'tue':'wed'}">${teamOfDate(date)==='화'?'화요일':'수요일'}</span>
+        </div>
+        <div class="meta-row">
+          <span>🏫 <b class="${!room?'meta-missing':''}">${room ? escapeHtml(room) : '미정'}</b></span>
+        </div>
+        <ul class="stulist" data-cascade="1">${studentsHtml}</ul>
+      </div>`;
+    }).join('');
+
+    dates.forEach(date => {
+      const gid = 'teacherview-' + name + '-' + date;
+      const rootEl = document.querySelector(`[data-gid="${gid}"]`);
+      if(!rootEl) return;
+      wireStudentToggles(rootEl);
+      wireTimeInputs(rootEl);
+      wireTeacherInputs(rootEl);
+      wireTeamInputs(rootEl);
+      wireSetModeInputs(rootEl);
+      wireCustomScheduleInputs(rootEl);
+      wireDragReorder(rootEl, date);
+    });
+  }
+
+  // ---------- admin login ----------
+  function updateAdminUI(){
+    const pill = document.getElementById('adminPill');
+    const loginBtn = document.getElementById('loginBtn');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const addTeacherBtn = document.getElementById('addTeacherBtn');
+    if(isAdmin){
+      pill.textContent = '🔓 관리자 모드'; pill.className = 'pill pill-admin-on';
+      loginBtn.style.display = 'none'; logoutBtn.style.display = '';
+      addTeacherBtn.style.display = '';
+    } else {
+      pill.textContent = '🔒 열람 모드'; pill.className = 'pill pill-admin-off';
+      loginBtn.style.display = ''; logoutBtn.style.display = 'none';
+      addTeacherBtn.style.display = 'none';
+    }
+    selectTab(currentTab);
+  }
+  document.getElementById('loginBtn').addEventListener('click', () => {
+    openModal({
+      title: '🔑 관리자 비밀번호',
+      placeholder: '비밀번호 입력',
+      isPassword: true,
+      onConfirm: (val) => {
+        if(!val) return;
+        if((val || '').trim() === ADMIN_PASSWORD){
+          isAdmin = true;
+          try{ sessionStorage.setItem('sq_admin','1'); }catch(e){}
+          updateAdminUI(); showToast('관리자 모드로 전환되었습니다');
+        } else { showToast('비밀번호가 올바르지 않습니다'); }
+      }
+    });
+  });
+  document.getElementById('logoutBtn').addEventListener('click', () => {
+    isAdmin = false;
+    try{ sessionStorage.removeItem('sq_admin'); }catch(e){}
+    updateAdminUI();
+  });
+
+  // ---------- 엑셀 다운로드 ----------
+  document.getElementById('excelBtn').addEventListener('click', async () => {
+    try{
+      if(!downloadsApi && window.claude && window.claude.use){ downloadsApi = await window.claude.use('downloads'); }
+      if(typeof XLSX === 'undefined'){ showToast('엑셀 라이브러리 로딩 중입니다. 잠시 후 다시 시도해주세요'); return; }
+
+      const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+      const rows = [];
+      let seq = 1;
+      DATA.clusters.forEach((c, cIdx) => {
+        const label = LETTERS[cIdx % LETTERS.length];
+        c.students.forEach(s => {
+          const teacherDisplay = s.isJesimun
+            ? (s.teacher1 || '미배정')
+            : (s.teacher1 === s.teacher2 ? (s.teacher1 || '미배정') : `1회차:${s.teacher1||'미배정'} / 2회차:${s.teacher2||'미배정'}`);
+          const apps = s.apps || [];
+          rows.push({
+            '연번': seq++,
+            '반': s.ban,
+            '학번': s.name,
+            '면접날짜1': s.d1,
+            '면접날짜2': s.d2,
+            '조': cIdx + 1,
+            '교사': label,
+            '강사이름': teacherDisplay,
+            '분야': s.field_raw,
+            '지원현황1': apps[0] || '.',
+            '지원2': apps[1] || '.',
+            '지원3': apps[2] || '.'
+          });
+        });
+      });
+      const ws = XLSX.utils.json_to_sheet(rows);
+      ws['!cols'] = Object.keys(rows[0] || {}).map(k => ({ wch: Math.min(Math.max(k.length, 10), 40) }));
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, '조별');
+      const arrBuf = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+      const blob = new Blob([arrBuf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      if(downloadsApi){
+        const res = await downloadsApi.save({ filename: '2027_면접특강_배정.xlsx', data: blob });
+        showToast(res.status === 'saved' ? '엑셀 파일이 저장되었습니다' : '파일이 전달되었습니다');
+      } else {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = '2027_면접특강_배정.xlsx';
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 2000);
+        showToast('엑셀 파일이 다운로드되었습니다');
+      }
+    }catch(err){
+      console.error(err);
+      if(!(err && err.code === 'declined')) showToast('다운로드 실패: ' + (err && err.message ? err.message : '알 수 없는 오류'));
+    }
+  });
+
+  // ---------- save / publish ----------
+  function buildNewHtml(){
+    syncDataScript();
+    const newJson = JSON.stringify(DATA);
+    return PRISTINE_HTML.replace(
+      /(<script type="application\/json" id="__DATA__">)[\s\S]*?(<\/script>)/,
+      function(_, open, close){ return open + newJson + close; }
+    );
+  }
+  document.getElementById('saveBtn').addEventListener('click', async () => {
+    try{
+      if(!artifactApi && window.claude && window.claude.use){ artifactApi = await window.claude.use('artifact'); }
+      if(!artifactApi){ showToast('⚠️ 이 페이지(GitHub)에서는 저장이 반영되지 않습니다. claude.ai 링크에서 저장해주세요.'); return; }
+      const html = buildNewHtml();
+      await artifactApi.publish(html);
+      document.getElementById('savebar').classList.add('hidden');
+      showToast('저장되었습니다. 모든 사람에게 반영됩니다.');
+    }catch(err){
+      console.error(err);
+      showToast('저장 실패: 관리자 권한이 없거나 오류가 발생했습니다');
+    }
+  });
+  document.getElementById('discardBtn').addEventListener('click', () => { location.reload(); });
+
+  // ---------- init ----------
+  document.getElementById('studentSearch').addEventListener('input', renderStudentSearch);
+  document.getElementById('teacherSearchInput').addEventListener('input', buildTeacherTabs);
+  (async function init(){
+    try{ if(window.claude && window.claude.use){
+      artifactApi = await window.claude.use('artifact');
+      downloadsApi = await window.claude.use('downloads');
+    } }catch(e){}
+    buildTabsNav();
+    updateAdminUI();
+  })();
+
+})();
+</script>
+</body>
+</html>

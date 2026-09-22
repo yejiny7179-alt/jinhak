@@ -485,6 +485,10 @@
           <span class="lbl" style="font-size:11px;color:var(--muted);">이름</span>
           <input type="text" data-stu-name="${s.ban}" value="${escapeHtml(s.name)}" style="max-width:80px; padding:5px 7px; border-radius:6px; border:1px solid var(--border); font-size:12px;" title="이름 수정">
         </div>
+        <label style="margin-top:8px; display:flex; align-items:center; gap:5px; cursor:pointer; font-size:12px; color:var(--text);">
+          <input type="checkbox" data-stu-jesimun="${s.ban}" ${s.isJesimun?'checked':''}>
+          📜 제시문(발표면접) 학생으로 지정 (송두리 선생님, 4일 모두 19:00~21:00 동시진행)
+        </label>
         ${s.isJesimun ? '' : `
         <label style="margin-top:8px; display:flex; align-items:center; gap:5px; cursor:pointer; font-size:12px; color:var(--text);">
           <input type="checkbox" data-stu-setmode="${s.ban}" ${isSetMode?'checked':''}>
@@ -497,6 +501,9 @@
           <span class="lbl" style="font-size:11px;color:var(--muted);">📌 이 4일 외 다른 날짜에 하는 경우</span>
           <input type="text" data-stu-customdate="${s.ban}" value="${escapeHtml(s.customDate||'')}" placeholder="예: 11월 10일" style="max-width:100px; padding:5px 7px; border-radius:6px; border:1px solid var(--border); font-size:12px;">
           <input type="text" data-stu-customtime="${s.ban}" value="${escapeHtml(s.customTime||'')}" placeholder="예: 15:00~15:40" style="max-width:110px; padding:5px 7px; border-radius:6px; border:1px solid var(--border); font-size:12px;">
+        </div>
+        <div style="margin-top:8px; padding-top:8px; border-top:1px dashed var(--border);">
+          <button type="button" class="btn-danger btn-sm" data-delete-student="${s.ban}">🗑 이 학생 삭제 (중도포기 등)</button>
         </div>`;
     }
     const dragHandle = isAdmin ? `<span class="drag-handle" title="드래그해서 순서 변경">⠿</span>` : '';
@@ -662,6 +669,54 @@
         const stulist = e.target.closest('ul.stulist[data-cascade="1"]');
         if(li && stulist) cascadeToSiblings(li, stulist, newVal);
         markDirty();
+      });
+    });
+  }
+  function wireJesimunToggle(root){
+    root.querySelectorAll('[data-stu-jesimun]').forEach(chk => {
+      chk.addEventListener('click', e => e.stopPropagation());
+      chk.addEventListener('change', (e) => {
+        const ban = e.target.getAttribute('data-stu-jesimun');
+        const cl = findClusterOfBan(ban);
+        const s = cl ? cl.students.find(x=>x.ban===ban) : null;
+        if(!s) return;
+        if(e.target.checked){
+          s.isJesimun = true;
+          s.teacher1 = '송두리';
+          s.teacher2 = '송두리';
+          s.time = '19:00~21:00';
+          showToast(`${s.name} 학생을 제시문(발표면접)으로 지정했습니다 (송두리 선생님, 4일 모두 진행)`);
+        } else {
+          s.isJesimun = false;
+          // 제시문 해제 시, 소속 조 담당쌤 기준으로 담당쌤을 다시 계산 (가능일 확인)
+          recomputeOneSession(s, cl, 'd1');
+          recomputeOneSession(s, cl, 'd2');
+          s.time = '';
+          showToast(`${s.name} 학생의 제시문 지정을 해제했습니다`);
+        }
+        markDirty(); rerenderCurrentTab();
+      });
+    });
+  }
+  function wireDeleteStudentButtons(root){
+    root.querySelectorAll('[data-delete-student]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const ban = btn.getAttribute('data-delete-student');
+        const cl = findClusterOfBan(ban);
+        const stu = cl ? cl.students.find(s=>s.ban===ban) : null;
+        if(!stu) return;
+        openModal({
+          title: `"${stu.name}" 학생을 삭제할까요?`,
+          placeholder: '삭제하려면 "삭제"라고 입력',
+          onConfirm: (val) => {
+            if(val !== '삭제'){ showToast('입력이 일치하지 않아 삭제하지 않았습니다'); return; }
+            const idx = cl.students.findIndex(s=>s.ban===ban);
+            if(idx > -1) cl.students.splice(idx,1);
+            markDirty(); rerenderCurrentTab();
+            showToast(`"${stu.name}" 학생을 삭제했습니다`);
+          }
+        });
       });
     });
   }
@@ -954,6 +1009,8 @@
     wireTeamInputs(rootEl);
     wireSetModeInputs(rootEl);
     wireCustomScheduleInputs(rootEl);
+    wireDeleteStudentButtons(rootEl);
+    wireJesimunToggle(rootEl);
     wireDragReorder(rootEl, date);
     const toggleBtn = rootEl.querySelector(`[data-edit-toggle="${gid}"]`);
     if(toggleBtn){ toggleBtn.addEventListener('click', () => document.getElementById(`edit-${gid}`).classList.toggle('open')); }
@@ -1151,6 +1208,8 @@
     wireTeamInputs(box);
     wireSetModeInputs(box);
     wireCustomScheduleInputs(box);
+    wireDeleteStudentButtons(box);
+    wireJesimunToggle(box);
   }
 
   // ---------- 강사별 보기 ----------
@@ -1224,6 +1283,8 @@
       wireTeamInputs(rootEl);
       wireSetModeInputs(rootEl);
       wireCustomScheduleInputs(rootEl);
+      wireDeleteStudentButtons(rootEl);
+      wireJesimunToggle(rootEl);
       wireDragReorder(rootEl, date);
     });
   }

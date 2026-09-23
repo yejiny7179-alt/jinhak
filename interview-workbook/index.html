@@ -661,6 +661,62 @@ table.tbl th{background:var(--surface2);color:var(--muted);font-weight:700;font-
     <button class="btn primary" id="btnTeacherSearch" type="button">학생 조회</button>
     <div id="teacherResults" style="margin-top:14px"></div>
   </div>
+  <div class="card">
+    <h2>전체 학생 일정 한눈에 보기</h2>
+    <p class="small muted">우리 학교 학생들의 1단계 발표일·면접일을 반별로 또는 전체로 한 번에 확인합니다.</p>
+    <div class="grid c2">
+      <div class="field"><label>학교</label><input id="allSchSchool" placeholder="예: 백운고등학교"></div>
+      <div class="field"><label>반 <span class="tiny muted">(비워두면 전체 학생 조회)</span></label><input id="allSchClassroom" placeholder="예: 3반 (비워두면 전체)"></div>
+    </div>
+    <button class="btn primary" id="btnLoadAllSchedule" type="button">불러오기</button>
+  </div>
+  <div class="card">
+    <h2>면접 후기 검색</h2>
+    <p class="small muted">학생과 똑같이 자료집에서 검색해 볼 수 있습니다.</p>
+    <div class="row">
+      <select id="tRvSearchType">
+        <option value="univ">대학으로 검색</option>
+        <option value="dept">학과로 검색</option>
+        <option value="track">전형으로 검색</option>
+      </select>
+      <input id="tRvSearchText" placeholder="검색어를 입력하세요" style="flex:1;min-width:160px">
+      <button class="btn primary sm" id="btnTeacherSearchReviews" type="button">검색</button>
+      <button class="btn sm" id="btnTeacherAllReviews" type="button">전체 보기</button>
+    </div>
+    <div id="teacherReviewsList" style="margin-top:14px"></div>
+  </div>
+</div>
+
+<!-- ================= 선생님 - 전체 학생 일정 ================= -->
+<div id="viewTeacherAllSchedule" hidden>
+  <header class="top">
+    <div class="brand"><h1>전체 학생 일정</h1><small id="allSchSubtitle">학교 전체 학생의 면접 일정입니다</small></div>
+    <div class="spacer"></div>
+    <button class="btn" id="btnBackFromAllSchedule" type="button">← 선생님 검색으로</button>
+  </header>
+  <div class="card">
+    <div class="row between">
+      <h2 style="margin:0">반 필터</h2>
+      <select id="allSchClassFilter"><option value="all">전체 학생</option></select>
+    </div>
+  </div>
+  <div class="card">
+    <h2>표로 보기</h2>
+    <div id="allSchTableWrap"></div>
+  </div>
+  <div class="card">
+    <h2>달력으로 보기 <span class="hint">
+      <span class="badge" style="background:#dbeafe;color:#1e3a8a">1단계 발표</span>
+      <span class="badge" style="background:#fee2e2;color:#991b1b">면접일</span>
+      <span class="badge" style="background:#dcfce7;color:#166534">최종 발표</span>
+    </span></h2>
+    <div class="calNav">
+      <button class="btn sm" id="allSchCalPrev" type="button">◀ 이전달</button>
+      <b id="allSchCalTitle"></b>
+      <button class="btn sm" id="allSchCalNext" type="button">다음달 ▶</button>
+    </div>
+    <div id="allSchCalWrap"></div>
+  </div>
 </div>
 
 <!-- ================= 선생님 - 학생 상세 ================= -->
@@ -670,6 +726,13 @@ table.tbl th{background:var(--surface2);color:var(--muted);font-weight:700;font-
     <div class="spacer"></div>
     <button class="btn" id="btnBackToSearch" type="button">← 학생 목록으로</button>
   </header>
+  <div class="card">
+    <h2>반 배정 <span class="hint">전체 학생 일정에서 반별로 모아볼 때 사용됩니다</span></h2>
+    <div class="row">
+      <input id="tClassroomInput" placeholder="예: 3반" style="flex:1;min-width:120px">
+      <button class="btn sm primary" id="btnSaveClassroom" type="button">저장</button>
+    </div>
+  </div>
   <div id="teacherScheduleWrap"></div>
   <div id="teacherMockWrap"></div>
   <div class="card">
@@ -966,7 +1029,7 @@ async function createHomonymTeacherAccount(school, name, password, key, displayN
  return {ok:true, key, displayName, school};
 }
 
-function show(id){ ['viewLanding','viewStudentLogin','viewStudentApp','viewTeacherLogin','viewTeacherSearch','viewTeacherWork'].forEach(x=>{
+function show(id){ ['viewLanding','viewStudentLogin','viewStudentApp','viewTeacherLogin','viewTeacherSearch','viewTeacherWork','viewTeacherAllSchedule'].forEach(x=>{
   document.getElementById(x).hidden = (x!==id);
 });}
 
@@ -2030,8 +2093,8 @@ function reviewCardHTML(r){
    ${r.source?`<p class="tiny muted" style="margin-top:6px">출처: ${esc(r.source)}</p>`:''}
  </div>`;
 }
-async function renderReviews(list){
- const wrap=document.getElementById('reviewsList');
+async function renderReviews(list, targetId){
+ const wrap=document.getElementById(targetId||'reviewsList');
  wrap.innerHTML='<p class="muted small">불러오는 중…</p>';
  const all = list || await loadReviewsCache();
  if(!all.length){ wrap.innerHTML='<div class="empty">등록된 면접 후기가 아직 없습니다.</div>'; return; }
@@ -2048,6 +2111,18 @@ document.getElementById('btnSearchReviews').addEventListener('click', async ()=>
 document.getElementById('btnAllReviews').addEventListener('click', async ()=>{
  document.getElementById('rvSearchText').value='';
  renderReviews(await loadReviewsCache());
+});
+document.getElementById('btnTeacherSearchReviews').addEventListener('click', async ()=>{
+ const type=document.getElementById('tRvSearchType').value;
+ const q=safeSeg(document.getElementById('tRvSearchText').value);
+ const all=await loadReviewsCache();
+ if(!q){ renderReviews(all, 'teacherReviewsList'); return; }
+ const filtered=all.filter(r=> safeSeg(r[type]||'').includes(q));
+ renderReviews(filtered, 'teacherReviewsList');
+});
+document.getElementById('btnTeacherAllReviews').addEventListener('click', async ()=>{
+ document.getElementById('tRvSearchText').value='';
+ renderReviews(await loadReviewsCache(), 'teacherReviewsList');
 });
 
 // =========================================================================
@@ -2143,12 +2218,84 @@ document.getElementById('btnTeacherSearch').addEventListener('click', async ()=>
  }catch(e){ console.error(e); resultsWrap.innerHTML='<p class="empty small">조회 중 오류가 발생했습니다: '+esc(e.message)+'</p>'; }
 });
 
+// ---------- 전체 학생 일정 한눈에 보기 ----------
+document.getElementById('btnBackFromAllSchedule').addEventListener('click',()=>show('viewTeacherSearch'));
+let ALL_SCH_STUDENTS=[]; // [{name, classroom, schedule:[...]}]
+let allSchClassFilter='all';
+let allSchCalState=null;
+document.getElementById('btnLoadAllSchedule').addEventListener('click', async ()=>{
+ if(!fbReady){await uiAlert('아직 Firebase 설정이 되어 있지 않습니다.');return;}
+ const school=document.getElementById('allSchSchool').value;
+ if(!norm(school)){await uiAlert('학교를 입력해 주세요.');return;}
+ try{
+   const snap=await db.collection('students').where('schoolNorm','==', safeSeg(school)).get();
+   ALL_SCH_STUDENTS=[];
+   snap.forEach(doc=>{
+     const d=doc.data();
+     ALL_SCH_STUDENTS.push({name:d.name, number:d.number, classroom:d.classroom||'', schedule:d.schedule||[]});
+   });
+ }catch(e){ console.error(e); await uiAlert('조회 중 오류: '+e.message); return; }
+ const wantClassroom=document.getElementById('allSchClassroom').value.trim();
+ const classes=[...new Set(ALL_SCH_STUDENTS.map(s=>s.classroom).filter(Boolean))];
+ const classSel=document.getElementById('allSchClassFilter');
+ classSel.innerHTML='<option value="all">전체 학생</option>'+classes.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('');
+ allSchClassFilter = wantClassroom && classes.includes(wantClassroom) ? wantClassroom : 'all';
+ classSel.value = allSchClassFilter;
+ document.getElementById('allSchSubtitle').textContent = `${school} · 학생 ${ALL_SCH_STUDENTS.length}명`;
+ allSchCalState=null;
+ show('viewTeacherAllSchedule');
+ renderAllSchedule();
+});
+document.getElementById('allSchClassFilter').addEventListener('change',(e)=>{ allSchClassFilter=e.target.value; renderAllSchedule(); });
+function getFilteredAllSchRows(){
+ const students = allSchClassFilter==='all' ? ALL_SCH_STUDENTS : ALL_SCH_STUDENTS.filter(s=>s.classroom===allSchClassFilter);
+ const rows=[];
+ students.forEach(s=>{
+   (s.schedule||[]).forEach(it=>{
+     rows.push({...it, studentName:s.name, studentNumber:s.number, classroom:s.classroom});
+   });
+ });
+ return rows;
+}
+function renderAllSchedule(){
+ const rows=getFilteredAllSchRows();
+ const tableWrap=document.getElementById('allSchTableWrap');
+ if(!rows.length){
+   tableWrap.innerHTML='<p class="empty small">등록된 일정이 없습니다.</p>';
+ } else {
+   const sorted=rows.slice().sort((a,b)=>(a.interviewDate||'9999').localeCompare(b.interviewDate||'9999'));
+   tableWrap.innerHTML=`<table class="tbl"><thead><tr><th>학생</th><th>반</th><th>대학</th><th>학과</th><th>1단계 발표일</th><th>면접일</th><th>디데이</th><th>최종 발표일</th></tr></thead><tbody>${sorted.map(it=>`<tr>
+     <td>${esc(it.studentName)}${it.studentNumber?` (${esc(it.studentNumber)})`:''}</td>
+     <td>${esc(it.classroom||'-')}</td>
+     <td>${esc(it.univ||'-')}</td>
+     <td>${esc(it.dept||'-')}</td>
+     <td>${esc(it.stage1Date||'-')}</td>
+     <td>${esc(it.interviewDate||'-')}</td>
+     <td>${it.interviewDate?`<span class="ddayBadge">${esc(ddayLabel(it.interviewDate))}</span>`:'-'}</td>
+     <td>${esc(it.finalDate||'-')}</td>
+   </tr>`).join('')}</tbody></table>`;
+ }
+ if(!allSchCalState){ const now=new Date(); allSchCalState={year:now.getFullYear(), month:now.getMonth()}; }
+ const events=[];
+ rows.forEach(it=>{
+   const label=`${it.studentName}${it.classroom?'('+it.classroom+')':''} · ${it.univ||''}`;
+   if(it.stage1Date) events.push({date:it.stage1Date, label:'1단계 · '+label, bg:'#dbeafe', fg:'#1e3a8a'});
+   if(it.interviewDate) events.push({date:it.interviewDate, label:'면접 · '+label, bg:'#fee2e2', fg:'#991b1b'});
+   if(it.finalDate) events.push({date:it.finalDate, label:'최종 · '+label, bg:'#dcfce7', fg:'#166534'});
+ });
+ document.getElementById('allSchCalWrap').innerHTML=calendarHTML(events, allSchCalState.year, allSchCalState.month);
+ document.getElementById('allSchCalTitle').textContent=`${allSchCalState.year}년 ${allSchCalState.month+1}월`;
+}
+document.getElementById('allSchCalPrev').addEventListener('click',()=>{ allSchCalState.month--; if(allSchCalState.month<0){allSchCalState.month=11;allSchCalState.year--;} renderAllSchedule(); });
+document.getElementById('allSchCalNext').addEventListener('click',()=>{ allSchCalState.month++; if(allSchCalState.month>11){allSchCalState.month=0;allSchCalState.year++;} renderAllSchedule(); });
+
 let TCUR=null; // {key, data}
 async function openTeacherWork(key){
  const snap=await db.collection('students').doc(key).get();
  if(!snap.exists){ await uiAlert('학생 데이터를 찾을 수 없습니다.'); return; }
  TCUR={key, data:snap.data()};
  document.getElementById('teacherStudentTitle').textContent=`${TCUR.data.name} 학생 (${TCUR.data.school} · ${TCUR.data.number}번)`;
+ document.getElementById('tClassroomInput').value=TCUR.data.classroom||'';
  show('viewTeacherWork');
  teacherCalState=null;
  populateTqUnivSelect();
@@ -2156,6 +2303,15 @@ async function openTeacherWork(key){
  renderTeacherMock();
  renderTeacherQList();
 }
+document.getElementById('btnSaveClassroom').addEventListener('click', async ()=>{
+ if(!TCUR){return;}
+ const val=document.getElementById('tClassroomInput').value.trim();
+ TCUR.data.classroom=val;
+ try{
+   await db.collection('students').doc(TCUR.key).update({classroom:val, updatedAt:Date.now()});
+   await uiAlert('반 정보가 저장되었습니다.');
+ }catch(e){ console.error(e); await uiAlert('저장 중 오류: '+e.message); }
+});
 function populateTqUnivSelect(){
  const sel=document.getElementById('tqUniv');
  const univs=((TCUR&&TCUR.data.schedule)||[]).map(it=>it.univ).filter(Boolean);
@@ -2421,9 +2577,11 @@ function renderTeacherQList(){
    el.innerHTML=`
     <div class="head">
       ${q.type==='basic'?'<span class="badge">기본질문</span>':`<span class="badge acc">생기부 기반</span><span class="badge gray">${esc(q.area)}</span>${q.univ && q.univ!=="공통"?`<span class="badge warn">${esc(q.univ)}</span>`:`<span class="badge gray">공통</span>`}`}
+      ${q.createdBy==='teacher'?`<span class="badge" style="background:#ede9fe;color:#6d28d9">👩‍🏫 ${esc(q.teacherName||'선생님')}이(가) 낸 질문</span>`:''}
       ${wasRevisedSinceFeedback(q.answerHtml, fbs, null)?`<span class="badge" style="background:#dbeafe;color:#1e3a8a">✏ 답변 수정됨</span>`:''}
     </div>
     <div class="qtext">Q. ${esc(q.text)}</div>
+    ${q.createdBy==='teacher'?`<div class="row" style="margin-bottom:8px"><button class="btn sm danger" data-act="delTeacherQ" data-qid="${q.id}">이 질문 삭제</button></div>`:''}
     ${answerWithRevision(q.answerHtml, fbs, null, q.updatedAt)}
     ${renderFeedbackBlock(fbs, followups, q.id, 'teacher')}
     ${followups.length?`<div class="followWrap"><b class="small">↳ 꼬리질문</b>${followups.map(fu=>{
@@ -2477,6 +2635,12 @@ function renderTeacherQList(){
    wrap.appendChild(el);
  });
  wrap.querySelectorAll('.fbtags .chip').forEach(c=>c.addEventListener('click',()=>c.classList.toggle('on')));
+ wrap.querySelectorAll('button[data-act="delTeacherQ"]').forEach(b=>b.addEventListener('click', async ()=>{
+   if(!(await uiConfirm('이 질문을 삭제할까요? 학생이 작성한 답변과 피드백도 함께 삭제됩니다.')))return;
+   TCUR.data.questions=(TCUR.data.questions||[]).filter(x=>x.id!==b.dataset.qid);
+   await saveTeacherQuestions();
+   renderTeacherQList();
+ }));
  wrap.querySelectorAll('button[data-act="savefb"]').forEach(b=>b.addEventListener('click', async ()=>{
    const qid=b.dataset.qid;
    const tname=TEACHER_SESSION?TEACHER_SESSION.displayName:'';

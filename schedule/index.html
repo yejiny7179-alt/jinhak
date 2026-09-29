@@ -217,6 +217,7 @@
       <button id="loginBtn" class="btn-ghost btn-sm">🔑 관리자 로그인</button>
       <button id="logoutBtn" class="btn-ghost btn-sm" style="display:none;">로그아웃</button>
       <button id="addTeacherBtn" class="btn-ghost btn-sm" style="display:none;">➕ 선생님 추가</button>
+      <button id="recomputeTimesBtn" class="btn-ghost btn-sm" style="display:none;">⏰ 시간 전체 재계산(18:30 기준)</button>
       <button id="excelBtn" class="btn-excel btn-sm">📊 엑셀 다운로드</button>
       <button id="printClassNoticeBtn" class="btn-ghost btn-sm">🖨 학급별 공지문(A1)</button>
       <button id="printOverallNoTeacherBtn" class="btn-ghost btn-sm">🖨 전체일정 - 교사명X(A1)</button>
@@ -1017,6 +1018,17 @@
     });
     if(changed) autoFilledPending = true;
   }
+  function recomputeAllGroupTimes(){
+    // 이미 시간이 채워져 있어도 모두 새 기본값(18:30 시작, 총 2시간 / 송두리 19:00)으로 강제 재계산
+    DATA.dateOrder.forEach(date => {
+      const groups = studentsForDate(date);
+      groups.forEach(g => {
+        if(!g.teacherName || g.students.length === 0) return;
+        g.students.forEach(s => { s.time = ''; }); // 기존 시작시간 앵커를 지워 새 기본값(18:30)부터 다시 계산
+        resequenceGroupTimes(date, g.teacherName);
+      });
+    });
+  }
   function applyJesimunAutoDetect(s, chosenTeacher){
     if(chosenTeacher === '송두리'){
       s.isJesimun = true;
@@ -1290,6 +1302,18 @@
       }
     });
   });
+  document.getElementById('recomputeTimesBtn').addEventListener('click', () => {
+    openModal({
+      title: '⏰ 모든 학생의 시간을 18:30 시작·총 2시간 기준으로 다시 계산할까요?',
+      placeholder: '재계산하려면 "재계산"이라고 입력',
+      onConfirm: (val) => {
+        if(val !== '재계산'){ showToast('입력이 일치하지 않아 재계산하지 않았습니다'); return; }
+        recomputeAllGroupTimes();
+        markDirty(); rerenderCurrentTab();
+        showToast('모든 학생의 시간을 새 기본값(18:30 시작·총 2시간, 송두리 선생님은 19:00)으로 다시 계산했습니다. "전체 저장"을 눌러야 모두에게 반영됩니다.');
+      }
+    });
+  });
 
   // ---------- 학생 찾기 (학급 필터 포함) ----------
   function populateClassSelect(){
@@ -1529,6 +1553,7 @@
       pages.push(`<div class="page">
         <div class="banner">${escapeHtml(grade)}학년 면접 컨설팅 안내(${escapeHtml(classCode)})</div>
         <div class="note">☺ 면접 시작 시간 15분전까지 학생 대기실(신관 다목적실)에서 대기하여야 합니다</div>
+        <div class="note">☺ 온라인 면접 워크북을 활용하여 질문을 만들어보고 완벽하지 않더라도 생기부 숙지해오세요.</div>
         <table><thead><tr><th style="width:12%;">학번</th><th style="width:14%;">이름</th><th>1차 장소 및 시간</th><th>2차 장소 및 시간</th></tr></thead>
         <tbody>${trs}</tbody></table>
         <div class="footer">•문의: 대입전략부 박예진 선생님</div>
@@ -1588,14 +1613,17 @@
     const loginBtn = document.getElementById('loginBtn');
     const logoutBtn = document.getElementById('logoutBtn');
     const addTeacherBtn = document.getElementById('addTeacherBtn');
+    const recomputeTimesBtn = document.getElementById('recomputeTimesBtn');
     if(isAdmin){
       pill.textContent = '🔓 관리자 모드'; pill.className = 'pill pill-admin-on';
       loginBtn.style.display = 'none'; logoutBtn.style.display = '';
       addTeacherBtn.style.display = '';
+      recomputeTimesBtn.style.display = '';
     } else {
       pill.textContent = '🔒 열람 모드'; pill.className = 'pill pill-admin-off';
       loginBtn.style.display = ''; logoutBtn.style.display = 'none';
       addTeacherBtn.style.display = 'none';
+      recomputeTimesBtn.style.display = 'none';
     }
     selectTab(currentTab);
   }

@@ -497,7 +497,7 @@
   function teamDates(team){ return team === '화' ? {d1:'10월 13일', d2:'11월 3일'} : {d1:'10월 14일', d2:'11월 4일'}; }
   function studentRow(s, gid, date){
     const timeHtml = isAdmin
-      ? `<input type="text" class="time-input" data-stu-time="${s.ban}" value="${escapeHtml(s.time||'')}" placeholder="18:00~18:40">`
+      ? `<input type="text" class="time-input" data-stu-time="${s.ban}" value="${escapeHtml(s.time||'')}" placeholder="18:30~19:10">`
       : `<span class="time-badge">${s.time ? escapeHtml(s.time) : '미정'}</span>`;
     let assignHtml = '';
     if(isAdmin && date){
@@ -671,7 +671,9 @@
     return `${fmt(startMin)}~${fmt(startMin+durMin)}`;
   }
   function slotDurationFor(count){
-    return count === 4 ? 30 : 40;
+    // 인원수와 관계없이 항상 총 2시간(120분)에 맞춰 균등 분배
+    if(!count || count <= 0) return 120;
+    return Math.max(5, Math.round(120 / count));
   }
   function cascadeToSiblings(li, stulist, startVal){
     const items = Array.from(stulist.querySelectorAll('li.stu'));
@@ -986,15 +988,34 @@
     const groups = studentsForDate(date);
     const grp = groups.find(g => (g.teacherName||'') === key);
     if(!grp || grp.students.length === 0) return;
+    if(key === '송두리'){
+      // 제시문(발표면접)은 인원 상관없이 항상 19:00~21:00 고정
+      grp.students.forEach(s => { s.time = '19:00~21:00'; });
+      return;
+    }
     const members = grp.students.slice().sort((a,b)=>(a.order??0)-(b.order??0));
     const dur = slotDurationFor(members.length);
     let startMin = parseStartMinutes(members[0].time);
-    if(startMin == null) startMin = parseStartMinutes('18:00');
+    if(startMin == null) startMin = parseStartMinutes('18:30'); // 기본 시작시간: 18시 30분
     let cur = startMin;
     members.forEach((s,i) => {
       if(i>0) cur += dur;
       s.time = formatTimeRange(cur, dur);
     });
+  }
+  let autoFilledPending = false;
+  function autoFillMissingTimes(){
+    // 아직 시간이 한 번도 입력/계산된 적 없는 그룹에 기본값(18:30 시작, 총 2시간 / 송두리 선생님은 19:00 시작)을 자동으로 채워넣음
+    let changed = false;
+    DATA.dateOrder.forEach(date => {
+      const groups = studentsForDate(date);
+      groups.forEach(g => {
+        if(!g.teacherName || g.students.length === 0) return;
+        const anyMissing = g.students.some(s => !s.time);
+        if(anyMissing){ resequenceGroupTimes(date, g.teacherName); changed = true; }
+      });
+    });
+    if(changed) autoFilledPending = true;
   }
   function applyJesimunAutoDetect(s, chosenTeacher){
     if(chosenTeacher === '송두리'){
@@ -1508,6 +1529,7 @@
       pages.push(`<div class="page">
         <div class="banner">${escapeHtml(grade)}학년 면접 컨설팅 안내(${escapeHtml(classCode)})</div>
         <div class="note">☺ 면접 시작 시간 15분전까지 학생 대기실(신관 다목적실)에서 대기하여야 합니다</div>
+        <div class="note">☺ 온라인 면접 워크북을 활용하여 질문을 만들어보고 완벽하지 않더라도 생기부 숙지해오세요.</div>
         <table><thead><tr><th style="width:12%;">학번</th><th style="width:14%;">이름</th><th>1차 장소 및 시간</th><th>2차 장소 및 시간</th></tr></thead>
         <tbody>${trs}</tbody></table>
         <div class="footer">•문의: 대입전략부 박예진 선생님</div>
@@ -1685,6 +1707,7 @@
     if(fbReady){
       fbAuth.onAuthStateChanged((user) => {
         isAdmin = !!user;
+        if(isAdmin && autoFilledPending){ markDirty(); autoFilledPending = false; }
         updateAdminUI();
       });
       try{
@@ -1703,6 +1726,8 @@
     } else {
       showToast('⚠️ Firebase 연결에 실패했습니다. 새로고침해보세요.');
     }
+    autoFillMissingTimes();
+    if(isAdmin && autoFilledPending){ markDirty(); autoFilledPending = false; }
     buildTabsNav();
     updateAdminUI();
     wirePrintDocButtons();

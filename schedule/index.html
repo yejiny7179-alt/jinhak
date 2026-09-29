@@ -423,7 +423,7 @@
     return !(s.d1 === nd.d1 && s.d2 === nd.d2);
   }
   function dateChangedDot(s){
-    return isDateChangedNow(s) ? '<span class="date-changed-dot" title="원래 신청한 날짜(화/수)와 다르게 배정됨"></span>' : '';
+    return ''; // 파란색 점 표시 제거됨
   }
   function customScheduleHtml(s){
     if(!s.customDate && !s.customTime) return '';

@@ -202,6 +202,9 @@
       <button id="addTeacherBtn" class="btn-ghost btn-sm" style="display:none;">➕ 선생님 추가</button>
       <button id="resetSeedBtn" class="btn-danger btn-sm" style="display:none;">🔄 이 파일 데이터로 초기화</button>
       <button id="excelBtn" class="btn-excel btn-sm">📊 엑셀 다운로드</button>
+      <button id="printClassNoticeBtn" class="btn-ghost btn-sm">🖨 학급별 공지문(A1)</button>
+      <button id="printOverallNoTeacherBtn" class="btn-ghost btn-sm">🖨 전체일정 - 교사명X(A1)</button>
+      <button id="printOverallWithTeacherBtn" class="btn-ghost btn-sm">🖨 전체일정 - 교사명O(A1)</button>
     </div>
     <nav class="tabs" id="tabsNav"></nav>
   </div>
@@ -414,8 +417,8 @@
   }
   function studentRoleForDate(s, date){
     if(s.isJesimun) return 'first'; // teacher1===teacher2 항상 동일하므로 role은 편의상 first
-    if(s.d1 === date) return 'first';
-    if(s.d2 === date) return 'second';
+    if(s.d1 === date) return s.skip1 ? null : 'first';
+    if(s.d2 === date) return s.skip2 ? null : 'second';
     return null;
   }
   function studentsForDate(date){
@@ -504,6 +507,19 @@
           <input type="text" data-stu-customdate="${s.ban}" value="${escapeHtml(s.customDate||'')}" placeholder="예: 11월 10일" style="max-width:100px; padding:5px 7px; border-radius:6px; border:1px solid var(--border); font-size:12px;">
           <input type="text" data-stu-customtime="${s.ban}" value="${escapeHtml(s.customTime||'')}" placeholder="예: 15:00~15:40" style="max-width:110px; padding:5px 7px; border-radius:6px; border:1px solid var(--border); font-size:12px;">
         </div>
+        ${s.isJesimun ? '' : `
+        <div style="margin-top:8px; padding-top:8px; border-top:1px dashed var(--border);">
+          <div style="font-size:11px;color:var(--muted); margin-bottom:4px;">🩹 면접이 일찍 끝나 한 회차만 필요 없는 경우, 해당 회차만 삭제할 수 있습니다 (다른 회차는 유지됨)</div>
+          <label style="display:flex; align-items:center; gap:5px; cursor:pointer; font-size:12px; color:var(--text);">
+            <input type="checkbox" data-stu-skip1="${s.ban}" ${s.skip1?'checked':''}>
+            1회차(${escapeHtml(shortDate(s.d1))}) 진행 안 함 (조기종료)
+          </label>
+          <label style="margin-top:4px; display:flex; align-items:center; gap:5px; cursor:pointer; font-size:12px; color:var(--text);">
+            <input type="checkbox" data-stu-skip2="${s.ban}" ${s.skip2?'checked':''}>
+            2회차(${escapeHtml(shortDate(s.d2))}) 진행 안 함 (조기종료)
+          </label>
+        </div>
+        `}
         <div style="margin-top:8px; padding-top:8px; border-top:1px dashed var(--border);">
           <button type="button" class="btn-danger btn-sm" data-delete-student="${s.ban}">🗑 이 학생 삭제 (중도포기 등)</button>
         </div>`;
@@ -516,7 +532,7 @@
           <span style="display:flex; align-items:center; gap:6px;">${timeHtml}${s.isJesimun ? '<span class="tag-jesimun">제시문</span>' : ''}</span>
         </div>
         <div class="apps-panel" id="apps-${s.ban}-${gid}">
-          <b>${escapeHtml(s.field_raw)}</b> · ${s.isJesimun ? `제시문 특별진행 (${DATA.dateOrder.map(shortDate).join(', ')}) · 담당:${teacherOrUnassigned(s.teacher1)}` : `${s.team==='화'?'화요일':'수요일'}팀 (${escapeHtml(s.d1)} / ${escapeHtml(s.d2)}) · 1회차:${teacherOrUnassigned(s.teacher1)} / 2회차:${teacherOrUnassigned(s.teacher2)}`}
+          <b>${escapeHtml(s.field_raw)}</b> · ${s.isJesimun ? `제시문 특별진행 (${DATA.dateOrder.map(shortDate).join(', ')}) · 담당:${teacherOrUnassigned(s.teacher1)}` : `${s.team==='화'?'화요일':'수요일'}팀 (${escapeHtml(s.d1)} / ${escapeHtml(s.d2)}) · 1회차:${s.skip1 ? '<span style="color:var(--muted);font-weight:700;">진행안함(조기종료)</span>' : teacherOrUnassigned(s.teacher1)} / 2회차:${s.skip2 ? '<span style="color:var(--muted);font-weight:700;">진행안함(조기종료)</span>' : teacherOrUnassigned(s.teacher2)}`}
           ${(s.customDate || s.customTime) ? `<div style="margin-top:4px;"><span class="custom-date-badge">📌 별도 일정: ${escapeHtml(s.customDate||'날짜미정')} ${escapeHtml(s.customTime||'')}</span></div>` : ''}
           ${s.apps && s.apps.length ? `<ul>${s.apps.map(a=>`<li>${escapeHtml(a)}</li>`).join('')}</ul>` : '<div style="margin-top:4px;color:var(--muted);">등록된 지원 정보가 없습니다.</div>'}
           ${assignHtml}
@@ -739,6 +755,34 @@
         const cl = findClusterOfBan(ban);
         const s = cl ? cl.students.find(x=>x.ban===ban) : null;
         if(s){ s.customTime = e.target.value.trim(); markDirty(); rerenderCurrentTab(); }
+      });
+    });
+  }
+  function wireSkipInputs(root){
+    root.querySelectorAll('[data-stu-skip1]').forEach(chk => {
+      chk.addEventListener('click', e => e.stopPropagation());
+      chk.addEventListener('change', (e) => {
+        const ban = e.target.getAttribute('data-stu-skip1');
+        const cl = findClusterOfBan(ban);
+        const s = cl ? cl.students.find(x=>x.ban===ban) : null;
+        if(s){
+          s.skip1 = e.target.checked;
+          markDirty(); rerenderCurrentTab();
+          showToast(s.skip1 ? `"${s.name}" 학생의 1회차(${shortDate(s.d1)})를 삭제했습니다` : `"${s.name}" 학생의 1회차를 다시 진행하도록 복구했습니다`);
+        }
+      });
+    });
+    root.querySelectorAll('[data-stu-skip2]').forEach(chk => {
+      chk.addEventListener('click', e => e.stopPropagation());
+      chk.addEventListener('change', (e) => {
+        const ban = e.target.getAttribute('data-stu-skip2');
+        const cl = findClusterOfBan(ban);
+        const s = cl ? cl.students.find(x=>x.ban===ban) : null;
+        if(s){
+          s.skip2 = e.target.checked;
+          markDirty(); rerenderCurrentTab();
+          showToast(s.skip2 ? `"${s.name}" 학생의 2회차(${shortDate(s.d2)})를 삭제했습니다` : `"${s.name}" 학생의 2회차를 다시 진행하도록 복구했습니다`);
+        }
       });
     });
   }
@@ -1033,6 +1077,7 @@
     wireTeamInputs(rootEl);
     wireSetModeInputs(rootEl);
     wireCustomScheduleInputs(rootEl);
+    wireSkipInputs(rootEl);
     wireDeleteStudentButtons(rootEl);
     wireJesimunToggle(rootEl);
     wireDragReorder(rootEl, date);
@@ -1253,6 +1298,7 @@
     wireTeamInputs(box);
     wireSetModeInputs(box);
     wireCustomScheduleInputs(box);
+    wireSkipInputs(box);
     wireDeleteStudentButtons(box);
     wireJesimunToggle(box);
   }
@@ -1328,10 +1374,166 @@
       wireTeamInputs(rootEl);
       wireSetModeInputs(rootEl);
       wireCustomScheduleInputs(rootEl);
+      wireSkipInputs(rootEl);
       wireDeleteStudentButtons(rootEl);
       wireJesimunToggle(rootEl);
       wireDragReorder(rootEl, date);
     });
+  }
+
+  // ---------- 인쇄용 문서(A1) 생성 ----------
+  function clusterOfTeacherName(name){ return name ? DATA.clusters.find(c => c.teacher === name) : null; }
+  function computeColSpans(rows, colKey){
+    const meta = new Array(rows.length);
+    let i=0;
+    while(i<rows.length){
+      let j=i;
+      while(j+1<rows.length && rows[j+1][colKey] === rows[i][colKey]) j++;
+      const span = j-i+1;
+      for(let k=i;k<=j;k++){ meta[k] = { span, skip: k!==i }; }
+      i=j+1;
+    }
+    return meta;
+  }
+  function groupedSessionsForDate(date){
+    const items = [];
+    DATA.clusters.forEach(c => c.students.forEach(s => {
+      const role = studentRoleForDate(s, date);
+      if(!role) return;
+      const teacherKey = role === 'first' ? 'teacher1' : 'teacher2';
+      const teacherName = s[teacherKey] || '';
+      const cl = clusterOfTeacherName(teacherName);
+      const room = cl ? getRoomForDate(cl, date) : '';
+      items.push({ s, teacherName, room });
+    }));
+    const groups = {};
+    items.forEach(it => {
+      const key = it.teacherName || '__unassigned__';
+      if(!groups[key]) groups[key] = { teacherName: it.teacherName, room: it.room, items: [] };
+      groups[key].items.push(it);
+    });
+    const order = DATA.clusters.map(c=>c.teacher);
+    const keys = Object.keys(groups).sort((a,b)=>{
+      if(a==='__unassigned__') return 1;
+      if(b==='__unassigned__') return -1;
+      return order.indexOf(groups[a].teacherName) - order.indexOf(groups[b].teacherName);
+    });
+    return keys.map(k=>groups[k]);
+  }
+  const PRINT_DOC_STYLE = `
+    *{box-sizing:border-box;}
+    body{ margin:0; font-family:"Malgun Gothic","Apple SD Gothic Neo",sans-serif; color:#111; }
+    @page{ size:A1; margin:12mm; }
+    .print-toolbar{ position:sticky; top:0; background:#fffbe8; border-bottom:2px solid #f59e0b; padding:12px 16px; display:flex; gap:10px; align-items:center; z-index:10; }
+    .print-toolbar button{ font-size:16px; font-weight:700; padding:8px 16px; border-radius:8px; border:none; background:#f59e0b; color:#fff; cursor:pointer; }
+    .print-toolbar span{ font-size:13px; color:#555; }
+    .page{ page-break-after:always; padding:10mm 8mm; }
+    .page:last-child{ page-break-after:auto; }
+    .banner{ background:#fde68a; padding:1.2vw 1.6vw; font-size:3vw; font-weight:800; text-align:center; border-radius:10px; margin-bottom:1.2vw; border:3px solid #d97706; }
+    .note{ font-weight:800; font-size:1.8vw; margin-bottom:1.4vw; }
+    table{ width:100%; border-collapse:collapse; font-size:1.5vw; table-layout:fixed; }
+    th,td{ border:2.5px solid #333; padding:0.9vw 1vw; text-align:center; word-break:keep-all; }
+    th{ background:#eef0ff; font-weight:800; }
+    td.name-cell{ font-weight:700; }
+    .footer{ margin-top:1.2vw; font-size:1vw; color:#333; }
+    @media print{ .print-toolbar{ display:none; } }
+  `;
+  function openPrintDoc(title, bodyHtml){
+    const html = `<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><title>${escapeHtml(title)}</title>
+      <style>${PRINT_DOC_STYLE}</style></head><body>
+      <div class="print-toolbar"><button onclick="window.print()">🖨 인쇄</button><span>인쇄 대화상자에서 용지 크기를 <b>A1</b>로 설정해주세요.</span></div>
+      ${bodyHtml}
+      </body></html>`;
+    const blob = new Blob([html], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const w = window.open(url, '_blank');
+    if(!w){ showToast('팝업이 차단되었습니다. 팝업 차단을 해제해주세요.'); }
+  }
+  function buildClassNoticeBody(){
+    const pages = [];
+    DATA.classes.forEach(classLabel => {
+      const m = classLabel.match(/(\d+)학년\s*(\d+)반/);
+      if(!m) return;
+      const grade = m[1], classNo = parseInt(m[2],10);
+      const classCode = `${grade}-${classNo}`;
+      const students = [];
+      DATA.clusters.forEach(c => c.students.forEach(s => { if(classOf(s) === classLabel) students.push(s); }));
+      if(students.length === 0) return;
+      students.sort((a,b) => (parseInt(a.seatNo,10)||0) - (parseInt(b.seatNo,10)||0));
+      const sessionText = (s, date, teacherKey, skip) => {
+        if(skip) return '진행 안 함 (조기종료)';
+        const teacherName = s[teacherKey];
+        if(!teacherName) return '담당 선생님께서 시간 및 장소 공지 예정';
+        const room = getRoomForDate(clusterOfTeacherName(teacherName), date) || '장소미정';
+        return `${shortDate(date)} ${room} (${s.time || '시간미정'})`;
+      };
+      const rows = students.map(s => ({
+        ban: s.ban, name: s.name,
+        col1Text: sessionText(s, s.d1, 'teacher1', !!s.skip1),
+        col2Text: sessionText(s, s.d2, 'teacher2', !!s.skip2)
+      }));
+      const span1 = computeColSpans(rows, 'col1Text');
+      const span2 = computeColSpans(rows, 'col2Text');
+      const trs = rows.map((r,i) => {
+        let tds = `<td>${escapeHtml(r.ban)}</td><td class="name-cell">${escapeHtml(r.name)}</td>`;
+        if(!span1[i].skip) tds += `<td rowspan="${span1[i].span}">${escapeHtml(r.col1Text)}</td>`;
+        if(!span2[i].skip) tds += `<td rowspan="${span2[i].span}">${escapeHtml(r.col2Text)}</td>`;
+        return `<tr>${tds}</tr>`;
+      }).join('');
+      pages.push(`<div class="page">
+        <div class="banner">${escapeHtml(grade)}학년 면접 컨설팅 안내(${escapeHtml(classCode)})</div>
+        <div class="note">☺ 면접 시작 시간 15분전까지 학생 대기실(신관 다목적실)에서 대기하여야 합니다</div>
+        <table><thead><tr><th style="width:12%;">학번</th><th style="width:14%;">이름</th><th>1차 장소 및 시간</th><th>2차 장소 및 시간</th></tr></thead>
+        <tbody>${trs}</tbody></table>
+        <div class="footer">•문의: 대입전략부 박예진 선생님</div>
+      </div>`);
+    });
+    return pages.join('');
+  }
+  function buildOverallScheduleBody(withTeacher){
+    const pages = DATA.dateOrder.map(date => {
+      const groups = groupedSessionsForDate(date);
+      let seq = 1;
+      const rows = [];
+      groups.forEach(g => {
+        const members = g.items.slice().sort((a,b)=>(a.s.order??0)-(b.s.order??0));
+        members.forEach((it, idx) => {
+          rows.push({
+            seq: seq++,
+            timeLabel: `${idx+1}타임(${it.s.time || '미정'})`,
+            ban: it.s.ban, name: it.s.name,
+            room: g.room || '미정',
+            teacher: g.teacherName || '미배정',
+            groupKey: g.teacherName || '__unassigned__'
+          });
+        });
+      });
+      const spanRoom = computeColSpans(rows, 'groupKey');
+      const trs = rows.map((r,i) => {
+        let tds = `<td>${r.seq}</td><td>${escapeHtml(r.timeLabel)}</td><td>${escapeHtml(r.ban)}</td><td class="name-cell">${escapeHtml(r.name)}</td>`;
+        if(!spanRoom[i].skip){
+          tds += `<td rowspan="${spanRoom[i].span}">${escapeHtml(r.room)}</td>`;
+          if(withTeacher) tds += `<td rowspan="${spanRoom[i].span}">${escapeHtml(r.teacher)} 선생님</td>`;
+        }
+        return `<tr>${tds}</tr>`;
+      }).join('');
+      const teacherTh = withTeacher ? '<th style="width:14%;">담당강사 선생님</th>' : '';
+      return `<div class="page">
+        <div class="banner">3학년 면접 컨설팅(${escapeHtml(date)})</div>
+        <table><thead><tr><th style="width:6%;">연번</th><th style="width:14%;">시간</th><th style="width:12%;">학번</th><th style="width:14%;">이름</th><th>장소</th>${teacherTh}</tr></thead>
+        <tbody>${trs || `<tr><td colspan="${withTeacher?6:5}">해당 날짜에 배정된 학생이 없습니다.</td></tr>`}</tbody></table>
+        <div class="footer">•문의: 대입전략부 박예진 선생님</div>
+      </div>`;
+    });
+    return pages.join('');
+  }
+  function wirePrintDocButtons(){
+    const b1 = document.getElementById('printClassNoticeBtn');
+    const b2 = document.getElementById('printOverallNoTeacherBtn');
+    const b3 = document.getElementById('printOverallWithTeacherBtn');
+    if(b1) b1.addEventListener('click', () => openPrintDoc('학급별 공지문', buildClassNoticeBody()));
+    if(b2) b2.addEventListener('click', () => openPrintDoc('전체 일정표(교사명 없음)', buildOverallScheduleBody(false)));
+    if(b3) b3.addEventListener('click', () => openPrintDoc('전체 일정표(교사명 포함)', buildOverallScheduleBody(true)));
   }
 
   // ---------- admin login ----------
@@ -1388,9 +1590,11 @@
       DATA.clusters.forEach((c, cIdx) => {
         const label = LETTERS[cIdx % LETTERS.length];
         c.students.forEach(s => {
+          const t1Disp = s.skip1 ? '진행안함(조기종료)' : (s.teacher1 || '미배정');
+          const t2Disp = s.skip2 ? '진행안함(조기종료)' : (s.teacher2 || '미배정');
           const teacherDisplay = s.isJesimun
             ? (s.teacher1 || '미배정')
-            : (s.teacher1 === s.teacher2 ? (s.teacher1 || '미배정') : `1회차:${s.teacher1||'미배정'} / 2회차:${s.teacher2||'미배정'}`);
+            : (!s.skip1 && !s.skip2 && s.teacher1 === s.teacher2 ? (s.teacher1 || '미배정') : `1회차:${t1Disp} / 2회차:${t2Disp}`);
           const apps = s.apps || [];
           rows.push({
             '연번': seq++,
@@ -1468,6 +1672,7 @@
     }
     buildTabsNav();
     updateAdminUI();
+    wirePrintDocButtons();
   })();
 
 })();

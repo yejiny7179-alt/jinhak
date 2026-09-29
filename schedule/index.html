@@ -1124,21 +1124,17 @@
         const toIdx = order.indexOf(targetBan);
         order.splice(toIdx, 0, draggedBan);
 
-        // 새 순서를 각 학생의 order 필드로 저장하고, 첫 학생 시간 기준으로 전체 시간 재계산
+        // 새 순서를 각 학생의 order 필드로 저장하고, 공통 시간 재계산 로직(resequenceGroupTimes)으로 전체 시간 재계산
         const orderedStudents = order.map(ban => {
           const cl = findClusterOfBan(ban);
           return cl ? cl.students.find(x=>x.ban===ban) : null;
         }).filter(Boolean);
         orderedStudents.forEach((s, i) => { s.order = i; });
         if(orderedStudents.length > 0){
-          const dur = slotDurationFor(orderedStudents.length);
-          let startMin = parseStartMinutes(orderedStudents[0].time);
-          if(startMin == null) startMin = parseStartMinutes('18:00');
-          let cur = startMin;
-          orderedStudents.forEach((s, i) => {
-            if(i>0) cur += dur;
-            s.time = formatTimeRange(cur, dur);
-          });
+          const targetStu = orderedStudents.find(s => s.ban === targetBan) || orderedStudents[0];
+          const role = studentRoleForDate(targetStu, date);
+          const teacherKey = role === 'second' ? 'teacher2' : 'teacher1';
+          resequenceGroupTimes(date, targetStu[teacherKey] || '');
         }
         draggedBan = null;
         markDirty(); rerenderCurrentTab();

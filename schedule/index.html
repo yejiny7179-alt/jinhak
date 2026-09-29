@@ -340,6 +340,16 @@
   function teamOfDate(date){ return (date === '10월 13일' || date === '11월 3일') ? '화' : '수'; }
   function shortDate(date){ return date.replace('월 ', '/').replace('일',''); }
   function isFirstDate(date){ return date === '10월 13일' || date === '10월 14일'; }
+  function timeKeyForDate(date){ return isFirstDate(date) ? 'time1' : 'time2'; }
+  function migrateTimeFields(){
+    // 예전 방식(공용 time 필드 1개)에서 날짜별(1회차/2회차 독립) time1/time2로 이전
+    let changed = false;
+    DATA.clusters.forEach(c => c.students.forEach(s => {
+      if(s.time1 === undefined){ s.time1 = s.time || ''; changed = true; }
+      if(s.time2 === undefined){ s.time2 = s.isJesimun ? s.time1 : (s.time || ''); changed = true; }
+    }));
+    return changed;
+  }
   function showToast(msg){
     const t = document.getElementById('toast');
     t.textContent = msg; t.classList.add('show');
@@ -498,14 +508,24 @@
   }
   function teamDates(team){ return team === '화' ? {d1:'10월 13일', d2:'11월 3일'} : {d1:'10월 14일', d2:'11월 4일'}; }
   function studentRow(s, gid, date){
-    const timeModeIsNegotiated = s.time === '협의';
-    const timeHtml = isAdmin
-      ? `<input type="text" class="time-input" data-stu-time="${s.ban}" value="${escapeHtml(s.time||'')}" placeholder="18:30~19:10">
-         <select class="time-mode-select" data-stu-timeselect="${s.ban}" title="시간 대신 '협의'로 표시하려면 선택하세요">
-           <option value="" ${!timeModeIsNegotiated?'selected':''}>직접입력</option>
-           <option value="협의" ${timeModeIsNegotiated?'selected':''}>협의</option>
-         </select>`
-      : `<span class="time-badge">${s.time ? escapeHtml(s.time) : '미정'}</span>`;
+    const timeKey = date ? (s.isJesimun ? 'time1' : timeKeyForDate(date)) : null;
+    let timeHtml;
+    if(timeKey){
+      const curTime = s[timeKey] || '';
+      const timeModeIsNegotiated = curTime === '협의';
+      timeHtml = isAdmin
+        ? `<input type="text" class="time-input" data-stu-time="${s.ban}" data-time-key="${timeKey}" value="${escapeHtml(curTime)}" placeholder="18:30~19:10">
+           <select class="time-mode-select" data-stu-timeselect="${s.ban}" data-time-key="${timeKey}" title="시간 대신 '협의'로 표시하려면 선택하세요">
+             <option value="" ${!timeModeIsNegotiated?'selected':''}>직접입력</option>
+             <option value="협의" ${timeModeIsNegotiated?'selected':''}>협의</option>
+           </select>`
+        : `<span class="time-badge">${curTime ? escapeHtml(curTime) : '미정'}</span>`;
+    } else {
+      // 날짜 컨텍스트가 없는 곳(학생 검색 등): 1회차/2회차 시간을 함께 읽기 전용으로 표시
+      timeHtml = s.isJesimun
+        ? `<span class="time-badge">${s.time1 ? escapeHtml(s.time1) : '미정'}</span>`
+        : `<span class="time-badge">1회차 ${s.time1 ? escapeHtml(s.time1) : '미정'}</span> <span class="time-badge">2회차 ${s.time2 ? escapeHtml(s.time2) : '미정'}</span>`;
+    }
     let assignHtml = '';
     if(isAdmin && date){
       const isSetMode = (s.d1 === teamDates('화').d1 && s.d2 === teamDates('화').d2 && s.teacher1 === s.teacher2)
@@ -682,7 +702,7 @@
     if(!count || count <= 0) return 120;
     return Math.max(5, Math.round(120 / count));
   }
-  function cascadeToSiblings(li, stulist, startVal){
+  function cascadeToSiblings(li, stulist, startVal, timeKey){
     const items = Array.from(stulist.querySelectorAll('li.stu'));
     const idx = items.indexOf(li);
     if(idx !== 0) return;
@@ -694,12 +714,13 @@
       const nextInput = items[i].querySelector('[data-stu-time]');
       if(!nextInput) continue;
       const nextBan = nextInput.getAttribute('data-stu-time');
+      const nextKey = nextInput.getAttribute('data-time-key') || timeKey || 'time1';
       const nextS = DATA.clusters.flatMap(c=>c.students).find(x=>x.ban===nextBan);
-      if(nextS && nextS.time === '협의') continue; // '협의'로 지정된 학생은 건너뛰고 시간 유지
+      if(nextS && nextS[nextKey] === '협의') continue; // '협의'로 지정된 학생은 건너뛰고 시간 유지
       cur += dur;
       const nextVal = formatTimeRange(cur, dur);
       nextInput.value = nextVal;
-      if(nextS) nextS.time = nextVal;
+      if(nextS) nextS[nextKey] = nextVal;
     }
   }
   function wireTimeInputs(root){
@@ -711,6 +732,7 @@
       // 타이핑 중(input): "18:00"처럼 시작시간만 완성되면 즉시 그 학생의 끝나는 시간까지 자동완성 + 형제들도 캐스케이드
       inp.addEventListener('input', (e) => {
         const ban = e.target.getAttribute('data-stu-time');
+        const timeKey = e.target.getAttribute('data-time-key') || 'time1';
         let val = e.target.value.trim();
         const bareMatch = val.match(/^(\d{1,2}):(\d{2})$/);
         if(bareMatch){
@@ -720,16 +742,17 @@
           val = formatTimeRange(startMin, slotDurationFor(cnt));
           e.target.value = val;
         }
-        DATA.clusters.forEach(c => { const s = c.students.find(x=>x.ban===ban); if(s) s.time = val; });
+        DATA.clusters.forEach(c => { const s = c.students.find(x=>x.ban===ban); if(s) s[timeKey] = val; });
         const li = e.target.closest('li.stu');
         const stulist = e.target.closest('ul.stulist[data-cascade="1"]');
-        if(li && stulist) cascadeToSiblings(li, stulist, val);
+        if(li && stulist) cascadeToSiblings(li, stulist, val, timeKey);
         markDirty();
       });
 
       // 입력을 마치고 포커스를 벗어날 때(change): 혹시 남아있는 시작시간만 있는 값을 마무리로 한 번 더 완성
       inp.addEventListener('change', (e) => {
         const ban = e.target.getAttribute('data-stu-time');
+        const timeKey = e.target.getAttribute('data-time-key') || 'time1';
         let newVal = e.target.value.trim();
         const bareMatch = newVal.match(/^(\d{1,2}):(\d{2})$/);
         if(bareMatch){
@@ -739,10 +762,10 @@
           newVal = formatTimeRange(startMin, slotDurationFor(cnt));
           e.target.value = newVal;
         }
-        DATA.clusters.forEach(c => { const s = c.students.find(x=>x.ban===ban); if(s) s.time = newVal; });
+        DATA.clusters.forEach(c => { const s = c.students.find(x=>x.ban===ban); if(s) s[timeKey] = newVal; });
         const li = e.target.closest('li.stu');
         const stulist = e.target.closest('ul.stulist[data-cascade="1"]');
-        if(li && stulist) cascadeToSiblings(li, stulist, newVal);
+        if(li && stulist) cascadeToSiblings(li, stulist, newVal, timeKey);
         markDirty();
       });
     });
@@ -759,14 +782,16 @@
           s.isJesimun = true;
           s.teacher1 = '송두리';
           s.teacher2 = '송두리';
-          s.time = '19:00~21:00';
+          s.time1 = '19:00~21:00';
+          s.time2 = '19:00~21:00';
           showToast(`${s.name} 학생을 제시문(발표면접)으로 지정했습니다 (송두리 선생님, 4일 모두 진행)`);
         } else {
           s.isJesimun = false;
           // 제시문 해제 시, 소속 조 담당쌤 기준으로 담당쌤을 다시 계산 (가능일 확인)
           recomputeOneSession(s, cl, 'd1');
           recomputeOneSession(s, cl, 'd2');
-          s.time = '';
+          s.time1 = '';
+          s.time2 = '';
           showToast(`${s.name} 학생의 제시문 지정을 해제했습니다`);
         }
         markDirty(); rerenderCurrentTab();
@@ -848,22 +873,24 @@
       sel.addEventListener('click', e => e.stopPropagation());
       sel.addEventListener('change', (e) => {
         const ban = e.target.getAttribute('data-stu-timeselect');
+        const timeKey = e.target.getAttribute('data-time-key') || 'time1';
         const cl = findClusterOfBan(ban);
         const s = cl ? cl.students.find(x=>x.ban===ban) : null;
         if(!s) return;
+        const sessionDate = timeKey === 'time2' ? s.d2 : s.d1;
+        const sessionTeacher = timeKey === 'time2' ? s.teacher2 : s.teacher1;
+        const roundLabel = timeKey === 'time2' ? '2회차' : '1회차';
         if(e.target.value === '협의'){
-          s.time = '협의';
-          resequenceGroupTimes(s.d1, s.teacher1);
-          resequenceGroupTimes(s.d2, s.teacher2);
+          s[timeKey] = '협의';
+          resequenceGroupTimes(sessionDate, sessionTeacher);
           markDirty(); rerenderCurrentTab();
-          showToast(`"${s.name}" 학생의 시간을 "협의"로 표시했습니다`);
+          showToast(`"${s.name}" 학생의 ${roundLabel} 시간을 "협의"로 표시했습니다`);
         } else {
           // 직접입력으로 되돌리면 다시 자동 시간 계산에 포함시킴
-          s.time = '';
-          resequenceGroupTimes(s.d1, s.teacher1);
-          resequenceGroupTimes(s.d2, s.teacher2);
+          s[timeKey] = '';
+          resequenceGroupTimes(sessionDate, sessionTeacher);
           markDirty(); rerenderCurrentTab();
-          showToast(`"${s.name}" 학생의 시간을 자동 계산으로 되돌렸습니다`);
+          showToast(`"${s.name}" 학생의 ${roundLabel} 시간을 자동 계산으로 되돌렸습니다`);
         }
       });
     });
@@ -1022,22 +1049,23 @@
     const groups = studentsForDate(date);
     const grp = groups.find(g => (g.teacherName||'') === key);
     if(!grp || grp.students.length === 0) return;
+    const timeKey = key === '송두리' ? 'time1' : timeKeyForDate(date);
     if(key === '송두리'){
       // 제시문(발표면접)은 인원 상관없이 항상 19:00~21:00 고정 ('협의'로 지정한 학생은 그대로 둠)
-      grp.students.forEach(s => { if(s.time !== '협의') s.time = '19:00~21:00'; });
+      grp.students.forEach(s => { if(s[timeKey] !== '협의') s[timeKey] = '19:00~21:00'; });
       return;
     }
     const members = grp.students.slice().sort((a,b)=>(a.order??0)-(b.order??0));
     const dur = slotDurationFor(members.length);
     // '협의'로 지정한 학생은 자동 시간 계산에서 제외(시간 유지), 나머지 학생끼리만 순서대로 이어붙임
-    const cascadable = members.filter(s => s.time !== '협의');
+    const cascadable = members.filter(s => s[timeKey] !== '협의');
     if(cascadable.length === 0) return;
-    let startMin = parseStartMinutes(cascadable[0].time);
+    let startMin = parseStartMinutes(cascadable[0][timeKey]);
     if(startMin == null) startMin = parseStartMinutes('18:30'); // 기본 시작시간: 18시 30분
     let cur = startMin;
     cascadable.forEach((s,i) => {
       if(i>0) cur += dur;
-      s.time = formatTimeRange(cur, dur);
+      s[timeKey] = formatTimeRange(cur, dur);
     });
   }
   let autoFilledPending = false;
@@ -1045,10 +1073,12 @@
     // 아직 시간이 한 번도 입력/계산된 적 없는 그룹에 기본값(18:30 시작, 총 2시간 / 송두리 선생님은 19:00 시작)을 자동으로 채워넣음
     let changed = false;
     DATA.dateOrder.forEach(date => {
+      const timeKey = timeKeyForDate(date);
       const groups = studentsForDate(date);
       groups.forEach(g => {
         if(!g.teacherName || g.students.length === 0) return;
-        const anyMissing = g.students.some(s => !s.time);
+        const key = g.teacherName === '송두리' ? 'time1' : timeKey;
+        const anyMissing = g.students.some(s => !s[key]);
         if(anyMissing){ resequenceGroupTimes(date, g.teacherName); changed = true; }
       });
     });
@@ -1057,10 +1087,12 @@
   function recomputeAllGroupTimes(){
     // 이미 시간이 채워져 있어도 모두 새 기본값(18:30 시작, 총 2시간 / 송두리 19:00)으로 강제 재계산
     DATA.dateOrder.forEach(date => {
+      const timeKey = timeKeyForDate(date);
       const groups = studentsForDate(date);
       groups.forEach(g => {
         if(!g.teacherName || g.students.length === 0) return;
-        g.students.forEach(s => { s.time = ''; }); // 기존 시작시간 앵커를 지워 새 기본값(18:30)부터 다시 계산
+        const key = g.teacherName === '송두리' ? 'time1' : timeKey;
+        g.students.forEach(s => { s[key] = ''; }); // 기존 시작시간 앵커를 지워 새 기본값(18:30)부터 다시 계산
         resequenceGroupTimes(date, g.teacherName);
       });
     });
@@ -1070,11 +1102,13 @@
       s.isJesimun = true;
       s.teacher1 = '송두리';
       s.teacher2 = '송두리';
-      s.time = '19:00~21:00';
+      s.time1 = '19:00~21:00';
+      s.time2 = '19:00~21:00';
       return true; // 제시문으로 전환됨
     } else if(s.isJesimun && chosenTeacher !== '송두리'){
       s.isJesimun = false;
-      s.time = '';
+      s.time1 = '';
+      s.time2 = '';
       return false;
     }
     return s.isJesimun;
@@ -1389,7 +1423,7 @@
           <span>📚 <b>${escapeHtml(c.name)}</b></span>
           <span>👩‍🏫 <b>${studentTeacherLabel(s)}</b></span>
           <span>📅 <b>${escapeHtml(s.d1)}</b> / <b>${escapeHtml(s.d2)}</b></span>
-          <span>⏰ <b>${s.time ? escapeHtml(s.time) : '미정'}</b></span>
+          <span>⏰ <b>${s.isJesimun ? (s.time1?escapeHtml(s.time1):'미정') : `1회차:${s.time1?escapeHtml(s.time1):'미정'} / 2회차:${s.time2?escapeHtml(s.time2):'미정'}`}</b></span>
           <span>🏫 <b>1회차:${escapeHtml(getRoomForDate(c,s.d1)||'미정')} / 2회차:${escapeHtml(getRoomForDate(c,s.d2)||'미정')}</b></span>
         </div>
         <ul class="stulist">${studentRow(s, 'search')}</ul>
@@ -1509,7 +1543,8 @@
       const teacherName = s[teacherKey] || '';
       const cl = clusterOfTeacherName(teacherName);
       const room = cl ? getRoomForDate(cl, date) : '';
-      items.push({ s, teacherName, room });
+      const time = s.isJesimun ? s.time1 : (role === 'second' ? s.time2 : s.time1);
+      items.push({ s, teacherName, room, time });
     }));
     const groups = {};
     items.forEach(it => {
@@ -1570,7 +1605,8 @@
         const teacherName = s[teacherKey];
         if(!teacherName) return '담당 선생님께서 시간 및 장소 공지 예정';
         const room = getRoomForDate(clusterOfTeacherName(teacherName), date) || '장소미정';
-        return `${shortDate(date)} ${room} (${s.time || '시간미정'})`;
+        const timeVal = teacherKey === 'teacher2' ? s.time2 : s.time1;
+        return `${shortDate(date)} ${room} (${timeVal || '시간미정'})`;
       };
       const rows = students.map(s => ({
         ban: s.ban, name: s.name,
@@ -1606,7 +1642,7 @@
         members.forEach((it, idx) => {
           rows.push({
             seq: seq++,
-            timeLabel: `${idx+1}타임(${it.s.time || '미정'})`,
+            timeLabel: `${idx+1}타임(${it.time || '미정'})`,
             ban: it.s.ban, name: it.s.name,
             room: g.room || '미정',
             teacher: g.teacherName || '미배정',
@@ -1788,6 +1824,7 @@
     } else {
       showToast('⚠️ Firebase 연결에 실패했습니다. 새로고침해보세요.');
     }
+    if(migrateTimeFields()) autoFilledPending = true;
     autoFillMissingTimes();
     if(isAdmin && autoFilledPending){ markDirty(); autoFilledPending = false; }
     buildTabsNav();

@@ -193,6 +193,13 @@
     font-size:14px; margin-bottom:14px; box-sizing:border-box;
   }
   .modal-actions{display:flex; justify-content:flex-end; gap:8px;}
+  .modal-box.modal-box-wide{max-width:520px;}
+  .modal-textarea{
+    width:100%; padding:10px 12px; border-radius:8px; border:1px solid var(--border);
+    font-size:13.5px; margin-bottom:10px; box-sizing:border-box; min-height:140px; line-height:1.6;
+    font-family:inherit; resize:vertical;
+  }
+  .modal-hint{font-size:11.5px; color:var(--muted); margin-bottom:10px; line-height:1.5;}
 
   .guide-box{
     background:#ffffff; border-radius:14px; padding:22px; width:100%; max-width:480px;
@@ -218,8 +225,8 @@
       <button id="loginBtn" class="btn-ghost btn-sm">🔑 관리자 로그인</button>
       <button id="logoutBtn" class="btn-ghost btn-sm" style="display:none;">로그아웃</button>
       <button id="addTeacherBtn" class="btn-ghost btn-sm" style="display:none;">➕ 선생님 추가</button>
-      <button id="recomputeTimesBtn" class="btn-ghost btn-sm" style="display:none;">⏰ 시간 전체 재계산(18:30 기준)</button>
-      <button id="excelBtn" class="btn-excel btn-sm">📊 엑셀 다운로드</button>
+      <button id="editNoticeNotesBtn" class="btn-ghost btn-sm" style="display:none;">📝 공지문 문구 수정</button>
+      <button id="excelBtn" class="btn-excel btn-sm" style="display:none;">📊 엑셀 다운로드</button>
       <button id="printClassNoticeBtn" class="btn-ghost btn-sm">🖨 학급별 공지문(A1)</button>
       <button id="printOverallNoTeacherBtn" class="btn-ghost btn-sm">🖨 전체일정 - 교사명X(A1)</button>
       <button id="printOverallWithTeacherBtn" class="btn-ghost btn-sm">🖨 전체일정 - 교사명O(A1)</button>
@@ -299,6 +306,19 @@
       <div class="txt"><b>인쇄용 문서</b><span>"학급별 공지문", "전체일정" 버튼을 누르면 인쇄하기 좋은 표가 새 창으로 열립니다. 필요하면 그 창에서 인쇄하거나 저장하시면 됩니다.</span></div>
     </div>
     <button id="guideCloseBtn" class="btn-primary btn-sm guide-close">닫기</button>
+  </div>
+</div>
+
+<div id="noticeNotesOverlay" class="modal-overlay" style="display:none;">
+  <div class="modal-box modal-box-wide">
+    <div class="modal-title">📝 학급별 공지문 안내문구 수정</div>
+    <div class="modal-hint">한 줄에 한 문구씩 입력하세요. 여기서 수정한 문구는 모든 학급 공지문 상단에 동일하게 표시됩니다.</div>
+    <textarea id="noticeNotesTextarea" class="modal-textarea"></textarea>
+    <div class="modal-actions">
+      <button id="noticeNotesResetBtn" class="btn-ghost btn-sm" style="margin-right:auto;">기본값으로</button>
+      <button id="noticeNotesCancel" class="btn-ghost btn-sm">취소</button>
+      <button id="noticeNotesSave" class="btn-primary btn-sm">저장</button>
+    </div>
   </div>
 </div>
 
@@ -1369,17 +1389,27 @@
       }
     });
   });
-  document.getElementById('recomputeTimesBtn').addEventListener('click', () => {
-    openModal({
-      title: '⏰ 모든 학생의 시간을 18:30 시작·총 2시간 기준으로 다시 계산할까요?',
-      placeholder: '재계산하려면 "재계산"이라고 입력',
-      onConfirm: (val) => {
-        if(val !== '재계산'){ showToast('입력이 일치하지 않아 재계산하지 않았습니다'); return; }
-        recomputeAllGroupTimes();
-        markDirty(); rerenderCurrentTab();
-        showToast('모든 학생의 시간을 새 기본값(18:30 시작·총 2시간, 송두리 선생님은 19:00)으로 다시 계산했습니다. "전체 저장"을 눌러야 모두에게 반영됩니다.');
-      }
-    });
+  // ---------- 학급별 공지문 안내문구 수정 ----------
+  document.getElementById('editNoticeNotesBtn').addEventListener('click', () => {
+    document.getElementById('noticeNotesTextarea').value = getClassNoticeNotes().join('\n');
+    document.getElementById('noticeNotesOverlay').style.display = 'flex';
+  });
+  document.getElementById('noticeNotesResetBtn').addEventListener('click', () => {
+    document.getElementById('noticeNotesTextarea').value = DEFAULT_CLASS_NOTICE_NOTES.join('\n');
+  });
+  document.getElementById('noticeNotesCancel').addEventListener('click', () => {
+    document.getElementById('noticeNotesOverlay').style.display = 'none';
+  });
+  document.getElementById('noticeNotesSave').addEventListener('click', () => {
+    const lines = document.getElementById('noticeNotesTextarea').value
+      .split('\n').map(l => l.trim()).filter(l => l.length > 0);
+    DATA.classNoticeNotes = lines;
+    markDirty();
+    document.getElementById('noticeNotesOverlay').style.display = 'none';
+    showToast('공지문 안내문구를 수정했습니다. "전체 저장"을 눌러야 모두에게 반영됩니다.');
+  });
+  document.getElementById('noticeNotesOverlay').addEventListener('click', (e) => {
+    if(e.target.id === 'noticeNotesOverlay') document.getElementById('noticeNotesOverlay').style.display = 'none';
   });
 
   // ---------- 학생 찾기 (학급 필터 포함) ----------
@@ -1589,7 +1619,15 @@
     const w = window.open(url, '_blank');
     if(!w){ showToast('팝업이 차단되었습니다. 팝업 차단을 해제해주세요.'); }
   }
+  const DEFAULT_CLASS_NOTICE_NOTES = [
+    '☺ 면접 시작 시간 15분전까지 학생 대기실(신관 다목적실)에서 대기하여야 합니다',
+    '☺ 온라인 면접 워크북을 활용하여 질문을 만들어보고 완벽하지 않더라도 생기부 숙지해오세요.'
+  ];
+  function getClassNoticeNotes(){
+    return (DATA.classNoticeNotes && DATA.classNoticeNotes.length) ? DATA.classNoticeNotes : DEFAULT_CLASS_NOTICE_NOTES;
+  }
   function buildClassNoticeBody(){
+    const notesHtml = getClassNoticeNotes().map(t => `<div class="note">${escapeHtml(t)}</div>`).join('');
     const pages = [];
     DATA.classes.forEach(classLabel => {
       const m = classLabel.match(/(\d+)학년\s*(\d+)반/);
@@ -1608,24 +1646,31 @@
         const timeVal = teacherKey === 'teacher2' ? s.time2 : s.time1;
         return `${shortDate(date)} ${room} (${timeVal || '시간미정'})`;
       };
-      const rows = students.map(s => ({
-        ban: s.ban, name: s.name,
-        col1Text: sessionText(s, s.d1, 'teacher1', !!s.skip1),
-        col2Text: sessionText(s, s.d2, 'teacher2', !!s.skip2)
-      }));
-      const span1 = computeColSpans(rows, 'col1Text');
-      const span2 = computeColSpans(rows, 'col2Text');
+      // 일반 학생은 자신의 1차/2차 날짜에만 일정이 있고, 송두리(제시문) 학생은 4일 모두 일정이 있음
+      const rows = students.map((s, idx) => {
+        const cells = DATA.dateOrder.map(date => {
+          const role = studentRoleForDate(s, date);
+          if(!role) return { display: '－', compare: `__na_${idx}_${date}` };
+          const teacherKey = role === 'second' ? 'teacher2' : 'teacher1';
+          const skip = role === 'second' ? !!s.skip2 : !!s.skip1;
+          const text = sessionText(s, date, teacherKey, skip);
+          return { display: text, compare: text };
+        });
+        return { ban: s.ban, name: s.name, cells };
+      });
+      const spans = DATA.dateOrder.map((_, ci) => computeColSpans(rows.map(r => ({ v: r.cells[ci].compare })), 'v'));
       const trs = rows.map((r,i) => {
         let tds = `<td>${escapeHtml(r.ban)}</td><td class="name-cell">${escapeHtml(r.name)}</td>`;
-        if(!span1[i].skip) tds += `<td rowspan="${span1[i].span}">${escapeHtml(r.col1Text)}</td>`;
-        if(!span2[i].skip) tds += `<td rowspan="${span2[i].span}">${escapeHtml(r.col2Text)}</td>`;
+        DATA.dateOrder.forEach((_, ci) => {
+          if(!spans[ci][i].skip) tds += `<td rowspan="${spans[ci][i].span}">${escapeHtml(r.cells[ci].display)}</td>`;
+        });
         return `<tr>${tds}</tr>`;
       }).join('');
+      const headerCols = DATA.dateOrder.map(d => `<th>${escapeHtml(shortDate(d))} 장소 및 시간</th>`).join('');
       pages.push(`<div class="page">
         <div class="banner">${escapeHtml(grade)}학년 면접 컨설팅 안내(${escapeHtml(classCode)})</div>
-        <div class="note">☺ 면접 시작 시간 15분전까지 학생 대기실(신관 다목적실)에서 대기하여야 합니다</div>
-        <div class="note">☺ 온라인 면접 워크북을 활용하여 질문을 만들어보고 완벽하지 않더라도 생기부 숙지해오세요.</div>
-        <table><thead><tr><th style="width:12%;">학번</th><th style="width:14%;">이름</th><th>1차 장소 및 시간</th><th>2차 장소 및 시간</th></tr></thead>
+        ${notesHtml}
+        <table><thead><tr><th style="width:10%;">학번</th><th style="width:12%;">이름</th>${headerCols}</tr></thead>
         <tbody>${trs}</tbody></table>
         <div class="footer">•문의: 대입전략부 박예진 선생님</div>
       </div>`);
@@ -1684,17 +1729,20 @@
     const loginBtn = document.getElementById('loginBtn');
     const logoutBtn = document.getElementById('logoutBtn');
     const addTeacherBtn = document.getElementById('addTeacherBtn');
-    const recomputeTimesBtn = document.getElementById('recomputeTimesBtn');
+    const editNoticeNotesBtn = document.getElementById('editNoticeNotesBtn');
+    const excelBtn = document.getElementById('excelBtn');
     if(isAdmin){
       pill.textContent = '🔓 관리자 모드'; pill.className = 'pill pill-admin-on';
       loginBtn.style.display = 'none'; logoutBtn.style.display = '';
       addTeacherBtn.style.display = '';
-      recomputeTimesBtn.style.display = '';
+      editNoticeNotesBtn.style.display = '';
+      excelBtn.style.display = '';
     } else {
       pill.textContent = '🔒 열람 모드'; pill.className = 'pill pill-admin-off';
       loginBtn.style.display = ''; logoutBtn.style.display = 'none';
       addTeacherBtn.style.display = 'none';
-      recomputeTimesBtn.style.display = 'none';
+      editNoticeNotesBtn.style.display = 'none';
+      excelBtn.style.display = 'none';
     }
     selectTab(currentTab);
   }

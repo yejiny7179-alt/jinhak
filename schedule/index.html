@@ -1653,11 +1653,11 @@
     .print-toolbar span{ font-size:13px; color:#555; }
     .page{ page-break-after:always; padding:10mm 8mm; }
     .page:last-child{ page-break-after:auto; }
-    .banner{ background:#fde68a; padding:1.2vw 1.6vw; font-size:3vw; font-weight:800; text-align:center; border-radius:10px; margin-bottom:1.2vw; border:3px solid #d97706; }
+    .banner{ box-shadow:inset 0 0 0 1000px #fde68a; padding:1.2vw 1.6vw; font-size:3vw; font-weight:800; text-align:center; border-radius:10px; margin-bottom:1.2vw; border:3px solid #d97706; }
     .note{ font-weight:800; font-size:1.8vw; margin-bottom:1.4vw; }
     table{ width:100%; border-collapse:collapse; font-size:1.5vw; table-layout:fixed; }
     th,td{ border:2.5px solid #333; padding:0.9vw 1vw; text-align:center; word-break:keep-all; }
-    th{ background:#eef0ff; font-weight:800; }
+    th{ box-shadow:inset 0 0 0 1000px #eef0ff; font-weight:800; }
     td.name-cell{ font-weight:700; }
     .footer{ margin-top:1.2vw; font-size:1vw; color:#333; }
     @media print{
@@ -1785,7 +1785,8 @@
   }
   function buildOverallScheduleBody(withTeacher){
     const pages = DATA.dateOrder.map(date => {
-      const groups = groupedSessionsForDate(date);
+      // 담당 선생님이 배정되지 않은(미정) 학생은 전체일정표에서 제외
+      const groups = groupedSessionsForDate(date).filter(g => !!g.teacherName);
       let seq = 1;
       const rows = [];
       groups.forEach(g => {
@@ -1802,20 +1803,28 @@
         });
       });
       const spanRoom = computeColSpans(rows, 'groupKey');
+      // 하루치 일정이 항상 한 장(A1) 안에 들어가도록, 행(학생) 수에 맞춰 표의 글자 크기·줄 높이를 자동으로 축소
+      const rowCount = Math.max(rows.length, 1) + 1; // +1 헤더행
+      const availableVh = 84; // 배너·여백·꼬리말을 제외한 표 영역 높이
+      const rowHeightVh = availableVh / rowCount;
+      const fontSizeVh = Math.max(0.3, Math.min(1.6, rowHeightVh * 0.42));
+      const cellPadVh = Math.max(0.08, Math.min(0.9, rowHeightVh * 0.22));
+      const cellStyle = `padding:${cellPadVh.toFixed(2)}vh 0.6vw;`;
       const trs = rows.map((r,i) => {
-        let tds = `<td>${r.seq}</td><td>${escapeHtml(r.timeLabel)}</td><td>${escapeHtml(r.ban)}</td><td class="name-cell">${escapeHtml(r.name)}</td>`;
+        let tds = `<td style="${cellStyle}">${r.seq}</td><td style="${cellStyle}">${escapeHtml(r.timeLabel)}</td><td style="${cellStyle}">${escapeHtml(r.ban)}</td><td class="name-cell" style="${cellStyle}">${escapeHtml(r.name)}</td>`;
         if(!spanRoom[i].skip){
-          tds += `<td rowspan="${spanRoom[i].span}">${escapeHtml(r.room)}</td>`;
-          if(withTeacher) tds += `<td rowspan="${spanRoom[i].span}">${escapeHtml(r.teacher)} 선생님</td>`;
+          tds += `<td rowspan="${spanRoom[i].span}" style="${cellStyle}">${escapeHtml(r.room)}</td>`;
+          if(withTeacher) tds += `<td rowspan="${spanRoom[i].span}" style="${cellStyle}">${escapeHtml(r.teacher)} 선생님</td>`;
         }
         return `<tr>${tds}</tr>`;
       }).join('');
-      const teacherTh = withTeacher ? '<th style="width:14%;">담당강사 선생님</th>' : '';
-      return `<div class="page">
-        <div class="banner">3학년 면접 컨설팅(${escapeHtml(date)})</div>
-        <table><thead><tr><th style="width:6%;">연번</th><th style="width:14%;">시간</th><th style="width:12%;">학번</th><th style="width:14%;">이름</th><th>장소</th>${teacherTh}</tr></thead>
-        <tbody>${trs || `<tr><td colspan="${withTeacher?6:5}">해당 날짜에 배정된 학생이 없습니다.</td></tr>`}</tbody></table>
-        <div class="footer">•문의: 대입전략부 박예진 선생님</div>
+      const teacherTh = withTeacher ? `<th style="width:14%; ${cellStyle}">담당강사 선생님</th>` : '';
+      const tableStyle = `font-size:${fontSizeVh.toFixed(2)}vh; flex:1 1 auto;`;
+      return `<div class="page" style="display:flex; flex-direction:column; height:100vh; box-sizing:border-box; overflow:hidden;">
+        <div class="banner" style="flex:0 0 auto;">3학년 면접 컨설팅(${escapeHtml(date)})</div>
+        <table style="${tableStyle}"><thead><tr><th style="width:6%; ${cellStyle}">연번</th><th style="width:14%; ${cellStyle}">시간</th><th style="width:12%; ${cellStyle}">학번</th><th style="width:14%; ${cellStyle}">이름</th><th style="${cellStyle}">장소</th>${teacherTh}</tr></thead>
+        <tbody>${trs || `<tr><td colspan="${withTeacher?6:5}" style="${cellStyle}">해당 날짜에 배정된 학생이 없습니다.</td></tr>`}</tbody></table>
+        <div class="footer" style="flex:0 0 auto;">•문의: 대입전략부 박예진 선생님</div>
       </div>`;
     });
     return pages.join('');

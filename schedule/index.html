@@ -1665,16 +1665,56 @@
     .footer{ margin-top:1.2vw; font-size:1vw; color:#333; }
     @media print{ .print-toolbar{ display:none; } }
   `;
-  function openPrintDoc(title, bodyHtml){
+  function openPrintDoc(title, bodyHtml, extraToolbarHtml, extraScript){
     const html = `<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><title>${escapeHtml(title)}</title>
       <style>${PRINT_DOC_STYLE}</style></head><body>
-      <div class="print-toolbar"><button onclick="window.print()">🖨 인쇄</button><span>인쇄 대화상자에서 용지 크기를 <b>A1</b>로 설정해주세요.</span></div>
+      <div class="print-toolbar"><button onclick="window.print()">🖨 인쇄</button><span>인쇄 대화상자에서 용지 크기를 <b>A1</b>로 설정해주세요.</span>${extraToolbarHtml || ''}</div>
       ${bodyHtml}
+      ${extraScript ? `<script>${extraScript}<\/script>` : ''}
       </body></html>`;
     const blob = new Blob([html], { type: 'text/html' });
     const url = URL.createObjectURL(blob);
     const w = window.open(url, '_blank');
     if(!w){ showToast('팝업이 차단되었습니다. 팝업 차단을 해제해주세요.'); }
+  }
+  function getPrintableClassLabels(){
+    return (DATA.classes || []).filter(classLabel => {
+      let count = 0;
+      DATA.clusters.forEach(c => c.students.forEach(s => { if(classOf(s) === classLabel) count++; }));
+      return count > 0;
+    });
+  }
+  function openClassNoticeDoc(defaultClassLabel){
+    const classLabels = getPrintableClassLabels();
+    const bodyHtml = buildClassNoticeBody(); // 모든 학급 페이지를 포함, JS로 표시 전환
+    const initial = (defaultClassLabel && classLabels.includes(defaultClassLabel)) ? defaultClassLabel : '__all__';
+    const options = [`<option value="__all__">전체 학급</option>`]
+      .concat(classLabels.map(cls => `<option value="${escapeHtml(cls)}">${escapeHtml(cls)}</option>`))
+      .join('');
+    const extraToolbarHtml = `
+      <label style="font-size:13px; color:#333; display:flex; align-items:center; gap:6px;">
+        반 선택:
+        <select id="classNoticeSelect" style="font-size:14px; padding:6px 10px; border-radius:6px; border:1px solid #d97706;">
+          ${options}
+        </select>
+      </label>`;
+    const extraScript = `
+      (function(){
+        var sel = document.getElementById('classNoticeSelect');
+        var pages = Array.prototype.slice.call(document.querySelectorAll('.page[data-class]'));
+        function apply(){
+          var v = sel.value;
+          pages.forEach(function(p){
+            p.style.display = (v === '__all__' || p.getAttribute('data-class') === v) ? '' : 'none';
+          });
+        }
+        sel.value = ${JSON.stringify(initial)};
+        sel.addEventListener('change', apply);
+        apply();
+      })();
+    `;
+    const title = (initial !== '__all__') ? `학급별 공지문(${initial})` : '학급별 공지문';
+    openPrintDoc(title, bodyHtml, extraToolbarHtml, extraScript);
   }
   function classCodeOf(classLabel){
     const m = (classLabel || '').match(/(\d+)학년\s*(\d+)반/);
@@ -1733,7 +1773,7 @@
         return `<tr>${tds}</tr>`;
       }).join('');
       const headerCols = DATA.dateOrder.map(d => `<th>${escapeHtml(shortDate(d))} 장소 및 시간</th>`).join('');
-      pages.push(`<div class="page">
+      pages.push(`<div class="page" data-class="${escapeHtml(classLabel)}">
         <div class="banner">${escapeHtml(grade)}학년 면접 컨설팅 안내(${escapeHtml(classCode)})</div>
         ${notesHtml}
         <table><thead><tr><th style="width:10%;">학번</th><th style="width:12%;">이름</th>${headerCols}</tr></thead>
@@ -1798,8 +1838,7 @@
     populateNoticeClassPrintSelect();
     if(b1) b1.addEventListener('click', () => {
       const chosen = classSel ? classSel.value : '';
-      const title = chosen ? `학급별 공지문(${chosen})` : '학급별 공지문';
-      openPrintDoc(title, buildClassNoticeBody(chosen || undefined));
+      openClassNoticeDoc(chosen || null);
     });
     if(b2) b2.addEventListener('click', () => openPrintDoc('전체 일정표(교사명 없음)', buildOverallScheduleBody(false)));
     if(b3) b3.addEventListener('click', () => openPrintDoc('전체 일정표(교사명 포함)', buildOverallScheduleBody(true)));

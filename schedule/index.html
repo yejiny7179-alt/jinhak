@@ -1660,10 +1660,31 @@
     th{ box-shadow:inset 0 0 0 1000px #eef0ff; font-weight:800; }
     td.name-cell{ font-weight:700; }
     .footer{ margin-top:1.2vw; font-size:1vw; color:#333; }
+    .overall-table{ table-layout:fixed; }
+    .overall-table th, .overall-table td{ padding:0.32em 0.4em; }
+    .overall-table td.time-cell, .overall-table th.time-th{ white-space:nowrap; }
+    .overall-table td.room-cell{ font-size:1.35em; font-weight:800; }
     @media print{
       .print-toolbar{ display:none; }
       *{ -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; color-adjust:exact !important; }
     }
+  `;
+  const OVERALL_SCHEDULE_AUTOFIT_SCRIPT = `
+    window.addEventListener('beforeprint', function(){
+      var pages = document.querySelectorAll('.page[data-autofit]');
+      pages.forEach(function(page){
+        var table = page.querySelector('table[data-base-font]');
+        if(!table) return;
+        var base = parseFloat(table.getAttribute('data-base-font')) || 1.2;
+        table.style.fontSize = base + 'vh';
+        var scale = 1, guard = 0;
+        while(page.scrollHeight > page.clientHeight + 1 && guard < 60){
+          scale *= 0.96;
+          table.style.fontSize = (base * scale).toFixed(3) + 'vh';
+          guard++;
+        }
+      });
+    });
   `;
   function openPrintDoc(title, bodyHtml, extraToolbarHtml, extraScript){
     const html = `<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><title>${escapeHtml(title)}</title>
@@ -1803,27 +1824,27 @@
         });
       });
       const spanRoom = computeColSpans(rows, 'groupKey');
-      // 하루치 일정이 항상 한 장(A1) 안에 들어가도록, 행(학생) 수에 맞춰 표의 글자 크기·줄 높이를 자동으로 축소
+      // 하루치 일정이 항상 한 장(A1) 안에 들어가도록, 행(학생) 수에 맞춰 표의 글자 크기를 1차 추정
+      // (정확한 최종 크기는 인쇄 시점에 실제 레이아웃을 측정해 자동으로 다시 보정됨 - 아래 autofit 스크립트 참고)
       const rowCount = Math.max(rows.length, 1) + 1; // +1 헤더행
-      const availableVh = 84; // 배너·여백·꼬리말을 제외한 표 영역 높이
+      const availableVh = 82; // 배너·여백·꼬리말을 제외한 표 영역 높이
       const rowHeightVh = availableVh / rowCount;
-      const fontSizeVh = Math.max(0.3, Math.min(1.6, rowHeightVh * 0.42));
-      const cellPadVh = Math.max(0.08, Math.min(0.9, rowHeightVh * 0.22));
-      const cellStyle = `padding:${cellPadVh.toFixed(2)}vh 0.6vw;`;
+      const baseFontVh = Math.max(0.3, Math.min(1.6, rowHeightVh * 0.4));
       const trs = rows.map((r,i) => {
-        let tds = `<td style="${cellStyle}">${r.seq}</td><td style="${cellStyle}">${escapeHtml(r.timeLabel)}</td><td style="${cellStyle}">${escapeHtml(r.ban)}</td><td class="name-cell" style="${cellStyle}">${escapeHtml(r.name)}</td>`;
+        let tds = `<td>${r.seq}</td><td class="time-cell">${escapeHtml(r.timeLabel)}</td><td>${escapeHtml(r.ban)}</td><td class="name-cell">${escapeHtml(r.name)}</td>`;
         if(!spanRoom[i].skip){
-          tds += `<td rowspan="${spanRoom[i].span}" style="${cellStyle}">${escapeHtml(r.room)}</td>`;
-          if(withTeacher) tds += `<td rowspan="${spanRoom[i].span}" style="${cellStyle}">${escapeHtml(r.teacher)} 선생님</td>`;
+          tds += `<td rowspan="${spanRoom[i].span}" class="room-cell">${escapeHtml(r.room)}</td>`;
+          if(withTeacher) tds += `<td rowspan="${spanRoom[i].span}">${escapeHtml(r.teacher)} 선생님</td>`;
         }
         return `<tr>${tds}</tr>`;
       }).join('');
-      const teacherTh = withTeacher ? `<th style="width:14%; ${cellStyle}">담당강사 선생님</th>` : '';
-      const tableStyle = `font-size:${fontSizeVh.toFixed(2)}vh; flex:1 1 auto;`;
-      return `<div class="page" style="display:flex; flex-direction:column; height:100vh; box-sizing:border-box; overflow:hidden;">
+      const teacherTh = withTeacher ? `<th style="width:14%;">담당강사 선생님</th>` : '';
+      // 시간 칸은 폭을 지정하지 않아 남는 너비를 모두 흡수(한 줄로 표시되도록), 장소 칸은 좁게 + 큰 글씨
+      return `<div class="page" data-autofit="1" style="display:flex; flex-direction:column; height:100vh; box-sizing:border-box; overflow:hidden;">
         <div class="banner" style="flex:0 0 auto;">3학년 면접 컨설팅(${escapeHtml(date)})</div>
-        <table style="${tableStyle}"><thead><tr><th style="width:6%; ${cellStyle}">연번</th><th style="width:14%; ${cellStyle}">시간</th><th style="width:12%; ${cellStyle}">학번</th><th style="width:14%; ${cellStyle}">이름</th><th style="${cellStyle}">장소</th>${teacherTh}</tr></thead>
-        <tbody>${trs || `<tr><td colspan="${withTeacher?6:5}" style="${cellStyle}">해당 날짜에 배정된 학생이 없습니다.</td></tr>`}</tbody></table>
+        <table class="overall-table" data-base-font="${baseFontVh.toFixed(3)}" style="font-size:${baseFontVh.toFixed(3)}vh; flex:1 1 auto;">
+        <thead><tr><th style="width:5%;">연번</th><th class="time-th">시간</th><th style="width:11%;">학번</th><th style="width:15%;">이름</th><th style="width:10%;">장소</th>${teacherTh}</tr></thead>
+        <tbody>${trs || `<tr><td colspan="${withTeacher?6:5}">해당 날짜에 배정된 학생이 없습니다.</td></tr>`}</tbody></table>
         <div class="footer" style="flex:0 0 auto;">•문의: 대입전략부 박예진 선생님</div>
       </div>`;
     });
@@ -1834,8 +1855,8 @@
     const b2 = document.getElementById('printOverallNoTeacherBtn');
     const b3 = document.getElementById('printOverallWithTeacherBtn');
     if(b1) b1.addEventListener('click', () => openClassNoticeDoc(null));
-    if(b2) b2.addEventListener('click', () => openPrintDoc('전체 일정표(교사명 없음)', buildOverallScheduleBody(false)));
-    if(b3) b3.addEventListener('click', () => openPrintDoc('전체 일정표(교사명 포함)', buildOverallScheduleBody(true)));
+    if(b2) b2.addEventListener('click', () => openPrintDoc('전체 일정표(교사명 없음)', buildOverallScheduleBody(false), null, OVERALL_SCHEDULE_AUTOFIT_SCRIPT));
+    if(b3) b3.addEventListener('click', () => openPrintDoc('전체 일정표(교사명 포함)', buildOverallScheduleBody(true), null, OVERALL_SCHEDULE_AUTOFIT_SCRIPT));
   }
 
   // ---------- admin login ----------

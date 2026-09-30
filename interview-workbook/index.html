@@ -157,6 +157,14 @@ table.tbl th{background:var(--surface2);color:var(--muted);font-weight:700;font-
 .mockSubField{margin-left:16px;padding-left:12px;border-left:3px solid var(--primary-3);margin-bottom:8px}
 .mockQRow .mockQNum{font-weight:800;color:var(--primary);margin-bottom:6px;font-size:12.5px}
 .mockQRow textarea, .mockQRow input{margin-bottom:8px}
+.attachList{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.attachChip{display:inline-flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--line2);border-radius:999px;padding:4px 6px 4px 10px;font-size:12.5px}
+.attachChip a{color:var(--text);text-decoration:none}
+.attachChip a:hover{text-decoration:underline}
+.attachDel{border:0;background:#fee2e2;color:#b91c1c;border-radius:999px;width:18px;height:18px;line-height:1;font-size:11px;cursor:pointer;padding:0}
+.attachPickWrap{margin-top:8px}
+.attachPickWrap input[type=file]{font-size:12.5px}
+.attachHint{font-size:11.5px;color:var(--muted);margin-top:4px}
 .practiceCard{max-width:640px;margin:0 auto;text-align:center;padding:36px 30px}
 .practiceFilterBar{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:10px;padding-bottom:14px;margin-bottom:10px;border-bottom:1px solid var(--line)}
 .selectPill{border:1px solid var(--line2);border-radius:999px;padding:7px 14px;font-size:13px;font-weight:600;background:#fff;color:var(--text);cursor:pointer}
@@ -251,6 +259,7 @@ table.tbl th{background:var(--surface2);color:var(--muted);font-weight:700;font-
     <button data-tab="presentation" type="button">제시문 면접</button>
     <button data-tab="research" type="button">대학·학과 조사</button>
     <button data-tab="reviews" type="button">면접 후기</button>
+    <button data-tab="usage" type="button">사용법</button>
   </nav>
 
   <!-- 가이드 -->
@@ -507,6 +516,16 @@ table.tbl th{background:var(--surface2);color:var(--muted);font-weight:700;font-
   <!-- 모의 면접 -->
   <section id="view-mock" class="view">
     <div class="notice">선생님과 1:1로 모의 면접을 본 뒤 남겨주신 평가표입니다.</div>
+    <div class="card">
+      <h2>모의 면접 준비 자료</h2>
+      <p class="small muted">모의 면접 전에 준비한 자료나 사진을 미리 올려두면 선생님도 함께 볼 수 있어요.</p>
+      <div id="mockPrepList"></div>
+      <input type="file" id="mockPrepInput" multiple accept="image/*,.pdf">
+    </div>
+    <div class="row between" style="margin-top:4px">
+      <b class="small muted">지난 모의 면접 평가</b>
+      <button class="btn sm" id="btnPrintAllMock" type="button">🖨 전체 인쇄</button>
+    </div>
     <div id="mockList"></div>
   </section>
 
@@ -579,6 +598,11 @@ table.tbl th{background:var(--surface2);color:var(--muted);font-weight:700;font-
         <div class="field"><label>출처 <span class="tiny muted">(선택)</span></label><input id="kbSource" placeholder="예: OO 뉴스, 책 제목 등"></div>
         <div class="field"><label>링크 <span class="tiny muted">(선택)</span></label><input id="kbLink" placeholder="예: https://..."></div>
       </div>
+      <div class="attachPickWrap">
+        <div class="tiny muted"><b>첨부 파일</b> <span class="attachHint">관련 자료나 사진을 첨부해 보세요 (파일당 350KB 이하).</span></div>
+        <div id="kbAttachPreview"></div>
+        <input type="file" id="kbAttachInput" multiple accept="image/*,.pdf">
+      </div>
       <div class="row">
         <button class="btn primary" id="btnSaveKb" type="button">저장하기</button>
         <button class="btn" id="btnCancelKb" type="button" hidden>수정 취소</button>
@@ -602,6 +626,11 @@ table.tbl th{background:var(--surface2);color:var(--muted);font-weight:700;font-
       <div class="grid c2">
         <div class="field"><label>출처 <span class="tiny muted">(선택)</span></label><input id="rsSource" placeholder="예: 학과 홈페이지"></div>
         <div class="field"><label>링크 <span class="tiny muted">(선택)</span></label><input id="rsLink" placeholder="예: https://..."></div>
+      </div>
+      <div class="attachPickWrap">
+        <div class="tiny muted"><b>첨부 파일</b> <span class="attachHint">캡처한 자료나 사진을 첨부해 보세요 (파일당 350KB 이하).</span></div>
+        <div id="rsAttachPreview"></div>
+        <input type="file" id="rsAttachInput" multiple accept="image/*,.pdf">
       </div>
       <div class="row">
         <button class="btn primary" id="btnSaveResearch" type="button">저장하기</button>
@@ -629,6 +658,54 @@ table.tbl th{background:var(--surface2);color:var(--muted);font-weight:700;font-
     </div>
     <div id="reviewsList"></div>
   </section>
+
+  <!-- 사용법 -->
+  <section id="view-usage" class="view">
+    <div class="card">
+      <h2>📘 이 워크북, 이렇게 사용하세요</h2>
+      <p class="small muted">각 탭이 하는 일과 추천하는 순서를 정리했어요. 순서대로 하지 않아도 되지만, 처음이라면 위에서부터 따라가 보는 걸 추천해요.</p>
+    </div>
+    <div class="card">
+      <h2>① 생기부 분석법</h2>
+      <p class="small muted">생기부를 항목별(교과세특·자율·동아리·진로·봉사·행특)로 나누어 읽고, 활동마다 <b>동기-과정-역할-개념-결과-한계</b> 6가지를 정리하는 방법을 안내합니다. 질문을 만들기 전에 먼저 읽어보세요.</p>
+    </div>
+    <div class="card">
+      <h2>② 면접 일정</h2>
+      <p class="small muted">지원한 대학의 1단계 발표일, 면접일, 최종 발표일을 입력해 두면 디데이(D-day)와 달력으로 한눈에 확인할 수 있어요. 선생님도 이 일정을 보고 전체 학생 현황을 파악하니, 날짜가 확정되면 바로 입력해 주세요.</p>
+    </div>
+    <div class="card">
+      <h2>③ 질문 만들기 / 내 질문 목록</h2>
+      <p class="small muted">생기부 항목이나 지원 대학을 선택하고 예상 질문을 직접 입력해 저장합니다. 대학마다 다르게 준비해야 하는 질문은 해당 대학을 선택하고, 어느 대학이나 똑같이 준비할 수 있는 질문은 "공통"으로 저장하세요. "내 질문 목록"에서는 대학·영역별로 필터링해서 볼 수 있고, 각 질문에 답변을 작성하면서 드래그로 핵심 키워드를 형광펜처럼 표시할 수 있어요. 선생님이 추가한 질문에는 표시가 되어 있고, 선생님이 남긴 피드백도 이 목록에서 확인합니다.</p>
+    </div>
+    <div class="card">
+      <h2>④ 연습하기</h2>
+      <p class="small muted">저장해 둔 질문들을 실전처럼 하나씩 넘겨가며 답변을 말로 연습해 볼 수 있는 공간입니다.</p>
+    </div>
+    <div class="card">
+      <h2>⑤ 모의 면접</h2>
+      <p class="small muted">선생님과 1:1로 모의 면접을 본 뒤 받은 평가와 피드백(내용, 태도·자세·목소리 톤 등)을 날짜별로 확인합니다. 선생님이 먼저 평가를 올려두는 경우도 있으니, 모의 면접을 본 날짜 이후에는 꼭 들어와서 확인하고, 다음 모의 면접 때까지의 과제도 챙겨보세요.</p>
+    </div>
+    <div class="card">
+      <h2>⑥ 토론면접 준비</h2>
+      <p class="small muted">토론(집단토론) 형태로 진행되는 면접을 준비하는 공간입니다. 예상 주제와 찬반 논리를 정리해 두세요.</p>
+    </div>
+    <div class="card">
+      <h2>⑦ 제시문 면접</h2>
+      <p class="small muted">제시문을 읽고 답하는 유형의 면접을 준비합니다. 선배들의 기출 제시문 자료(글 또는 이미지)를 참고하고, 관련 배경지식을 정리해 둘 수 있어요.</p>
+    </div>
+    <div class="card">
+      <h2>⑧ 대학·학과 조사</h2>
+      <p class="small muted">지원하는 대학·학과의 인재상, 교육과정, 전형 특징 등을 조사해서 기록해 두는 공간입니다. 지원동기·학업계획 관련 질문에 답할 때 활용하세요.</p>
+    </div>
+    <div class="card">
+      <h2>⑨ 면접 후기</h2>
+      <p class="small muted">선생님이 올려주신 선배들의 실제 면접 후기를 대학·학과·전형으로 검색해서 참고할 수 있습니다.</p>
+    </div>
+    <div class="card">
+      <h2>💾 데이터는 어떻게 저장되나요?</h2>
+      <p class="small muted">입력한 내용은 자동으로 저장되며, 같은 학교·학번·이름·비밀번호로 로그인하면 다른 기기에서도 이어서 볼 수 있습니다. 비밀번호는 잊지 않도록 따로 기록해 두세요. 선생님은 이 정보 중 내가 로그인한 학교의 학생 자료만 볼 수 있고, 다른 학생은 내 자료를 볼 수 없습니다.</p>
+    </div>
+  </section>
 </div>
 
 <!-- ================= 선생님 검색 ================= -->
@@ -649,6 +726,7 @@ table.tbl th{background:var(--surface2);color:var(--muted);font-weight:700;font-
   <header class="top">
     <div class="brand"><h1>선생님 모드</h1><small id="teacherGreeting">학생을 찾아 질문과 답변을 확인하고 피드백을 남깁니다</small></div>
     <div class="spacer"></div>
+    <button class="btn" id="btnTeacherGuide" type="button">사용법</button>
     <button class="btn" id="btnTeacherLogout" type="button">로그아웃</button>
   </header>
   <div class="card">
@@ -757,6 +835,11 @@ table.tbl th{background:var(--surface2);color:var(--muted);font-weight:700;font-
     </div>
     <div class="field"><label>지원 대학</label><select id="tqUniv"><option value="공통">공통 (모든 대학에 해당)</option></select></div>
     <div class="field"><label>질문 내용</label><textarea id="tqText" placeholder="예: 이 활동에서 겪은 어려움은 무엇이었나요?"></textarea></div>
+    <div class="attachPickWrap">
+      <div class="tiny muted"><b>참고 자료 첨부</b> <span class="attachHint">학생이 참고할 자료나 사진을 함께 줄 수 있어요 (파일당 350KB 이하).</span></div>
+      <div id="tqAttachPreview"></div>
+      <input type="file" id="tqAttachInput" multiple accept="image/*,.pdf">
+    </div>
     <button class="btn primary" id="btnAddTeacherQ" type="button">질문 추가하기</button>
   </div>
   <div class="card">
@@ -784,6 +867,47 @@ table.tbl th{background:var(--surface2);color:var(--muted);font-weight:700;font-
     </div>
   </div>
   <div id="teacherQList"></div>
+</div>
+
+<!-- ================= 선생님 - 사용법 ================= -->
+<div id="viewTeacherGuide" hidden>
+  <header class="top">
+    <div class="brand"><h1>사용법 안내</h1><small>선생님 모드에서 할 수 있는 일을 정리했습니다</small></div>
+    <div class="spacer"></div>
+    <button class="btn" id="btnBackFromTeacherGuide" type="button">← 선생님 검색으로</button>
+  </header>
+  <div class="card">
+    <h2>① 학생 찾기</h2>
+    <p class="small muted">학교(필수)와 학번·이름(선택)으로 학생을 조회합니다. 학번·이름을 비워두면 해당 학교의 전체 학생이 조회됩니다. 학생이 아직 로그인한 적이 없다면 "학생 찾기"에서 미리 등록(사전 등록)해 둘 수 있고, 학생이 처음 로그인할 때 비밀번호를 직접 설정하며 그 계정을 이어받게 됩니다.</p>
+  </div>
+  <div class="card">
+    <h2>② 학생 상세 화면 (질문·답변·피드백)</h2>
+    <p class="small muted">학생을 선택하면 그 학생이 만든 질문과 답변, 토론면접·대학조사 내용을 볼 수 있습니다. 답변 아래 피드백을 남기면 학생이 로그인했을 때 바로 확인합니다. 이미 남긴 내 피드백은 수정할 수 있고, 학생 답변에 달린 피드백에는 답글(재피드백)도 남길 수 있습니다. 목록 상단의 칩(기본질문/생기부 기반/토론면접/대학·학과 조사)과 영역·대학 선택으로 원하는 질문만 걸러볼 수 있습니다.</p>
+  </div>
+  <div class="card">
+    <h2>③ 선생님이 질문 추가하기</h2>
+    <p class="small muted">학생 상세 화면에서 직접 예상 질문을 추가해 줄 수 있습니다. 추가한 질문에는 "선생님이 추가함" 표시가 붙고, 학생은 그 질문에도 답변을 작성합니다. 필요 없어진 질문은 "이 질문 삭제" 버튼으로 삭제할 수 있으며, 삭제하면 그 질문에 달린 학생 답변과 피드백도 함께 삭제되니 신중히 눌러주세요.</p>
+  </div>
+  <div class="card">
+    <h2>④ 반 배정</h2>
+    <p class="small muted">학생 상세 화면에서 그 학생의 반을 입력해 저장해 두면, "전체 학생 일정"에서 반별로 걸러볼 수 있습니다.</p>
+  </div>
+  <div class="card">
+    <h2>⑤ 모의 면접 평가</h2>
+    <p class="small muted">학생과 1:1 모의 면접을 진행한 뒤, 날짜와 담당 선생님을 기록하고 질문별 평가(내용)와 태도·자세·목소리 톤 등에 대한 피드백을 남깁니다. 다음 모의 면접 전까지 학생이 해볼 과제도 함께 적어줄 수 있습니다. 학생이 아직 로그인하지 않았어도 먼저 평가를 올려둘 수 있고, 학생이 나중에 로그인하면 확인할 수 있습니다. 지난 모의 면접 기록은 학생 상세 화면에서 펼쳐볼 수 있습니다.</p>
+  </div>
+  <div class="card">
+    <h2>⑥ 전체 학생 일정 한눈에 보기</h2>
+    <p class="small muted">학교를 입력하고(반을 비워두면 전체, 입력하면 그 반만) "불러오기"를 누르면, 학생들의 1단계 발표일·면접일·최종 발표일을 표와 달력으로 한 번에 확인할 수 있습니다. 반 필터로 특정 반만 골라볼 수도 있습니다.</p>
+  </div>
+  <div class="card">
+    <h2>⑦ 면접 후기 검색</h2>
+    <p class="small muted">학생과 똑같이 선배들의 면접 후기 자료집을 대학·학과·전형으로 검색해서 볼 수 있습니다. 학생에게 미리 참고할 자료를 안내할 때 활용해 보세요.</p>
+  </div>
+  <div class="card">
+    <h2>💾 계정과 데이터 보호</h2>
+    <p class="small muted">선생님 계정은 소속(학교)·성함·비밀번호로 로그인합니다. 같은 학교에 동명이인이 있으면 나중에 등록한 선생님의 이름 뒤에 숫자가 자동으로 붙습니다. 비밀번호가 있어야만 로그인되므로, 다른 선생님이나 학생이 이름만으로 자료를 열람할 수 없습니다.</p>
+  </div>
 </div>
 
 <footer>학생과 선생님이 함께하는 면접 준비 공간입니다.<br>제작 백운고등학교 박예진</footer>
@@ -901,6 +1025,77 @@ function safeSeg(s){return norm(s).replace(/[^\w가-힣ㄱ-ㅎㅏ-ㅣ0-9\-]/g,''
 function makeKey(school,number,name){return [safeSeg(school),safeSeg(number),safeSeg(name)].join('_')||('anon_'+Date.now());}
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7);}
 function esc(s){return (s==null?'':String(s)).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+
+// ---------- 첨부파일 공통 유틸 ----------
+const ATTACH_MAX_BYTES = 350*1024; // 파일 하나당 최대 크기 (base64로 저장되어 용량이 약 1.37배로 커지므로 넉넉히 작게 제한)
+function formatFileSize(n){
+  if(n<1024) return n+'B';
+  if(n<1024*1024) return Math.round(n/1024)+'KB';
+  return (n/1024/1024).toFixed(1)+'MB';
+}
+function attachIcon(type){
+  if(type&&type.startsWith('image/')) return '🖼';
+  if(type==='application/pdf') return '📄';
+  return '📎';
+}
+function fileToDataURL(file){
+  return new Promise((resolve,reject)=>{
+    const reader=new FileReader();
+    reader.onload=()=>resolve(reader.result);
+    reader.onerror=()=>reject(reader.error);
+    reader.readAsDataURL(file);
+  });
+}
+// 파일 입력(input[type=file])에서 고른 파일들을 {id,name,type,size,dataUrl} 배열로 변환. 너무 큰 파일은 건너뛰고 알림.
+async function filesToAttachments(inputEl){
+  const files=[...(inputEl.files||[])];
+  const out=[];
+  for(const f of files){
+    if(f.size > ATTACH_MAX_BYTES){
+      await uiAlert(`"${f.name}" 파일이 너무 커서 첨부할 수 없습니다 (최대 ${formatFileSize(ATTACH_MAX_BYTES)}). 사진이라면 용량을 줄이거나 화질을 낮춰 다시 시도해 주세요.`);
+      continue;
+    }
+    try{
+      const dataUrl=await fileToDataURL(f);
+      out.push({id:uid(), name:f.name, type:f.type||'', size:f.size, dataUrl});
+    }catch(e){ console.error(e); }
+  }
+  inputEl.value='';
+  return out;
+}
+// 이미 첨부된 목록을 보기용으로 렌더링. removable이 true면 각 항목에 삭제(✕) 버튼을 붙인다 (data-act="delAttach" data-aid=...).
+function attachmentsHTML(list, removable, extraAttr){
+  if(!list || !list.length) return '';
+  return `<div class="attachList">${list.map(a=>`
+    <span class="attachChip">
+      <a href="${a.dataUrl}" download="${esc(a.name)}" target="_blank" rel="noopener">${attachIcon(a.type)} ${esc(a.name)} <span class="tiny muted">(${formatFileSize(a.size)})</span></a>
+      ${removable?`<button type="button" class="attachDel" data-act="delAttach" data-aid="${a.id}" ${extraAttr||''}>✕</button>`:''}
+    </span>`).join('')}</div>`;
+}
+// 인쇄용 팝업 창 열기
+function printHTML(title, bodyHtml){
+  const win=window.open('', '_blank');
+  if(!win){ uiAlert('팝업이 차단되어 인쇄 창을 열 수 없습니다. 브라우저의 팝업 차단을 해제해 주세요.'); return; }
+  win.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${esc(title)}</title>
+  <style>
+    body{font-family:'Malgun Gothic','Apple SD Gothic Neo',sans-serif;color:#111;padding:28px;line-height:1.6;max-width:760px;margin:0 auto}
+    h1{font-size:20px;margin:0 0 14px}
+    h2{font-size:15px;margin:16px 0 6px}
+    h3{font-size:13.5px;margin:14px 0 4px;color:#333}
+    .badge{display:inline-block;padding:2px 9px;border-radius:999px;background:#eee;color:#333;font-size:12px;margin-right:4px}
+    .badge.acc{background:#dbeafe;color:#1e3a8a}
+    .badge.gray{background:#f1f5f9;color:#475569}
+    .answerBox,.item{border:1px solid #ddd;border-radius:8px;padding:10px 12px;margin-bottom:10px}
+    .item{margin-bottom:22px}
+    .chips{margin-bottom:6px}
+    .mockQRow{border-top:1px dashed #ccc;padding-top:8px;margin-top:8px}
+    .mockQNum{font-weight:700;font-size:12.5px;color:#444}
+    .fbEntry{background:#fffbea;border:1px solid #fde68a;border-radius:8px;padding:8px 10px;margin-top:6px;font-size:13px}
+    .attachList{display:none} /* 인쇄물에는 첨부파일 링크 대신 목록만 필요 없으므로 숨김 */
+    @media print{ body{padding:0} }
+  </style></head><body>${bodyHtml}<script>window.onload=function(){setTimeout(function(){window.print();},250);}<\/script></body></html>`);
+  win.document.close();
+}
 // 피드백 이후 수정 여부를 비교해, 수정됐다면 원문 아래에 파란 글씨로 수정본을 보여준다
 function wasRevisedSinceFeedback(currentHtml, feedbackArr, followupId){
  const relevant = (feedbackArr||[]).filter(f => followupId ? f.followupId===followupId : !f.followupId);
@@ -1029,7 +1224,7 @@ async function createHomonymTeacherAccount(school, name, password, key, displayN
  return {ok:true, key, displayName, school};
 }
 
-function show(id){ ['viewLanding','viewStudentLogin','viewStudentApp','viewTeacherLogin','viewTeacherSearch','viewTeacherWork','viewTeacherAllSchedule'].forEach(x=>{
+function show(id){ ['viewLanding','viewStudentLogin','viewStudentApp','viewTeacherLogin','viewTeacherSearch','viewTeacherWork','viewTeacherAllSchedule','viewTeacherGuide'].forEach(x=>{
   document.getElementById(x).hidden = (x!==id);
 });}
 
@@ -1060,17 +1255,17 @@ document.getElementById('btnStudentLogin').addEventListener('click', async ()=>{
       if(!data.passwordHash){
         // 선생님이 미리 등록해둔 계정 — 지금 입력한 비밀번호를 새로 설정하고 이어서 로그인
         await ref.update({passwordHash:hash});
-        CURRENT={key, school:data.school, number:data.number, name:data.name, questions:data.questions||[], schedule:data.schedule||[], debates:data.debates||[], mockInterviews:data.mockInterviews||[], research:data.research||[], presentations:data.presentations||[], knowledge:data.knowledge||[]};
+        CURRENT={key, school:data.school, number:data.number, name:data.name, questions:data.questions||[], schedule:data.schedule||[], debates:data.debates||[], mockInterviews:data.mockInterviews||[], research:data.research||[], presentations:data.presentations||[], knowledge:data.knowledge||[], mockPrepAttachments:data.mockPrepAttachments||[]};
       } else if(data.passwordHash!==hash){
         showSlMsg('비밀번호가 일치하지 않습니다.','error');return;
       } else {
-        CURRENT={key, school:data.school, number:data.number, name:data.name, questions:data.questions||[], schedule:data.schedule||[], debates:data.debates||[], mockInterviews:data.mockInterviews||[], research:data.research||[], presentations:data.presentations||[], knowledge:data.knowledge||[]};
+        CURRENT={key, school:data.school, number:data.number, name:data.name, questions:data.questions||[], schedule:data.schedule||[], debates:data.debates||[], mockInterviews:data.mockInterviews||[], research:data.research||[], presentations:data.presentations||[], knowledge:data.knowledge||[], mockPrepAttachments:data.mockPrepAttachments||[]};
       }
     } else {
       const newDoc={school, number, name, schoolNorm:safeSeg(school), numberNorm:safeSeg(number), nameNorm:safeSeg(name),
         passwordHash:hash, questions:[], schedule:[], debates:[], mockInterviews:[], research:[], presentations:[], knowledge:[], updatedAt:Date.now()};
       await ref.set(newDoc);
-      CURRENT={key, school, number, name, questions:[], schedule:[], debates:[], mockInterviews:[], research:[], presentations:[], knowledge:[]};
+      CURRENT={key, school, number, name, questions:[], schedule:[], debates:[], mockInterviews:[], research:[], presentations:[], knowledge:[], mockPrepAttachments:[]};
     }
     document.getElementById('studentGreeting').textContent=`${CURRENT.school} · ${CURRENT.number}번 · ${CURRENT.name}님`;
     document.getElementById('slPassword').value='';
@@ -1086,7 +1281,7 @@ async function saveCurrent(){
   if(!fbReady||!CURRENT) return;
   const note=document.getElementById('savingNote'); note.textContent='저장 중…';
   try{
-    await db.collection('students').doc(CURRENT.key).update({questions:CURRENT.questions, schedule:CURRENT.schedule, debates:CURRENT.debates, mockInterviews:CURRENT.mockInterviews, research:CURRENT.research, presentations:CURRENT.presentations, knowledge:CURRENT.knowledge, updatedAt:Date.now()});
+    await db.collection('students').doc(CURRENT.key).update({questions:CURRENT.questions, schedule:CURRENT.schedule, debates:CURRENT.debates, mockInterviews:CURRENT.mockInterviews, research:CURRENT.research, presentations:CURRENT.presentations, knowledge:CURRENT.knowledge, mockPrepAttachments:CURRENT.mockPrepAttachments||[], updatedAt:Date.now()});
     note.textContent='저장됨 ✓';
     setTimeout(()=>{ if(note.textContent==='저장됨 ✓') note.textContent=''; },1500);
   }catch(e){ console.error(e); note.textContent=''; await uiAlert('저장 중 오류: '+e.message); }
@@ -1095,7 +1290,7 @@ async function refreshCurrent(){
   if(!fbReady||!CURRENT) return;
   try{
     const snap=await db.collection('students').doc(CURRENT.key).get();
-    if(snap.exists){ CURRENT.questions=snap.data().questions||[]; CURRENT.schedule=snap.data().schedule||[]; CURRENT.debates=snap.data().debates||[]; CURRENT.mockInterviews=snap.data().mockInterviews||[]; CURRENT.research=snap.data().research||[]; CURRENT.presentations=snap.data().presentations||[]; CURRENT.knowledge=snap.data().knowledge||[]; }
+    if(snap.exists){ CURRENT.questions=snap.data().questions||[]; CURRENT.schedule=snap.data().schedule||[]; CURRENT.debates=snap.data().debates||[]; CURRENT.mockInterviews=snap.data().mockInterviews||[]; CURRENT.research=snap.data().research||[]; CURRENT.presentations=snap.data().presentations||[]; CURRENT.knowledge=snap.data().knowledge||[]; CURRENT.mockPrepAttachments=snap.data().mockPrepAttachments||[]; }
     renderList();
   }catch(e){ console.error(e); }
 }
@@ -1229,6 +1424,7 @@ function fbHtml(f, qid, role){
    <div class="who">${esc(f.teacherName||'선생님')}${f.teacherSchool?(' · '+esc(f.teacherSchool)):''} · ${formatDateTime(f.at)}${f.editedAt?' <span class="tiny muted">(수정됨)</span>':''}</div>
    ${f.tags&&f.tags.length?`<div class="chips" style="margin-bottom:6px">${f.tags.map(t=>`<span class="badge">${esc(t)}</span>`).join(' ')}</div>`:''}
    ${esc(f.comment)}
+   ${attachmentsHTML(f.attachments)}
    ${replies?`<div class="fbReplies">${replies}</div>`:''}
    <div class="row" style="margin-top:6px">
      ${canEdit?`<button class="btn sm" data-act="editfb" data-qid="${qid}" data-fid="${f.id}">수정</button>`:''}
@@ -1262,7 +1458,13 @@ function renderList(){
       ${wasRevisedSinceFeedback(q.answerHtml, fbs, null)?`<span class="badge" style="background:#dbeafe;color:#1e3a8a">✏ 답변 수정됨</span>`:''}
     </div>
     <div class="qtext">Q. ${esc(q.text)}</div>
+    ${q.teacherAttachments&&q.teacherAttachments.length?`<div class="tiny muted" style="margin-top:6px"><b>👩‍🏫 선생님이 첨부한 참고자료</b></div>${attachmentsHTML(q.teacherAttachments)}`:''}
     ${answerWithRevision(q.answerHtml, fbs, null, q.updatedAt)}
+    <div class="attachPickWrap">
+      <div class="tiny muted"><b>내 참고 자료</b> <span class="attachHint">답변에 참고한 자료나 사진을 첨부해 보세요 (파일당 ${formatFileSize(ATTACH_MAX_BYTES)} 이하).</span></div>
+      ${attachmentsHTML(q.attachments, true, `data-qid="${q.id}"`)}
+      <input type="file" class="qAttachInput" data-qid="${q.id}" multiple accept="image/*,.pdf">
+    </div>
     <div class="row" style="margin-top:8px">
       <button class="btn sm" data-act="edit" data-id="${q.id}">수정</button>
       <button class="btn sm danger" data-act="del" data-id="${q.id}">삭제</button>
@@ -1292,6 +1494,18 @@ function renderList(){
    `;
    wrap.appendChild(el);
  });
+ wrap.querySelectorAll('input.qAttachInput').forEach(inp=>inp.addEventListener('change', async ()=>{
+   const q=CURRENT.questions.find(x=>x.id===inp.dataset.qid); if(!q)return;
+   const added=await filesToAttachments(inp);
+   if(!added.length) return;
+   q.attachments=(q.attachments||[]).concat(added);
+   await saveCurrent(); renderList();
+ }));
+ wrap.querySelectorAll('button[data-act="delAttach"][data-qid]').forEach(b=>b.addEventListener('click', async ()=>{
+   const q=CURRENT.questions.find(x=>x.id===b.dataset.qid); if(!q)return;
+   q.attachments=(q.attachments||[]).filter(a=>a.id!==b.dataset.aid);
+   await saveCurrent(); renderList();
+ }));
  wrap.querySelectorAll('button[data-act="edit"]').forEach(b=>b.addEventListener('click',()=>{
    const q=CURRENT.questions.find(x=>x.id===b.dataset.id); if(!q)return;
    editingId=q.id;
@@ -1499,7 +1713,7 @@ function debateListHTML(list){
    </div>
  </div>`).join('');
 }
-function mockCardHTML(m, editable){
+function mockCardBodyHTML(m){
  const qRows=(m.questions||[]).map((q,i)=>`
    <div class="mockQRow">
      <div class="mockQNum">질문 ${i+1}</div>
@@ -1508,8 +1722,7 @@ function mockCardHTML(m, editable){
      ${q.keywords?`<div class="tiny muted" style="margin-bottom:6px"><b>답변 키워드</b> ${esc(q.keywords)}</div>`:''}
      ${q.feedback?`<div class="fbEntry" style="margin-top:0">${esc(q.feedback)}</div>`:''}
    </div>`).join('');
- return `<div class="item">
-   <div class="head">
+ return `<div class="head">
      <span class="badge acc">${esc(m.date||'-')}</span>
      <span class="badge">면접위원 ${esc(m.teacherName||'-')}</span>
      ${m.type?`<span class="badge gray">${esc(m.type)}</span>`:''}
@@ -1525,17 +1738,58 @@ function mockCardHTML(m, editable){
    ${m.improve?`<h3>보완할 점</h3><div class="answerBox">${esc(m.improve).replace(/\n/g,'<br>')}</div>`:''}
    ${m.mission?`<h3>🎯 다음 모의 면접까지 미션</h3><div class="revisedBlock"><div class="revisedText" style="color:#166534;background:#f0fdf4;border-color:#bbf7d0">${esc(m.mission).replace(/\n/g,'<br>')}</div></div>`:''}
    ${m.comment?`<h3>종합 피드백</h3><div class="answerBox">${esc(m.comment).replace(/\n/g,'<br>')}</div>`:''}
-   ${editable?`<div class="row" style="margin-top:8px">
-     <button class="btn sm" data-act="editMock" data-id="${m.id}">수정</button>
-     <button class="btn sm danger" data-act="delMock" data-id="${m.id}">삭제</button>
-   </div>`:''}
+   ${m.attachments&&m.attachments.length?`<h3>첨부 자료</h3>${attachmentsHTML(m.attachments)}`:''}`;
+}
+function mockCardHTML(m, editable){
+ return `<div class="item">
+   ${mockCardBodyHTML(m)}
+   <div class="row" style="margin-top:8px">
+     <button class="btn sm" data-act="printMock" data-id="${m.id}">🖨 인쇄</button>
+     ${editable?`<button class="btn sm" data-act="editMock" data-id="${m.id}">수정</button>
+     <button class="btn sm danger" data-act="delMock" data-id="${m.id}">삭제</button>`:''}
+   </div>
  </div>`;
 }
+function printMockCard(m){
+ printHTML(`모의 면접 평가 - ${m.date||''}`, `<h1>모의 면접 평가표</h1><div class="item">${mockCardBodyHTML(m)}</div>`);
+}
+function printAllMocks(list, studentName){
+ const body=`<h1>${esc(studentName||'')}님 모의 면접 전체 기록</h1>`+
+   (list.length? list.map(m=>`<div class="item">${mockCardBodyHTML(m)}</div>`).join('<hr style="margin:22px 0;border:none;border-top:1px solid #ccc">') : '<p>등록된 모의 면접 평가가 없습니다.</p>');
+ printHTML(`${studentName||''} 모의 면접 전체 기록`, body);
+}
+let mockPrepAttach=[];
+function renderMockPrepList(){
+ const box=document.getElementById('mockPrepList');
+ if(!box) return;
+ mockPrepAttach = (CURRENT && CURRENT.mockPrepAttachments) || [];
+ box.innerHTML = mockPrepAttach.length ? attachmentsHTML(mockPrepAttach, true) : '<p class="tiny muted">아직 올린 자료가 없습니다.</p>';
+ box.querySelectorAll('button[data-act="delAttach"]').forEach(b=>b.addEventListener('click', async ()=>{
+   CURRENT.mockPrepAttachments=(CURRENT.mockPrepAttachments||[]).filter(a=>a.id!==b.dataset.aid);
+   await saveCurrent(); renderMockPrepList();
+ }));
+}
+document.getElementById('mockPrepInput').addEventListener('change', async (e)=>{
+ if(!CURRENT) return;
+ const added=await filesToAttachments(e.target);
+ if(!added.length) return;
+ CURRENT.mockPrepAttachments=(CURRENT.mockPrepAttachments||[]).concat(added);
+ await saveCurrent(); renderMockPrepList();
+});
+document.getElementById('btnPrintAllMock').addEventListener('click',()=>{
+ if(!CURRENT) return;
+ const list=(CURRENT.mockInterviews||[]).slice().sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+ printAllMocks(list, CURRENT.name);
+});
 function renderMockList(){
  if(!CURRENT) return;
+ renderMockPrepList();
  const wrap=document.getElementById('mockList');
  const list=(CURRENT.mockInterviews||[]).slice().sort((a,b)=>(b.date||'').localeCompare(a.date||''));
  wrap.innerHTML = list.length ? list.map(m=>mockCardHTML(m,false)).join('') : '<div class="empty">아직 등록된 모의 면접 평가가 없습니다.</div>';
+ wrap.querySelectorAll('button[data-act="printMock"]').forEach(b=>b.addEventListener('click',()=>{
+   const m=list.find(x=>x.id===b.dataset.id); if(m) printMockCard(m);
+ }));
 }
 
 // ---------- 연습하기 ----------
@@ -1793,12 +2047,28 @@ function researchCardHTML(r, editable){
    </div>
    <div class="answerBox">${r.content?esc(r.content).replace(/\n/g,'<br>'):'<span class="muted">-</span>'}</div>
    ${(r.source||r.link)?`<p class="tiny muted" style="margin-top:6px">${r.source?esc(r.source):''}${r.source&&r.link?' · ':''}${r.link?`<a href="${esc(r.link)}" target="_blank" rel="noopener">${esc(r.link)}</a>`:''}</p>`:''}
+   ${attachmentsHTML(r.attachments)}
    ${editable?`<div class="row" style="margin-top:8px">
      <button class="btn sm" data-act="editRs" data-id="${r.id}">수정</button>
      <button class="btn sm danger" data-act="delRs" data-id="${r.id}">삭제</button>
    </div>`:''}
  </div>`;
 }
+let rsPendingAttach=[];
+function renderRsAttachPreview(){
+ const box=document.getElementById('rsAttachPreview');
+ box.innerHTML = attachmentsHTML(rsPendingAttach, true);
+ box.querySelectorAll('button[data-act="delAttach"]').forEach(b=>b.addEventListener('click',()=>{
+   rsPendingAttach=rsPendingAttach.filter(a=>a.id!==b.dataset.aid);
+   renderRsAttachPreview();
+ }));
+}
+document.getElementById('rsAttachInput').addEventListener('change', async (e)=>{
+ const added=await filesToAttachments(e.target);
+ if(!added.length) return;
+ rsPendingAttach=rsPendingAttach.concat(added);
+ renderRsAttachPreview();
+});
 function renderResearch(){
  if(!CURRENT) return;
  populateRsUnivSelect(document.getElementById('rsUniv').value);
@@ -1813,6 +2083,8 @@ function renderResearch(){
    document.getElementById('rsContent').value=r.content||'';
    document.getElementById('rsSource').value=r.source||'';
    document.getElementById('rsLink').value=r.link||'';
+   rsPendingAttach=(r.attachments||[]).slice();
+   renderRsAttachPreview();
    document.getElementById('rsFormTitle').textContent='대학·학과 조사 수정';
    document.getElementById('btnCancelResearch').hidden=false;
  }));
@@ -1826,6 +2098,8 @@ function resetResearchForm(){
  editingRsId=null;
  ['rsDept','rsContent','rsSource','rsLink'].forEach(id=>document.getElementById(id).value='');
  populateRsUnivSelect('공통');
+ rsPendingAttach=[];
+ renderRsAttachPreview();
  document.getElementById('rsFormTitle').textContent='대학·학과 조사 추가';
  document.getElementById('btnCancelResearch').hidden=true;
 }
@@ -1839,7 +2113,8 @@ document.getElementById('btnSaveResearch').addEventListener('click', async ()=>{
    dept:document.getElementById('rsDept').value.trim(),
    content,
    source:document.getElementById('rsSource').value.trim(),
-   link:document.getElementById('rsLink').value.trim()
+   link:document.getElementById('rsLink').value.trim(),
+   attachments:rsPendingAttach.slice()
  };
  CURRENT.research=CURRENT.research||[];
  if(editingRsId){
@@ -1996,6 +2271,7 @@ function renderKnowledge(){
      ${items.map(k=>`<div class="kbEntry">
        <div class="answerBox">${k.content?esc(k.content).replace(/\n/g,'<br>'):'<span class="muted">-</span>'}</div>
        ${(k.source||k.link)?`<p class="tiny muted" style="margin-top:6px">${k.source?esc(k.source):''}${k.source&&k.link?' · ':''}${k.link?`<a href="${esc(k.link)}" target="_blank" rel="noopener">${esc(k.link)}</a>`:''}</p>`:''}
+       ${attachmentsHTML(k.attachments)}
        <div class="row" style="margin-top:6px">
          <button class="btn sm" data-act="editKb" data-id="${k.id}">수정</button>
          <button class="btn sm danger" data-act="delKb" data-id="${k.id}">삭제</button>
@@ -2011,6 +2287,8 @@ function renderKnowledge(){
    document.getElementById('kbContent').value=k.content||'';
    document.getElementById('kbSource').value=k.source||'';
    document.getElementById('kbLink').value=k.link||'';
+   kbPendingAttach=(k.attachments||[]).slice();
+   renderKbAttachPreview();
    document.getElementById('kbFormTitle').textContent='배경지식 정리 수정';
    document.getElementById('btnCancelKb').hidden=false;
  }));
@@ -2020,9 +2298,26 @@ function renderKnowledge(){
    await saveCurrent(); renderKnowledge();
  }));
 }
+let kbPendingAttach=[];
+function renderKbAttachPreview(){
+ const box=document.getElementById('kbAttachPreview');
+ box.innerHTML = attachmentsHTML(kbPendingAttach, true);
+ box.querySelectorAll('button[data-act="delAttach"]').forEach(b=>b.addEventListener('click',()=>{
+   kbPendingAttach=kbPendingAttach.filter(a=>a.id!==b.dataset.aid);
+   renderKbAttachPreview();
+ }));
+}
+document.getElementById('kbAttachInput').addEventListener('change', async (e)=>{
+ const added=await filesToAttachments(e.target);
+ if(!added.length) return;
+ kbPendingAttach=kbPendingAttach.concat(added);
+ renderKbAttachPreview();
+});
 function resetKbForm(){
  editingKbId=null;
  ['kbSubject','kbTopic','kbContent','kbSource','kbLink'].forEach(id=>document.getElementById(id).value='');
+ kbPendingAttach=[];
+ renderKbAttachPreview();
  document.getElementById('kbFormTitle').textContent='배경지식 정리 추가';
  document.getElementById('btnCancelKb').hidden=true;
 }
@@ -2037,7 +2332,8 @@ document.getElementById('btnSaveKb').addEventListener('click', async ()=>{
  const item={
    subject, topic, content,
    source:document.getElementById('kbSource').value.trim(),
-   link:document.getElementById('kbLink').value.trim()
+   link:document.getElementById('kbLink').value.trim(),
+   attachments:kbPendingAttach.slice()
  };
  CURRENT.knowledge=CURRENT.knowledge||[];
  if(editingKbId){
@@ -2220,6 +2516,8 @@ document.getElementById('btnTeacherSearch').addEventListener('click', async ()=>
 
 // ---------- 전체 학생 일정 한눈에 보기 ----------
 document.getElementById('btnBackFromAllSchedule').addEventListener('click',()=>show('viewTeacherSearch'));
+document.getElementById('btnTeacherGuide').addEventListener('click',()=>show('viewTeacherGuide'));
+document.getElementById('btnBackFromTeacherGuide').addEventListener('click',()=>show('viewTeacherSearch'));
 let ALL_SCH_STUDENTS=[]; // [{name, classroom, schedule:[...]}]
 let allSchClassFilter='all';
 let allSchCalState=null;
@@ -2321,6 +2619,21 @@ function populateTqUnivSelect(){
 document.getElementById('tqType').addEventListener('change',()=>{
  document.getElementById('tqAreaWrap').hidden = document.getElementById('tqType').value!=='record';
 });
+let tqPendingAttach=[];
+function renderTqAttachPreview(){
+ const box=document.getElementById('tqAttachPreview');
+ box.innerHTML = attachmentsHTML(tqPendingAttach, true);
+ box.querySelectorAll('button[data-act="delAttach"]').forEach(b=>b.addEventListener('click',()=>{
+   tqPendingAttach=tqPendingAttach.filter(a=>a.id!==b.dataset.aid);
+   renderTqAttachPreview();
+ }));
+}
+document.getElementById('tqAttachInput').addEventListener('change', async (e)=>{
+ const added=await filesToAttachments(e.target);
+ if(!added.length) return;
+ tqPendingAttach=tqPendingAttach.concat(added);
+ renderTqAttachPreview();
+});
 document.getElementById('btnAddTeacherQ').addEventListener('click', async ()=>{
  if(!TCUR){await uiAlert('학생 정보가 없습니다.');return;}
  const text=document.getElementById('tqText').value.trim();
@@ -2329,7 +2642,7 @@ document.getElementById('btnAddTeacherQ').addEventListener('click', async ()=>{
  const newQ={
    id:uid(), type, area: type==='record'?document.getElementById('tqArea').value:null,
    univ:document.getElementById('tqUniv').value,
-   text, answerHtml:'', followups:[], feedback:[],
+   text, answerHtml:'', followups:[], feedback:[], teacherAttachments:tqPendingAttach.slice(),
    createdBy:'teacher', teacherName:TEACHER_SESSION?TEACHER_SESSION.displayName:'선생님',
    createdAt:Date.now(), updatedAt:Date.now()
  };
@@ -2337,6 +2650,8 @@ document.getElementById('btnAddTeacherQ').addEventListener('click', async ()=>{
  TCUR.data.questions.unshift(newQ);
  await saveTeacherQuestions();
  document.getElementById('tqText').value='';
+ tqPendingAttach=[];
+ renderTqAttachPreview();
  await uiAlert('질문을 추가했습니다. 학생이 "내 질문 목록"에서 확인하고 답변할 수 있어요.');
  renderTeacherQList();
 });
@@ -2372,7 +2687,12 @@ function renderTeacherMock(){
  const wrap=document.getElementById('teacherMockWrap');
  const univs=(TCUR.data.schedule||[]).map(it=>it.univ).filter(Boolean);
  const univDatalist='<datalist id="mockUnivList">'+[...new Set(univs)].map(u=>`<option value="${esc(u)}">`).join('')+'</datalist>';
- wrap.innerHTML=`<div class="card">
+ const prepAttachments=(TCUR.data.mockPrepAttachments)||[];
+ wrap.innerHTML=`${prepAttachments.length?`<div class="card">
+   <h2>학생이 올린 모의 면접 준비 자료</h2>
+   ${attachmentsHTML(prepAttachments)}
+ </div>`:''}
+ <div class="card">
    <h2 id="mockFormTitle">모의 면접 평가표 작성</h2>
    <p class="small muted">1:1 모의 면접을 본 뒤 그날의 평가를 남겨주세요. 면접위원 이름은 위 "선생님 정보"에 입력한 성함이 사용됩니다.</p>
    <div class="grid c2">
@@ -2405,6 +2725,11 @@ function renderTeacherMock(){
    <div class="field" style="margin-top:14px"><label>강점</label><textarea id="mockStrengths" placeholder="이번 모의 면접에서 잘한 점을 적어주세요."></textarea></div>
    <div class="field"><label>보완할 점</label><textarea id="mockImprove" placeholder="아쉬웠던 점, 다음에 개선할 부분을 적어주세요."></textarea></div>
    <div class="field"><label>다음 모의 면접까지 미션·과제</label><textarea id="mockMission" placeholder="예: 지원동기를 30초 안에 말할 수 있도록 다시 연습해오기"></textarea></div>
+   <div class="attachPickWrap">
+     <div class="tiny muted"><b>첨부 파일</b> <span class="attachHint">평가표 사진, 참고 자료 등을 첨부할 수 있어요 (파일당 350KB 이하).</span></div>
+     <div id="mockAttachPreview"></div>
+     <input type="file" id="mockAttachInput" multiple accept="image/*,.pdf">
+   </div>
    <div class="row">
      <button class="btn primary" id="btnSaveMock" type="button">평가 저장하기</button>
      <button class="btn" id="btnCancelMock" type="button" hidden>수정 취소</button>
@@ -2413,7 +2738,10 @@ function renderTeacherMock(){
  <div class="card">
    <div class="row between">
      <h3 style="margin:0;color:var(--text)">이전 평가 목록 <span class="badge" id="mockHistoryCount">0건</span></h3>
-     <button class="btn sm" id="btnToggleMockHistory" type="button">참고하려면 펼치기 ▾</button>
+     <div class="row">
+       <button class="btn sm" id="btnPrintAllTeacherMock" type="button">🖨 전체 인쇄</button>
+       <button class="btn sm" id="btnToggleMockHistory" type="button">참고하려면 펼치기 ▾</button>
+     </div>
    </div>
    <div id="teacherMockListWrap" hidden></div>
  </div>`;
@@ -2427,8 +2755,30 @@ function renderTeacherMock(){
    box.hidden = !box.hidden;
    document.getElementById('btnToggleMockHistory').textContent = box.hidden ? '참고하려면 펼치기 ▾' : '접기 ▴';
  });
+ document.getElementById('btnPrintAllTeacherMock').addEventListener('click',()=>{
+   const list=(TCUR.data.mockInterviews||[]).slice().sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+   printAllMocks(list, TCUR.data.name);
+ });
+ document.getElementById('mockAttachInput').addEventListener('change', async (e)=>{
+   const added=await filesToAttachments(e.target);
+   if(!added.length) return;
+   mockPendingAttach=mockPendingAttach.concat(added);
+   renderMockAttachPreview();
+ });
+ mockPendingAttach=[];
+ renderMockAttachPreview();
  addMockQRow();
  renderTeacherMockList();
+}
+let mockPendingAttach=[];
+function renderMockAttachPreview(){
+ const box=document.getElementById('mockAttachPreview');
+ if(!box) return;
+ box.innerHTML = attachmentsHTML(mockPendingAttach, true);
+ box.querySelectorAll('button[data-act="delAttach"]').forEach(b=>b.addEventListener('click',()=>{
+   mockPendingAttach=mockPendingAttach.filter(a=>a.id!==b.dataset.aid);
+   renderMockAttachPreview();
+ }));
 }
 function renumberMockQRows(){
  document.querySelectorAll('#mockQRows .mockQRow .mockQNum').forEach((el,i)=>{ el.textContent='질문 '+(i+1); });
@@ -2456,6 +2806,8 @@ function resetMockForm(){
  document.querySelectorAll('#mockDeliveryChips .chip, #mockContentChips .chip').forEach(c=>c.classList.remove('on'));
  document.getElementById('mockQRows').innerHTML='';
  addMockQRow();
+ mockPendingAttach=[];
+ renderMockAttachPreview();
  document.getElementById('mockFormTitle').textContent='모의 면접 평가표 작성';
  document.getElementById('btnCancelMock').hidden=true;
 }
@@ -2485,6 +2837,8 @@ function renderTeacherMockList(){
    } else {
      addMockQRow();
    }
+   mockPendingAttach=(m.attachments||[]).slice();
+   renderMockAttachPreview();
    document.getElementById('mockFormTitle').textContent='모의 면접 평가 수정';
    document.getElementById('btnCancelMock').hidden=false;
    wrap.scrollIntoView({behavior:'smooth', block:'start'});
@@ -2494,6 +2848,9 @@ function renderTeacherMockList(){
    TCUR.data.mockInterviews=(TCUR.data.mockInterviews||[]).filter(x=>x.id!==b.dataset.id);
    await saveTeacherMock();
    renderTeacherMockList();
+ }));
+ wrap.querySelectorAll('button[data-act="printMock"]').forEach(b=>b.addEventListener('click',()=>{
+   const m=(TCUR.data.mockInterviews||[]).find(x=>x.id===b.dataset.id); if(m) printMockCard(m);
  }));
 }
 async function saveMockEntry(){
@@ -2521,7 +2878,8 @@ async function saveMockEntry(){
    deliveryFeedback:document.getElementById('mockDeliveryFeedback').value.trim(),
    strengths:document.getElementById('mockStrengths').value.trim(),
    improve:document.getElementById('mockImprove').value.trim(),
-   mission:document.getElementById('mockMission').value.trim()
+   mission:document.getElementById('mockMission').value.trim(),
+   attachments:mockPendingAttach.slice()
  };
  TCUR.data.mockInterviews=TCUR.data.mockInterviews||[];
  let savedId;
@@ -2544,6 +2902,7 @@ async function saveMockEntry(){
 let tQTypeFilter='all';
 let tQUnivFilter='all';
 let tQAreaFilter='all';
+let fbPendingAttach={}; // qid -> 아직 저장 전인 피드백 첨부파일 목록
 function renderTeacherQList(){
  const wrap=document.getElementById('teacherQList');
  const allQ=TCUR.data.questions||[];
@@ -2582,7 +2941,9 @@ function renderTeacherQList(){
     </div>
     <div class="qtext">Q. ${esc(q.text)}</div>
     ${q.createdBy==='teacher'?`<div class="row" style="margin-bottom:8px"><button class="btn sm danger" data-act="delTeacherQ" data-qid="${q.id}">이 질문 삭제</button></div>`:''}
+    ${q.teacherAttachments&&q.teacherAttachments.length?`<div class="tiny muted" style="margin-top:4px"><b>👩‍🏫 첨부한 참고자료</b></div>${attachmentsHTML(q.teacherAttachments)}`:''}
     ${answerWithRevision(q.answerHtml, fbs, null, q.updatedAt)}
+    ${q.attachments&&q.attachments.length?`<div class="tiny muted" style="margin-top:6px"><b>학생이 첨부한 참고 자료</b></div>${attachmentsHTML(q.attachments)}`:''}
     ${renderFeedbackBlock(fbs, followups, q.id, 'teacher')}
     ${followups.length?`<div class="followWrap"><b class="small">↳ 꼬리질문</b>${followups.map(fu=>{
       const fufbs=fbs.filter(f=>f.followupId===fu.id);
@@ -2600,6 +2961,11 @@ function renderTeacherQList(){
         <div class="chips fbtags" data-qid="${q.id}">${FB_TAGS.map(t=>`<span class="chip" data-t="${esc(t)}">${esc(t)}</span>`).join('')}</div>
       </div>
       <div class="field"><label>피드백 내용</label><textarea class="fbtext" data-qid="${q.id}" placeholder="구체적인 피드백을 남겨주세요."></textarea></div>
+      <div class="attachPickWrap">
+        <div class="tiny muted"><b>첨부 파일</b> <span class="attachHint">참고 답안, 촬영한 평가지 등을 첨부할 수 있어요 (파일당 ${formatFileSize(ATTACH_MAX_BYTES)} 이하).</span></div>
+        <div class="fbAttachPreview" data-qid="${q.id}"></div>
+        <input type="file" class="fbAttachInput" data-qid="${q.id}" multiple accept="image/*,.pdf">
+      </div>
       <button class="btn sm accent" data-act="savefb" data-qid="${q.id}">피드백 저장</button>
     </div>
    `;
@@ -2635,6 +3001,25 @@ function renderTeacherQList(){
    wrap.appendChild(el);
  });
  wrap.querySelectorAll('.fbtags .chip').forEach(c=>c.addEventListener('click',()=>c.classList.toggle('on')));
+ function renderFbAttachPreview(qid){
+   const box=wrap.querySelector(`.fbAttachPreview[data-qid="${qid}"]`);
+   if(!box) return;
+   box.innerHTML = attachmentsHTML(fbPendingAttach[qid]||[], true, `data-qid="${qid}"`);
+   box.querySelectorAll('button[data-act="delAttach"]').forEach(b=>b.addEventListener('click',()=>{
+     fbPendingAttach[qid]=(fbPendingAttach[qid]||[]).filter(a=>a.id!==b.dataset.aid);
+     renderFbAttachPreview(qid);
+   }));
+ }
+ wrap.querySelectorAll('.fbAttachInput').forEach(inp=>{
+   renderFbAttachPreview(inp.dataset.qid);
+   inp.addEventListener('change', async ()=>{
+     const added=await filesToAttachments(inp);
+     if(!added.length) return;
+     const qid=inp.dataset.qid;
+     fbPendingAttach[qid]=(fbPendingAttach[qid]||[]).concat(added);
+     renderFbAttachPreview(qid);
+   });
+ });
  wrap.querySelectorAll('button[data-act="delTeacherQ"]').forEach(b=>b.addEventListener('click', async ()=>{
    if(!(await uiConfirm('이 질문을 삭제할까요? 학생이 작성한 답변과 피드백도 함께 삭제됩니다.')))return;
    TCUR.data.questions=(TCUR.data.questions||[]).filter(x=>x.id!==b.dataset.qid);
@@ -2656,7 +3041,8 @@ function renderTeacherQList(){
    const q=TCUR.data.questions.find(x=>x.id===qid);
    const targetAnswerSnapshot = followupId ? (()=>{ const fu=(q.followups||[]).find(x=>x.id===followupId); return fu ? (fu.answerHtml!=null?fu.answerHtml:(fu.answerText?esc(fu.answerText):'')) : ''; })() : (q.answerHtml||'');
    q.feedback=q.feedback||[];
-   q.feedback.push({id:uid(), teacherKey:TEACHER_SESSION?TEACHER_SESSION.key:null, teacherName:resolvedName, teacherSchool:tschool, tags, comment, followupId, answerSnapshot:targetAnswerSnapshot, at:Date.now()});
+   q.feedback.push({id:uid(), teacherKey:TEACHER_SESSION?TEACHER_SESSION.key:null, teacherName:resolvedName, teacherSchool:tschool, tags, comment, followupId, answerSnapshot:targetAnswerSnapshot, attachments:fbPendingAttach[qid]||[], at:Date.now()});
+   delete fbPendingAttach[qid];
    await saveTeacherQuestions();
    await uiAlert('피드백이 저장되었습니다.');
    renderTeacherQList();
@@ -2688,7 +3074,7 @@ function renderTeacherQList(){
       if(snap.exists){
         const data = snap.data();
         CURRENT = {key:savedStudentKey, school:data.school, number:data.number, name:data.name,
-          questions:data.questions||[], schedule:data.schedule||[], debates:data.debates||[], mockInterviews:data.mockInterviews||[], research:data.research||[], presentations:data.presentations||[], knowledge:data.knowledge||[]};
+          questions:data.questions||[], schedule:data.schedule||[], debates:data.debates||[], mockInterviews:data.mockInterviews||[], research:data.research||[], presentations:data.presentations||[], knowledge:data.knowledge||[], mockPrepAttachments:data.mockPrepAttachments||[]};
         document.getElementById('studentGreeting').textContent = `${CURRENT.school} · ${CURRENT.number}번 · ${CURRENT.name}님`;
         show('viewStudentApp');
         goTab('guide');

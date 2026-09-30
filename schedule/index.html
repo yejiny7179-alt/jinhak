@@ -227,9 +227,6 @@
       <button id="addTeacherBtn" class="btn-ghost btn-sm" style="display:none;">➕ 선생님 추가</button>
       <button id="editNoticeNotesBtn" class="btn-ghost btn-sm" style="display:none;">📝 공지문 문구 수정</button>
       <button id="excelBtn" class="btn-excel btn-sm" style="display:none;">📊 엑셀 다운로드</button>
-      <select id="noticeClassPrintSelect" class="btn-ghost btn-sm" style="cursor:pointer;">
-        <option value="">전체 학급</option>
-      </select>
       <button id="printClassNoticeBtn" class="btn-ghost btn-sm">🖨 학급별 공지문(A1)</button>
       <button id="printOverallNoTeacherBtn" class="btn-ghost btn-sm">🖨 전체일정 - 교사명X(A1)</button>
       <button id="printOverallWithTeacherBtn" class="btn-ghost btn-sm">🖨 전체일정 - 교사명O(A1)</button>
@@ -1820,26 +1817,11 @@
     });
     return pages.join('');
   }
-  function populateNoticeClassPrintSelect(){
-    const sel = document.getElementById('noticeClassPrintSelect');
-    if(!sel || sel.dataset.filled) return;
-    (DATA.classes || []).forEach(cls => {
-      const opt = document.createElement('option');
-      opt.value = cls; opt.textContent = cls;
-      sel.appendChild(opt);
-    });
-    sel.dataset.filled = '1';
-  }
   function wirePrintDocButtons(){
     const b1 = document.getElementById('printClassNoticeBtn');
     const b2 = document.getElementById('printOverallNoTeacherBtn');
     const b3 = document.getElementById('printOverallWithTeacherBtn');
-    const classSel = document.getElementById('noticeClassPrintSelect');
-    populateNoticeClassPrintSelect();
-    if(b1) b1.addEventListener('click', () => {
-      const chosen = classSel ? classSel.value : '';
-      openClassNoticeDoc(chosen || null);
-    });
+    if(b1) b1.addEventListener('click', () => openClassNoticeDoc(null));
     if(b2) b2.addEventListener('click', () => openPrintDoc('전체 일정표(교사명 없음)', buildOverallScheduleBody(false)));
     if(b3) b3.addEventListener('click', () => openPrintDoc('전체 일정표(교사명 포함)', buildOverallScheduleBody(true)));
   }

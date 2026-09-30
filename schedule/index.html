@@ -1645,7 +1645,7 @@
     return keys.map(k=>groups[k]);
   }
   const PRINT_DOC_STYLE = `
-    *{box-sizing:border-box;}
+    *{box-sizing:border-box; -webkit-print-color-adjust:exact; print-color-adjust:exact; color-adjust:exact;}
     body{ margin:0; font-family:"Malgun Gothic","Apple SD Gothic Neo",sans-serif; color:#111; }
     @page{ size:A1; margin:12mm; }
     .print-toolbar{ position:sticky; top:0; background:#fffbe8; border-bottom:2px solid #f59e0b; padding:12px 16px; display:flex; gap:10px; align-items:center; z-index:10; }
@@ -1660,7 +1660,10 @@
     th{ background:#eef0ff; font-weight:800; }
     td.name-cell{ font-weight:700; }
     .footer{ margin-top:1.2vw; font-size:1vw; color:#333; }
-    @media print{ .print-toolbar{ display:none; } }
+    @media print{
+      .print-toolbar{ display:none; }
+      *{ -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; color-adjust:exact !important; }
+    }
   `;
   function openPrintDoc(title, bodyHtml, extraToolbarHtml, extraScript){
     const html = `<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><title>${escapeHtml(title)}</title>

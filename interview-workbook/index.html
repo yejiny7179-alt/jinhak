@@ -135,7 +135,8 @@ table.tbl th{background:var(--surface2);color:var(--muted);font-weight:700;font-
 .calHead{text-align:center;font-weight:700;font-size:12px;color:var(--muted);padding:4px 0}
 .calCell{min-height:74px;border:1px solid var(--line);border-radius:8px;padding:4px;background:#fff;overflow:hidden;position:relative}
 .calCell.empty{border:0;background:transparent}
-.calMockMark{position:absolute;top:3px;right:4px;font-size:12px;line-height:1}
+.calMockMark{position:absolute;top:2px;right:3px;font-size:13px;line-height:1;border:none;background:transparent;padding:2px;cursor:pointer;border-radius:4px}
+.calMockMark:hover{background:#fef9c3}
 .calDate{font-size:11px;color:var(--muted2);font-weight:700;margin-bottom:3px}
 .calEvt{font-size:10.5px;border-radius:5px;padding:1px 4px;margin-bottom:2px;line-height:1.4;overflow-wrap:anywhere}
 .calNav{display:flex;align-items:center;gap:10px;justify-content:center;margin-bottom:10px}
@@ -1167,6 +1168,21 @@ function uiPrompt(msg, defVal){
    document.getElementById('uiCancelBtn').addEventListener('click',()=>{ uiRoot.innerHTML=''; resolve(null); });
  });
 }
+// 캘린더의 🙂 표시를 눌렀을 때 그 날짜의 모의 면접 피드백을 바로 보여주는 모달.
+// items: [{m: 모의면접항목, studentLabel?: 전체 일정 화면에서 학생을 구분하기 위한 이름표}]
+function showMockDayModal(items){
+ return new Promise(resolve=>{
+   if(!items || !items.length){ resolve(true); return; }
+   const date=items[0].m.date||'';
+   const body=items.map(({m,studentLabel})=>`<div class="item">${studentLabel?`<div class="badge acc" style="margin-bottom:6px">${esc(studentLabel)}</div>`:''}${mockCardBodyHTML(m)}</div>`).join('<hr style="margin:14px 0;border:none;border-top:1px solid var(--line)">');
+   uiRoot.innerHTML=`<div class="uiOverlay"><div class="uiBox" style="max-width:640px;max-height:82vh;overflow:auto;text-align:left">
+     <p style="font-weight:700;margin-bottom:10px">🙂 ${esc(date)} 모의 면접 피드백</p>
+     ${body}
+     <div class="row" style="margin-top:14px"><button class="btn primary" id="uiOkBtn" type="button">닫기</button></div>
+   </div></div>`;
+   document.getElementById('uiOkBtn').addEventListener('click',()=>{ uiRoot.innerHTML=''; resolve(true); });
+ });
+}
 function openFollowupEditor(initialText, initialAnswerHtml){
  return new Promise(resolve=>{
    uiRoot.innerHTML=`<div class="uiOverlay"><div class="uiBox" style="max-width:540px">
@@ -1660,7 +1676,7 @@ function calendarHTML(events, year, month, mockDates){
    const dateStr=year+'-'+pad2(month+1)+'-'+pad2(d);
    const evs=evByDate[dateStr]||[];
    const hasMock=mockSet.has(dateStr);
-   html+=`<div class="calCell">${hasMock?`<span class="calMockMark" title="모의 면접">🙂</span>`:''}<div class="calDate">${d}</div>${evs.map(e=>`<div class="calEvt" style="background:${e.bg};color:${e.fg}">${esc(e.label)}</div>`).join('')}</div>`;
+   html+=`<div class="calCell">${hasMock?`<button type="button" class="calMockMark" data-date="${dateStr}" title="이 날 모의 면접 피드백 보기">🙂</button>`:''}<div class="calDate">${d}</div>${evs.map(e=>`<div class="calEvt" style="background:${e.bg};color:${e.fg}">${esc(e.label)}</div>`).join('')}</div>`;
  });
  html+='</div>';
  return html;
@@ -1685,6 +1701,10 @@ function renderSchedule(){
  if(!schCalState){ const now=new Date(); schCalState={year:now.getFullYear(), month:now.getMonth()}; }
  document.getElementById('schTableWrap').innerHTML=scheduleTableHTML(CURRENT.schedule||[], true);
  document.getElementById('schCalWrap').innerHTML=calendarHTML(scheduleEvents(CURRENT.schedule||[]), schCalState.year, schCalState.month, (CURRENT.mockInterviews||[]).map(m=>m.date));
+ document.getElementById('schCalWrap').querySelectorAll('.calMockMark').forEach(b=>b.addEventListener('click',()=>{
+   const items=(CURRENT.mockInterviews||[]).filter(m=>m.date===b.dataset.date).map(m=>({m}));
+   showMockDayModal(items);
+ }));
  document.getElementById('schCalTitle').textContent=`${schCalState.year}년 ${schCalState.month+1}월`;
  document.getElementById('schTableWrap').querySelectorAll('button[data-act="editSch"]').forEach(b=>b.addEventListener('click',()=>{
    const it=(CURRENT.schedule||[]).find(x=>x.id===b.dataset.id); if(!it)return;
@@ -2652,7 +2672,17 @@ function renderAllSchedule(){
  });
  const studentsForCal = allSchClassFilter==='all' ? ALL_SCH_STUDENTS : ALL_SCH_STUDENTS.filter(s=>s.classroom===allSchClassFilter);
  const mockDates = studentsForCal.flatMap(s=>(s.mockInterviews||[]).map(m=>m.date)).filter(Boolean);
+ const mockByDate={};
+ studentsForCal.forEach(s=>{
+   (s.mockInterviews||[]).forEach(m=>{
+     if(!m.date) return;
+     (mockByDate[m.date]=mockByDate[m.date]||[]).push({m, studentLabel:`${s.name}${s.classroom?'('+s.classroom+')':''}`});
+   });
+ });
  document.getElementById('allSchCalWrap').innerHTML=calendarHTML(events, allSchCalState.year, allSchCalState.month, mockDates);
+ document.getElementById('allSchCalWrap').querySelectorAll('.calMockMark').forEach(b=>b.addEventListener('click',()=>{
+   showMockDayModal(mockByDate[b.dataset.date]||[]);
+ }));
  document.getElementById('allSchCalTitle').textContent=`${allSchCalState.year}년 ${allSchCalState.month+1}월`;
 }
 document.getElementById('allSchCalPrev').addEventListener('click',()=>{ allSchCalState.month--; if(allSchCalState.month<0){allSchCalState.month=11;allSchCalState.year--;} renderAllSchedule(); });
@@ -2741,6 +2771,10 @@ function renderTeacherSchedule(){
    <div id="tSchCalWrap"></div></div>`;
  document.getElementById('tSchTable').innerHTML=scheduleTableHTML(list, false);
  document.getElementById('tSchCalWrap').innerHTML=calendarHTML(scheduleEvents(list), teacherCalState.year, teacherCalState.month, (TCUR.data.mockInterviews||[]).map(m=>m.date));
+ document.getElementById('tSchCalWrap').querySelectorAll('.calMockMark').forEach(b=>b.addEventListener('click',()=>{
+   const items=(TCUR.data.mockInterviews||[]).filter(m=>m.date===b.dataset.date).map(m=>({m}));
+   showMockDayModal(items);
+ }));
  document.getElementById('tSchCalTitle').textContent=`${teacherCalState.year}년 ${teacherCalState.month+1}월`;
  document.getElementById('tSchPrev').addEventListener('click',()=>{ teacherCalState.month--; if(teacherCalState.month<0){teacherCalState.month=11;teacherCalState.year--;} renderTeacherSchedule(); });
  document.getElementById('tSchNext').addEventListener('click',()=>{ teacherCalState.month++; if(teacherCalState.month>11){teacherCalState.month=0;teacherCalState.year++;} renderTeacherSchedule(); });

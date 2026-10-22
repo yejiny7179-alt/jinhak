@@ -2683,7 +2683,10 @@ async function saveTeacherMock(){
  await db.collection('students').doc(TCUR.key).update({mockInterviews:TCUR.data.mockInterviews||[], updatedAt:Date.now()});
 }
 let editingMockId=null;
+let mockLoadedDate=''; // 현재 폼에 불러온(또는 저장 직후인) 평가의 날짜 — 이 값과 다르게 날짜를 바꾸면 새 평가로 간주
 function renderTeacherMock(){
+ editingMockId=null;
+ mockLoadedDate='';
  const wrap=document.getElementById('teacherMockWrap');
  const univs=(TCUR.data.schedule||[]).map(it=>it.univ).filter(Boolean);
  const univDatalist='<datalist id="mockUnivList">'+[...new Set(univs)].map(u=>`<option value="${esc(u)}">`).join('')+'</datalist>';
@@ -2750,6 +2753,14 @@ function renderTeacherMock(){
  document.getElementById('btnAddMockQ').addEventListener('click',()=>addMockQRow());
  document.getElementById('btnCancelMock').addEventListener('click', resetMockForm);
  document.getElementById('btnSaveMock').addEventListener('click', saveMockEntry);
+ document.getElementById('mockDate').addEventListener('change', ()=>{
+   const dateInput=document.getElementById('mockDate');
+   if(editingMockId && dateInput.value !== mockLoadedDate){
+     const newDate=dateInput.value;
+     resetMockForm();
+     dateInput.value=newDate;
+   }
+ });
  document.getElementById('btnToggleMockHistory').addEventListener('click',()=>{
    const box=document.getElementById('teacherMockListWrap');
    box.hidden = !box.hidden;
@@ -2800,6 +2811,7 @@ function addMockQRow(question,keywords,feedback,followup){
 }
 function resetMockForm(){
  editingMockId=null;
+ mockLoadedDate='';
  ['mockDate','mockDept','mockTrack','mockStrengths','mockImprove','mockMission','mockDeliveryFeedback'].forEach(id=>document.getElementById(id).value='');
  document.getElementById('mockType').value='';
  document.getElementById('mockUniv').value='';
@@ -2820,6 +2832,7 @@ function renderTeacherMockList(){
  wrap.querySelectorAll('button[data-act="editMock"]').forEach(b=>b.addEventListener('click',()=>{
    const m=(TCUR.data.mockInterviews||[]).find(x=>x.id===b.dataset.id); if(!m)return;
    editingMockId=m.id;
+   mockLoadedDate=m.date||'';
    document.getElementById('mockDate').value=m.date||'';
    document.getElementById('mockType').value=m.type||'';
    document.getElementById('mockUniv').value=m.univ||'';
@@ -2894,6 +2907,7 @@ async function saveMockEntry(){
  await saveTeacherMock();
  // 저장 후에도 폼을 그대로 두어, 이어서 질문을 추가하거나 내용을 계속 수정할 수 있도록 함
  editingMockId=savedId;
+ mockLoadedDate=date;
  document.getElementById('mockFormTitle').textContent='모의 면접 평가 수정 중 (이어서 계속 작성할 수 있어요)';
  document.getElementById('btnCancelMock').hidden=false;
  renderTeacherMockList();

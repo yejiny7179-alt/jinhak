@@ -2728,6 +2728,7 @@ function renderTeacherMock(){
    <div class="field" style="margin-top:14px"><label>강점</label><textarea id="mockStrengths" placeholder="이번 모의 면접에서 잘한 점을 적어주세요."></textarea></div>
    <div class="field"><label>보완할 점</label><textarea id="mockImprove" placeholder="아쉬웠던 점, 다음에 개선할 부분을 적어주세요."></textarea></div>
    <div class="field"><label>다음 모의 면접까지 미션·과제</label><textarea id="mockMission" placeholder="예: 지원동기를 30초 안에 말할 수 있도록 다시 연습해오기"></textarea></div>
+   <div class="field"><label>이 날의 총평</label><textarea id="mockComment" placeholder="이 날 면접을 어떻게 진행했는지, 전체적인 느낌이나 총평을 자유롭게 적어주세요."></textarea></div>
    <div class="attachPickWrap">
      <div class="tiny muted"><b>첨부 파일</b> <span class="attachHint">평가표 사진, 참고 자료 등을 첨부할 수 있어요 (파일당 350KB 이하).</span></div>
      <div id="mockAttachPreview"></div>
@@ -2812,7 +2813,7 @@ function addMockQRow(question,keywords,feedback,followup){
 function resetMockForm(){
  editingMockId=null;
  mockLoadedDate='';
- ['mockDate','mockDept','mockTrack','mockStrengths','mockImprove','mockMission','mockDeliveryFeedback'].forEach(id=>document.getElementById(id).value='');
+ ['mockDate','mockDept','mockTrack','mockStrengths','mockImprove','mockMission','mockComment','mockDeliveryFeedback'].forEach(id=>document.getElementById(id).value='');
  document.getElementById('mockType').value='';
  document.getElementById('mockUniv').value='';
  document.querySelectorAll('#mockDeliveryChips .chip, #mockContentChips .chip').forEach(c=>c.classList.remove('on'));
@@ -2841,6 +2842,7 @@ function renderTeacherMockList(){
    document.getElementById('mockStrengths').value=m.strengths||'';
    document.getElementById('mockImprove').value=m.improve||'';
    document.getElementById('mockMission').value=m.mission||'';
+   document.getElementById('mockComment').value=m.comment||'';
    document.getElementById('mockDeliveryFeedback').value=m.deliveryFeedback||'';
    document.querySelectorAll('#mockDeliveryChips .chip').forEach(c=>c.classList.toggle('on', (m.deliveryGood||[]).includes(c.dataset.t)));
    document.querySelectorAll('#mockContentChips .chip').forEach(c=>c.classList.toggle('on', (m.contentGood||[]).includes(c.dataset.t)));
@@ -2892,6 +2894,7 @@ async function saveMockEntry(){
    strengths:document.getElementById('mockStrengths').value.trim(),
    improve:document.getElementById('mockImprove').value.trim(),
    mission:document.getElementById('mockMission').value.trim(),
+   comment:document.getElementById('mockComment').value.trim(),
    attachments:mockPendingAttach.slice()
  };
  TCUR.data.mockInterviews=TCUR.data.mockInterviews||[];

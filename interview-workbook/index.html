@@ -64,6 +64,10 @@ textarea{resize:vertical;min-height:70px}
 .item .qtext{font-size:15.5px;font-weight:700;margin:4px 0 10px;line-height:1.5}
 .answerBox{border:1px solid var(--line2);border-radius:10px;padding:12px 14px;background:var(--surface2);min-height:90px;font-size:14px;line-height:1.85;white-space:pre-wrap;overflow-wrap:anywhere}
 .answerBox mark.kw{background:#fde68a;border-radius:4px;padding:0 2px;cursor:pointer}
+.hlToolbar{display:flex;align-items:center;flex-wrap:wrap;gap:6px}
+.hlColorBtn{width:22px;height:22px;border-radius:50%;border:2px solid var(--line2);cursor:pointer;padding:0}
+.hlColorBtn:hover{border-color:var(--text)}
+.hlColorBtn.on{border-color:var(--text);box-shadow:0 0 0 2px #fff inset}
 .answerBox:empty:before{content:attr(data-ph);color:var(--muted2)}
 .toolbar{display:flex;gap:8px;margin:6px 0 10px;flex-wrap:wrap}
 .fbBox{margin-top:12px;padding-top:12px;border-top:1px dashed var(--line2)}
@@ -416,10 +420,7 @@ table.tbl th{background:var(--surface2);color:var(--muted);font-weight:700;font-
       <div class="field"><label>예상 질문 (메인 질문)</label><textarea id="qText" placeholder="예: 화학 심화탐구에서 특정 촉매를 선택한 이유는 무엇인가요?"></textarea></div>
       <div class="field"><label>내 답변 <span class="tiny muted">(작성 후 드래그로 선택해 핵심 키워드를 표시하세요)</span></label></div>
       <div class="answerBox" id="qAnswer" contenteditable="true" data-ph="여기에 답변을 직접 작성해 보세요."></div>
-      <div class="toolbar">
-        <button class="btn accent sm" id="btnMark" type="button">🖍 선택 영역을 키워드로 표시</button>
-        <span class="tiny muted">표시된 키워드를 클릭하면 지워집니다</span>
-      </div>
+      <div id="qAnswerToolbarWrap"></div>
       <button class="btn primary" id="btnSaveQ" type="button">질문 저장하기</button>
       <span class="tiny muted" id="editingNote"></span>
       <p class="small muted" style="margin-top:10px">저장한 뒤 "내 질문 목록"에서 이 질문에 대한 <b>꼬리질문</b>을 추가할 수 있어요.</p>
@@ -840,6 +841,9 @@ table.tbl th{background:var(--surface2);color:var(--muted);font-weight:700;font-
     </div>
     <div class="field"><label>지원 대학</label><select id="tqUniv"><option value="공통">공통 (모든 대학에 해당)</option></select></div>
     <div class="field"><label>질문 내용</label><textarea id="tqText" placeholder="예: 이 활동에서 겪은 어려움은 무엇이었나요?"></textarea></div>
+    <div class="field"><label>답변 예시 <span class="tiny muted">(학생이 아직 답변을 쓰지 않았다면, 참고할 수 있는 답변 예시를 작성해 주세요)</span></label></div>
+    <div class="answerBox" id="tqAnswer" contenteditable="true" data-ph="답변 예시를 작성해 보세요 (선택 사항)."></div>
+    <div id="tqAnswerToolbarWrap"></div>
     <div class="attachPickWrap">
       <div class="tiny muted"><b>참고 자료 첨부</b> <span class="attachHint">학생이 참고할 자료나 사진을 함께 줄 수 있어요 (파일당 350KB 이하).</span></div>
       <div id="tqAttachPreview"></div>
@@ -1036,6 +1040,59 @@ function swapArrayItemsById(arr, idA, idB){
  const tmp=arr[iA]; arr[iA]=arr[iB]; arr[iB]=tmp;
 }
 function esc(s){return (s==null?'':String(s)).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+
+// ---------- 답변 하이라이트(키워드 표시) 공통 유틸 ----------
+const HL_COLORS=[
+ {key:'yellow',bg:'#fde68a',label:'노랑'},
+ {key:'green',bg:'#bbf7d0',label:'초록'},
+ {key:'blue',bg:'#bfdbfe',label:'파랑'},
+ {key:'pink',bg:'#fbcfe8',label:'분홍'},
+ {key:'orange',bg:'#fed7aa',label:'주황'}
+];
+const HL_COLOR_MAP=Object.fromEntries(HL_COLORS.map(c=>[c.key,c.bg]));
+// contenteditable 답변 상자(boxId) 위에 붙일 색상 선택 하이라이트 툴바 HTML
+function highlightToolbarHTML(boxId){
+ const swatches=HL_COLORS.map((c,i)=>
+  `<button type="button" class="hlColorBtn${i===0?' on':''}" data-box="${boxId}" data-color="${c.key}" style="background:${c.bg}" title="${c.label}"></button>`
+ ).join('');
+ return `<div class="toolbar hlToolbar" data-hltoolbar="${boxId}">
+  <span class="tiny muted">🖍 드래그 후 색 선택:</span>${swatches}
+  <span class="tiny muted" style="margin-left:4px">표시된 키워드를 클릭하면 지워집니다</span>
+ </div>`;
+}
+// 하이라이트 툴바 + 답변 상자(boxId)에 대한 동작(드래그→색칠, 클릭→해제)을 연결. 같은 id의 상자/툴바가 매번 새로 렌더링된 뒤 호출.
+function wireAnswerBox(boxId){
+ const box=document.getElementById(boxId);
+ if(!box) return;
+ const toolbar=document.querySelector(`[data-hltoolbar="${boxId}"]`);
+ if(toolbar){
+  toolbar.querySelectorAll('.hlColorBtn').forEach(btn=>{
+   btn.addEventListener('click',()=>{
+    toolbar.querySelectorAll('.hlColorBtn').forEach(b=>b.classList.remove('on'));
+    btn.classList.add('on');
+    const sel=window.getSelection();
+    if(!sel || sel.rangeCount===0 || sel.isCollapsed){ box.focus(); return; }
+    const range=sel.getRangeAt(0);
+    if(!box.contains(range.commonAncestorContainer)){ return; }
+    const color=btn.getAttribute('data-color');
+    const mark=document.createElement('mark');
+    mark.className='kw';
+    mark.style.background=HL_COLOR_MAP[color]||HL_COLOR_MAP.yellow;
+    mark.setAttribute('data-hlcolor',color);
+    try{ range.surroundContents(mark); }
+    catch(e){ mark.appendChild(range.extractContents()); range.insertNode(mark); }
+    sel.removeAllRanges();
+   });
+  });
+ }
+ box.addEventListener('click',(e)=>{
+  if(e.target.tagName==='MARK'){
+   const parent=e.target.parentNode;
+   while(e.target.firstChild) parent.insertBefore(e.target.firstChild,e.target);
+   parent.removeChild(e.target);
+  }
+ });
+}
 
 // ---------- 첨부파일 공통 유틸 ----------
 const ATTACH_MAX_BYTES = 350*1024; // 파일 하나당 최대 크기 (base64로 저장되어 용량이 약 1.37배로 커지므로 넉넉히 작게 제한)
@@ -1383,24 +1440,8 @@ function populateQUnivSelect(selected){
  }
  sel.value = selected || '공통';
 }
-document.getElementById('btnMark').addEventListener('click',()=>{
- const sel=window.getSelection();
- if(!sel || sel.rangeCount===0 || sel.isCollapsed){uiAlert('먼저 답변에서 키워드로 표시할 부분을 드래그로 선택하세요.');return;}
- const range=sel.getRangeAt(0);
- const box=document.getElementById('qAnswer');
- if(!box.contains(range.commonAncestorContainer)){uiAlert('답변 상자 안의 텍스트를 선택해 주세요.');return;}
- const mark=document.createElement('mark'); mark.className='kw';
- try{ range.surroundContents(mark); }
- catch(e){ mark.appendChild(range.extractContents()); range.insertNode(mark); }
- sel.removeAllRanges();
-});
-document.getElementById('qAnswer').addEventListener('click',(e)=>{
- if(e.target.tagName==='MARK'){
-   const parent=e.target.parentNode;
-   while(e.target.firstChild) parent.insertBefore(e.target.firstChild,e.target);
-   parent.removeChild(e.target);
- }
-});
+document.getElementById('qAnswerToolbarWrap').innerHTML = highlightToolbarHTML('qAnswer');
+wireAnswerBox('qAnswer');
 let editingId=null;
 document.getElementById('btnSaveQ').addEventListener('click', async ()=>{
  if(!CURRENT){await uiAlert('로그인이 필요합니다.');return;}
@@ -1417,7 +1458,7 @@ document.getElementById('btnSaveQ').addEventListener('click', async ()=>{
  } else {
    CURRENT.questions.unshift({
      id:uid(), type, area: type==='record'?document.getElementById('qArea').value:null, univ,
-     text, answerHtml, followups:[], feedback:[], createdAt:Date.now(), updatedAt:Date.now()
+     text, answerHtml, followups:[], feedback:[], memos:[], createdAt:Date.now(), updatedAt:Date.now()
    });
  }
  await saveCurrent();
@@ -1443,16 +1484,18 @@ function renderFeedbackBlock(fbs, followups, qid, role){
  return mainFbs.length? `<div class="fbBox">${mainFbs.map(f=>fbHtml(f,qid,role)).join('')}</div>` : '';
 }
 // 답글의 답글까지 재귀적으로 렌더링. path는 f.replies에서부터 이 답글까지 내려가는 id 경로.
-function repliesHTML(list, qid, fid, path){
+// actionName: 답글 버튼의 data-act 값 (기본 replyToReply). 피드백/메모 등 다른 스레드에서 재사용하기 위한 구분자.
+function repliesHTML(list, qid, fid, path, actionName){
+ actionName = actionName || 'replyToReply';
  if(!list || !list.length) return '';
  return list.map(r=>{
    const curPath=(path||[]).concat([r.id]);
-   const sub=repliesHTML(r.replies, qid, fid, curPath);
+   const sub=repliesHTML(r.replies, qid, fid, curPath, actionName);
    return `<div class="fbReply">
      <b>${esc(r.author)}</b><span class="tiny muted"> · ${r.role==='teacher'?'선생님':'학생'} · ${formatDateTime(r.at)}</span>
      <div>${esc(r.text)}</div>
      <div class="row" style="margin-top:4px">
-       <button class="btn sm" data-act="replyToReply" data-qid="${qid}" data-fid="${fid}" data-path="${esc(curPath.join(','))}">💬 답글</button>
+       <button class="btn sm" data-act="${actionName}" data-qid="${qid}" data-fid="${fid}" data-path="${esc(curPath.join(','))}">💬 답글</button>
      </div>
      ${sub?`<div class="fbReplies" style="margin-left:14px">${sub}</div>`:''}
    </div>`;
@@ -1484,6 +1527,84 @@ function fbHtml(f, qid, role){
      <button class="btn sm" data-act="replyfb" data-qid="${qid}" data-fid="${f.id}">💬 답글</button>
    </div>
  </div>`;
+}
+
+// ---------- 메모(의견 교환) 공통 ----------
+// q.memos: [{id, author, role, text, at, editedAt, replies:[]}]
+function memoHTML(m, qid, role){
+ const canEdit = role==='teacher'
+   ? (m.role==='teacher' && typeof TEACHER_SESSION!=='undefined' && TEACHER_SESSION && m.authorKey===TEACHER_SESSION.key)
+   : (m.role==='student');
+ const replies=repliesHTML(m.replies, qid, m.id, [], 'memoReplyToReply');
+ return `<div class="fbEntry">
+   <div class="who">${esc(m.author)}${m.role==='teacher'?' (선생님)':' (학생)'} · ${formatDateTime(m.at)}${m.editedAt?' <span class="tiny muted">(수정됨)</span>':''}</div>
+   <div>${esc(m.text).replace(/\n/g,'<br>')}</div>
+   ${replies?`<div class="fbReplies">${replies}</div>`:''}
+   <div class="row" style="margin-top:6px">
+     ${canEdit?`<button class="btn sm" data-act="editMemo" data-qid="${qid}" data-mid="${m.id}">수정</button>`:''}
+     ${canEdit?`<button class="btn sm danger" data-act="delMemo" data-qid="${qid}" data-mid="${m.id}">삭제</button>`:''}
+     <button class="btn sm" data-act="replyMemo" data-qid="${qid}" data-mid="${m.id}">💬 답글</button>
+   </div>
+ </div>`;
+}
+// 질문별 메모(의견 교환) 블록 전체 HTML. role: 'student' | 'teacher'
+function memoBlockHTML(q, qid, role){
+ const memos=q.memos||[];
+ return `<div class="fbBox">
+   <div class="tiny muted" style="margin-bottom:6px"><b>💬 메모 (선생님-학생 의견 교환)</b></div>
+   ${memos.length?memos.map(m=>memoHTML(m,qid,role)).join(''):'<div class="tiny muted" style="margin-bottom:6px">아직 메모가 없습니다.</div>'}
+   <div class="field"><textarea class="memoText" data-qid="${qid}" placeholder="메모를 남겨 보세요."></textarea></div>
+   <button class="btn sm accent" data-act="addMemo" data-qid="${qid}">메모 남기기</button>
+ </div>`;
+}
+// 메모 영역 내 add/edit/delete/reply 버튼 공통 와이어링. getQ: qid로 질문 객체를 찾는 함수. save: 변경 후 저장. rerender: 다시 그리기.
+function wireMemoBlock(wrap, getQ, save, rerender, role){
+ function newAuthor(){
+   return role==='teacher'
+     ? {author:TEACHER_SESSION?TEACHER_SESSION.displayName:'선생님', role:'teacher', authorKey:TEACHER_SESSION?TEACHER_SESSION.key:null}
+     : {author:(CURRENT?CURRENT.name:'학생'), role:'student'};
+ }
+ wrap.querySelectorAll('button[data-act="addMemo"]').forEach(b=>b.addEventListener('click', async ()=>{
+   const qid=b.dataset.qid;
+   const ta=wrap.querySelector(`.memoText[data-qid="${qid}"]`);
+   const text=(ta.value||'').trim();
+   if(!text){await uiAlert('메모 내용을 입력해 주세요.');return;}
+   const q=getQ(qid); if(!q)return;
+   q.memos=q.memos||[];
+   q.memos.push(Object.assign({id:uid(), text, at:Date.now(), replies:[]}, newAuthor()));
+   await save(); rerender();
+ }));
+ wrap.querySelectorAll('button[data-act="editMemo"]').forEach(b=>b.addEventListener('click', async ()=>{
+   const qid=b.dataset.qid, q=getQ(qid); if(!q)return;
+   const m=(q.memos||[]).find(x=>x.id===b.dataset.mid); if(!m)return;
+   const newText=await uiPrompt('메모 내용 수정', m.text); if(newText===null)return;
+   m.text=newText.trim(); m.editedAt=Date.now();
+   await save(); rerender();
+ }));
+ wrap.querySelectorAll('button[data-act="delMemo"]').forEach(b=>b.addEventListener('click', async ()=>{
+   if(!(await uiConfirm('이 메모를 삭제할까요? 답글도 함께 삭제됩니다.')))return;
+   const qid=b.dataset.qid, q=getQ(qid); if(!q)return;
+   q.memos=(q.memos||[]).filter(x=>x.id!==b.dataset.mid);
+   await save(); rerender();
+ }));
+ wrap.querySelectorAll('button[data-act="replyMemo"]').forEach(b=>b.addEventListener('click', async ()=>{
+   const text=await uiPrompt('답글을 입력하세요.'); if(!text||!text.trim())return;
+   const qid=b.dataset.qid, q=getQ(qid); if(!q)return;
+   const m=(q.memos||[]).find(x=>x.id===b.dataset.mid); if(!m)return;
+   m.replies=m.replies||[];
+   m.replies.push(Object.assign({id:uid(), text:text.trim(), at:Date.now()}, newAuthor()));
+   await save(); rerender();
+ }));
+ wrap.querySelectorAll('button[data-act="memoReplyToReply"]').forEach(b=>b.addEventListener('click', async ()=>{
+   const text=await uiPrompt('답글을 입력하세요.'); if(!text||!text.trim())return;
+   const qid=b.dataset.qid, q=getQ(qid); if(!q)return;
+   const m=(q.memos||[]).find(x=>x.id===b.dataset.mid); if(!m)return;
+   const path=b.dataset.path.split(',');
+   const target=findReplyByPath(m.replies||[], path); if(!target)return;
+   target.replies=target.replies||[];
+   target.replies.push(Object.assign({id:uid(), text:text.trim(), at:Date.now()}, newAuthor()));
+   await save(); rerender();
+ }));
 }
 
 function renderList(){
@@ -1526,6 +1647,7 @@ function renderList(){
       <button class="btn sm" data-act="edit" data-id="${q.id}">수정</button>
       <button class="btn sm danger" data-act="del" data-id="${q.id}">삭제</button>
     </div>
+    ${memoBlockHTML(q, q.id, 'student')}
     ${renderFeedbackBlock(fbs, followups, q.id, 'student')}
     <div class="followWrap">
       <div class="row between"><b class="small">↳ 꼬리질문</b><button class="btn sm" data-act="addfollow" data-id="${q.id}">+ 꼬리질문 추가</button></div>
@@ -1621,6 +1743,7 @@ function renderList(){
    q.feedback=(q.feedback||[]).filter(f=>f.followupId!==b.dataset.fid);
    await saveCurrent(); renderList();
  }));
+ wireMemoBlock(wrap, (qid)=>CURRENT.questions.find(x=>x.id===qid), saveCurrent, renderList, 'student');
  wrap.querySelectorAll('button[data-act="replyfb"]').forEach(b=>b.addEventListener('click', async ()=>{
    const text=await uiPrompt('답글을 입력하세요.'); if(!text||!text.trim())return;
    const q=CURRENT.questions.find(x=>x.id===b.dataset.qid); if(!q)return;
@@ -2735,15 +2858,18 @@ document.getElementById('tqAttachInput').addEventListener('change', async (e)=>{
  tqPendingAttach=tqPendingAttach.concat(added);
  renderTqAttachPreview();
 });
+document.getElementById('tqAnswerToolbarWrap').innerHTML = highlightToolbarHTML('tqAnswer');
+wireAnswerBox('tqAnswer');
 document.getElementById('btnAddTeacherQ').addEventListener('click', async ()=>{
  if(!TCUR){await uiAlert('학생 정보가 없습니다.');return;}
  const text=document.getElementById('tqText').value.trim();
  if(!text){await uiAlert('질문 내용을 입력해 주세요.');return;}
  const type=document.getElementById('tqType').value;
+ const answerHtml=document.getElementById('tqAnswer').innerHTML.trim();
  const newQ={
    id:uid(), type, area: type==='record'?document.getElementById('tqArea').value:null,
    univ:document.getElementById('tqUniv').value,
-   text, answerHtml:'', followups:[], feedback:[], teacherAttachments:tqPendingAttach.slice(),
+   text, answerHtml, followups:[], feedback:[], memos:[], teacherAttachments:tqPendingAttach.slice(),
    createdBy:'teacher', teacherName:TEACHER_SESSION?TEACHER_SESSION.displayName:'선생님',
    createdAt:Date.now(), updatedAt:Date.now()
  };
@@ -2751,6 +2877,7 @@ document.getElementById('btnAddTeacherQ').addEventListener('click', async ()=>{
  TCUR.data.questions.unshift(newQ);
  await saveTeacherQuestions();
  document.getElementById('tqText').value='';
+ document.getElementById('tqAnswer').innerHTML='';
  tqPendingAttach=[];
  renderTqAttachPreview();
  await uiAlert('질문을 추가했습니다. 학생이 "내 질문 목록"에서 확인하고 답변할 수 있어요.');
@@ -3038,6 +3165,16 @@ async function saveMockEntry(){
 let tQTypeFilter='all';
 let tQUnivFilter='all';
 let tQAreaFilter='all';
+let teacherAnswerEditingQid=null;
+function teacherAnswerEditorHTML(q){
+ const boxId='tqEdit_'+q.id;
+ return `<div class="answerBox" id="${boxId}" contenteditable="true">${q.answerHtml||''}</div>
+  <div id="${boxId}_toolbar"></div>
+  <div class="row" style="margin-top:6px">
+    <button class="btn sm primary" data-act="saveTeacherAnswer" data-qid="${q.id}">저장</button>
+    <button class="btn sm" data-act="cancelTeacherAnswer" data-qid="${q.id}">취소</button>
+  </div>`;
+}
 let fbPendingAttach={}; // qid -> 아직 저장 전인 피드백 첨부파일 목록
 function renderTeacherQList(){
  const wrap=document.getElementById('teacherQList');
@@ -3082,8 +3219,14 @@ function renderTeacherQList(){
     <div class="qtext">Q. ${esc(q.text)}</div>
     ${q.createdBy==='teacher'?`<div class="row" style="margin-bottom:8px"><button class="btn sm danger" data-act="delTeacherQ" data-qid="${q.id}">이 질문 삭제</button></div>`:''}
     ${q.teacherAttachments&&q.teacherAttachments.length?`<div class="tiny muted" style="margin-top:4px"><b>👩‍🏫 첨부한 참고자료</b></div>${attachmentsHTML(q.teacherAttachments)}`:''}
-    ${answerWithRevision(q.answerHtml, fbs, null, q.updatedAt)}
+    <div class="answerEditWrap" data-qid="${q.id}">
+      ${teacherAnswerEditingQid===q.id ? teacherAnswerEditorHTML(q) : `
+        ${answerWithRevision(q.answerHtml, fbs, null, q.updatedAt)}
+        <div class="row" style="margin-top:6px"><button class="btn sm" data-act="editTeacherAnswer" data-qid="${q.id}">✏ 답변 수정하기</button></div>
+      `}
+    </div>
     ${q.attachments&&q.attachments.length?`<div class="tiny muted" style="margin-top:6px"><b>학생이 첨부한 참고 자료</b></div>${attachmentsHTML(q.attachments)}`:''}
+    ${memoBlockHTML(q, q.id, 'teacher')}
     ${renderFeedbackBlock(fbs, followups, q.id, 'teacher')}
     ${followups.length?`<div class="followWrap"><b class="small">↳ 꼬리질문</b>${followups.map(fu=>{
       const fufbs=fbs.filter(f=>f.followupId===fu.id);
@@ -3140,6 +3283,27 @@ function renderTeacherQList(){
    `;
    wrap.appendChild(el);
  });
+ if(teacherAnswerEditingQid){
+   const boxId='tqEdit_'+teacherAnswerEditingQid;
+   const tb=document.getElementById(boxId+'_toolbar');
+   if(tb){ tb.innerHTML=highlightToolbarHTML(boxId); wireAnswerBox(boxId); }
+ }
+ wrap.querySelectorAll('button[data-act="editTeacherAnswer"]').forEach(b=>b.addEventListener('click',()=>{
+   teacherAnswerEditingQid=b.dataset.qid; renderTeacherQList();
+ }));
+ wrap.querySelectorAll('button[data-act="cancelTeacherAnswer"]').forEach(b=>b.addEventListener('click',()=>{
+   teacherAnswerEditingQid=null; renderTeacherQList();
+ }));
+ wrap.querySelectorAll('button[data-act="saveTeacherAnswer"]').forEach(b=>b.addEventListener('click', async ()=>{
+   const qid=b.dataset.qid;
+   const q=TCUR.data.questions.find(x=>x.id===qid); if(!q)return;
+   const box=document.getElementById('tqEdit_'+qid);
+   q.answerHtml = box ? box.innerHTML : q.answerHtml;
+   q.updatedAt=Date.now();
+   teacherAnswerEditingQid=null;
+   await saveTeacherQuestions();
+   renderTeacherQList();
+ }));
  wrap.querySelectorAll('.fbtags .chip').forEach(c=>c.addEventListener('click',()=>c.classList.toggle('on')));
  function renderFbAttachPreview(qid){
    const box=wrap.querySelector(`.fbAttachPreview[data-qid="${qid}"]`);
@@ -3176,6 +3340,7 @@ function renderTeacherQList(){
    swapArrayItemsById(TCUR.data.questions, list[i].id, list[i+1].id);
    await saveTeacherQuestions(); renderTeacherQList();
  }));
+ wireMemoBlock(wrap, (qid)=>TCUR.data.questions.find(x=>x.id===qid), saveTeacherQuestions, renderTeacherQList, 'teacher');
  wrap.querySelectorAll('button[data-act="savefb"]').forEach(b=>b.addEventListener('click', async ()=>{
    const qid=b.dataset.qid;
    const tname=TEACHER_SESSION?TEACHER_SESSION.displayName:'';

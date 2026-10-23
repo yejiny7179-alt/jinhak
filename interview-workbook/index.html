@@ -69,6 +69,8 @@ textarea{resize:vertical;min-height:70px}
 .hlColorBtn:hover{border-color:var(--text)}
 .hlColorBtn.on{border-color:var(--text);box-shadow:0 0 0 2px #fff inset}
 .answerBox:empty:before{content:attr(data-ph);color:var(--muted2)}
+.micBtn.on{background:#fee2e2;border-color:#dc2626;color:#dc2626}
+.micBtn:disabled{opacity:.5;cursor:not-allowed}
 .toolbar{display:flex;gap:8px;margin:6px 0 10px;flex-wrap:wrap}
 .fbBox{margin-top:12px;padding-top:12px;border-top:1px dashed var(--line2)}
 .fbEntry{background:#fffbea;border:1px solid #fde68a;border-radius:10px;padding:10px 14px;margin-top:8px;font-size:13.5px}
@@ -417,9 +419,13 @@ table.tbl th{background:var(--surface2);color:var(--muted);font-weight:700;font-
           </div>
         </div>
       </div>
-      <div class="field"><label>예상 질문 (메인 질문)</label><textarea id="qText" placeholder="예: 화학 심화탐구에서 특정 촉매를 선택한 이유는 무엇인가요?"></textarea></div>
+      <div class="field"><label>예상 질문 (메인 질문)</label><textarea id="qText" placeholder="예: 화학 심화탐구에서 특정 촉매를 선택한 이유는 무엇인가요?"></textarea>
+        <div class="row" style="margin-top:4px;align-items:center;flex-wrap:wrap"><button type="button" class="btn sm micBtn" data-target="qText" title="마이크 버튼을 누르고 말하면 자동으로 입력됩니다">🎤 음성으로 입력</button> <span class="tiny muted micStatus" data-target="qText"></span></div>
+        <p class="tiny muted" style="margin:2px 0 0">💡 조용한 곳에서 문장 단위로 또렷하게 말하면 인식 정확도가 높아져요. 인식된 내용은 눈으로 확인하고 바로 고칠 수 있어요.</p>
+      </div>
       <div class="field"><label>내 답변 <span class="tiny muted">(작성 후 드래그로 선택해 핵심 키워드를 표시하세요)</span></label></div>
       <div class="answerBox" id="qAnswer" contenteditable="true" data-ph="여기에 답변을 직접 작성해 보세요."></div>
+      <div class="row" style="margin-top:4px;align-items:center;flex-wrap:wrap"><button type="button" class="btn sm micBtn" data-target="qAnswer" title="마이크 버튼을 누르고 말하면 자동으로 입력됩니다">🎤 음성으로 입력</button> <span class="tiny muted micStatus" data-target="qAnswer"></span></div>
       <div id="qAnswerToolbarWrap"></div>
       <div class="row" style="align-items:center;gap:10px;flex-wrap:wrap">
         <button class="btn primary" id="btnSaveQ" type="button">질문 저장하기</button>
@@ -475,13 +481,37 @@ table.tbl th{background:var(--surface2);color:var(--muted);font-weight:700;font-
             <select id="practiceUnivFilter"><option value="all">모든 대학</option></select>
           </div>
         </div>
-        <p class="small muted" style="margin-top:8px">아래 목록으로 한 번에 훑어보거나, 카드 연습으로 하나씩 실전처럼 연습해 보세요. 랜덤 연습은 질문이 무작위 순서로 나오고, 목표시간을 설정해두면 시간이 되면 자동으로 다음 질문으로 넘어가요.</p>
+        <p class="small muted" style="margin-top:8px">아래 목록으로 한 번에 훑어보거나, 카드 연습으로 하나씩 실전처럼 연습해 보세요. 랜덤 연습은 질문 순서가 섞여서 나오고, 목표시간을 설정해두면 시간이 되면 자동으로 다음 질문으로 넘어가요. 첫 질문은 항상 자기소개·지원동기 질문으로, 마지막 질문은 마지막으로 하고 싶은 말·지원자를 뽑아야 하는 이유 질문으로 고정돼요 (해당 질문을 만들어 두었다면).</p>
+        <div class="row" style="gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
+          <label class="tiny muted" style="display:flex;align-items:center;gap:4px">질문 개수<input type="number" id="practiceQCountInput" min="1" max="50" placeholder="전체" style="width:60px"></label>
+          <span class="tiny muted">비워두면 조건에 맞는 질문 전체로 연습해요.</span>
+        </div>
         <div class="row" style="gap:8px;flex-wrap:wrap">
           <button class="btn primary" id="btnStartPractice" type="button">🎴 순서대로 연습 시작</button>
           <button class="btn accent" id="btnStartRandomPractice" type="button">🔀 랜덤으로 연습 시작</button>
         </div>
       </div>
       <div id="practiceSimpleList"></div>
+      <div class="card">
+        <h2>📋 지난 연습 기록</h2>
+        <p class="small muted">연습을 마치고 남긴 스스로 피드백 기록이에요. 선생님도 함께 볼 수 있어요.</p>
+        <div id="practiceLogListWrap"></div>
+      </div>
+    </div>
+
+    <div id="practiceSessionFeedbackView" hidden>
+      <div class="card">
+        <h2>오늘의 연습 피드백</h2>
+        <p class="small muted" id="psfDateTimeLabel"></p>
+        <div id="practiceSessionSummary"></div>
+        <div class="field"><label>답변 구성</label><textarea id="psfStructure" placeholder="답변의 구성(서론-본론-결론, 논리적 흐름 등)에 대해 스스로 평가해 보세요."></textarea></div>
+        <div class="field"><label>태도</label><textarea id="psfAttitude" placeholder="목소리, 시선, 자신감, 말하는 속도 등 태도에 대해 스스로 평가해 보세요."></textarea></div>
+        <div class="field"><label>오늘의 총평</label><textarea id="psfOverall" placeholder="오늘 연습에서 잘한 점과 더 연습할 점을 적어보세요."></textarea></div>
+        <div class="row" style="gap:8px">
+          <button class="btn primary" id="btnSavePracticeSession" type="button">피드백 저장하고 마치기</button>
+          <button class="btn" id="btnDiscardPracticeSession" type="button">저장하지 않고 나가기</button>
+        </div>
+      </div>
     </div>
 
     <div id="practiceCardView" hidden>
@@ -521,7 +551,10 @@ table.tbl th{background:var(--surface2);color:var(--muted);font-weight:700;font-
         </div>
         <div id="practiceHintBox" class="tiny" style="text-align:center;margin-top:8px" hidden></div>
         <div id="practiceAnswerBox" class="tiny" style="text-align:left;margin-top:8px" hidden></div>
-        <div class="toolbar" id="practiceRecordControls" style="justify-content:center;margin-top:18px">
+        <div class="row" style="justify-content:center;margin-top:18px">
+          <button class="btn primary" id="btnPracticeBeginTimer" type="button">▶ 답변 시작 (타이머 시작)</button>
+        </div>
+        <div class="toolbar" id="practiceRecordControls" style="justify-content:center;margin-top:18px" hidden>
           <button class="btn accent sm" id="btnRecStart" type="button">🎙 녹음 시작</button>
           <button class="btn danger sm" id="btnRecStop" type="button" hidden>⏹ 녹음 정지</button>
         </div>
@@ -529,6 +562,22 @@ table.tbl th{background:var(--surface2);color:var(--muted);font-weight:700;font-
         <a id="practiceDownloadLink" href="#" download="answer.webm" class="btn sm" style="display:none;margin-top:8px">⬇ 이 녹음 다운로드</a>
         <p class="tiny muted" id="practiceRecNote" style="text-align:center;margin-top:6px"></p>
         <div id="practiceCheckResult" class="tiny" style="text-align:left;margin-top:10px;background:var(--primary-2,#f3f4f6);border-radius:10px;padding:10px 12px" hidden></div>
+        <div id="practiceEvalBox" class="tiny" style="text-align:left;margin-top:14px;border-top:1px dashed var(--line2);padding-top:12px">
+          <div style="font-weight:700;margin-bottom:6px">이 답변 스스로 평가하기</div>
+          <div class="row" style="gap:6px;margin-bottom:8px">
+            <button class="btn sm" id="btnEvalGood" type="button" data-val="good">👍 잘했어요</button>
+            <button class="btn sm" id="btnEvalBad" type="button" data-val="bad">👎 아쉬웠어요</button>
+          </div>
+          <div class="chips" id="practiceEvalReasons">
+            <button class="chip" data-r="stutter" type="button">더듬었어요</button>
+            <button class="chip" data-r="missingKeyword" type="button">키워드를 빠뜨렸어요</button>
+            <button class="chip" data-r="overtime" type="button">시간을 초과했어요</button>
+            <button class="chip" data-r="thin" type="button">내용이 부족했어요</button>
+            <button class="chip" data-r="unstructured" type="button">두서없이 말했어요</button>
+            <button class="chip" data-r="voice" type="button">목소리/자신감이 부족했어요</button>
+          </div>
+          <textarea id="practiceEvalNote" placeholder="메모(선택)" style="margin-top:8px"></textarea>
+        </div>
         <div class="row between" style="margin-top:22px">
           <button class="btn" id="btnPracticePrev" type="button">← 이전</button>
           <button class="btn" id="btnPracticeEnd" type="button">연습 종료</button>
@@ -839,6 +888,10 @@ table.tbl th{background:var(--surface2);color:var(--muted);font-weight:700;font-
   <div id="teacherScheduleWrap"></div>
   <div id="teacherMockWrap"></div>
   <div class="card">
+    <h2>📋 학생의 연습 피드백 기록 <span class="hint">학생이 "연습하기"에서 혼자 연습한 뒤 스스로 남긴 피드백입니다</span></h2>
+    <div id="teacherPracticeLogWrap"></div>
+  </div>
+  <div class="card">
     <h2>선생님이 질문 추가하기 <span class="hint">학생의 질문 목록에 바로 추가되어, 학생이 답변을 작성할 수 있습니다</span></h2>
     <div class="grid c2">
       <div class="field"><label>질문 유형</label>
@@ -859,9 +912,13 @@ table.tbl th{background:var(--surface2);color:var(--muted);font-weight:700;font-
       </div>
     </div>
     <div class="field"><label>지원 대학</label><select id="tqUniv"><option value="공통">공통 (모든 대학에 해당)</option></select></div>
-    <div class="field"><label>질문 내용</label><textarea id="tqText" placeholder="예: 이 활동에서 겪은 어려움은 무엇이었나요?"></textarea></div>
+    <div class="field"><label>질문 내용</label><textarea id="tqText" placeholder="예: 이 활동에서 겪은 어려움은 무엇이었나요?"></textarea>
+      <div class="row" style="margin-top:4px;align-items:center;flex-wrap:wrap"><button type="button" class="btn sm micBtn" data-target="tqText" title="마이크 버튼을 누르고 말하면 자동으로 입력됩니다">🎤 음성으로 입력</button> <span class="tiny muted micStatus" data-target="tqText"></span></div>
+      <p class="tiny muted" style="margin:2px 0 0">💡 조용한 곳에서 문장 단위로 또렷하게 말하면 인식 정확도가 높아져요. 인식된 내용은 눈으로 확인하고 바로 고칠 수 있어요.</p>
+    </div>
     <div class="field"><label>답변 예시 <span class="tiny muted">(학생이 아직 답변을 쓰지 않았다면, 참고할 수 있는 답변 예시를 작성해 주세요)</span></label></div>
     <div class="answerBox" id="tqAnswer" contenteditable="true" data-ph="답변 예시를 작성해 보세요 (선택 사항)."></div>
+    <div class="row" style="margin-top:4px;align-items:center;flex-wrap:wrap"><button type="button" class="btn sm micBtn" data-target="tqAnswer" title="마이크 버튼을 누르고 말하면 자동으로 입력됩니다">🎤 음성으로 입력</button> <span class="tiny muted micStatus" data-target="tqAnswer"></span></div>
     <div id="tqAnswerToolbarWrap"></div>
     <div class="attachPickWrap">
       <div class="tiny muted"><b>참고 자료 첨부</b> <span class="attachHint">학생이 참고할 자료나 사진을 함께 줄 수 있어요 (파일당 350KB 이하).</span></div>
@@ -1103,13 +1160,16 @@ const HL_COLORS=[
 ];
 const HL_COLOR_MAP=Object.fromEntries(HL_COLORS.map(c=>[c.key,c.bg]));
 // contenteditable 답변 상자(boxId) 위에 붙일 색상 선택 하이라이트 툴바 HTML
-function highlightToolbarHTML(boxId){
+// teacherMode=true 이면 "선생님 수정(빨간색 표시)" 버튼도 함께 넣어준다 (교사가 학생 답변을 고칠 때 사용)
+function highlightToolbarHTML(boxId, teacherMode){
  const swatches=HL_COLORS.map((c,i)=>
   `<button type="button" class="hlColorBtn${i===0?' on':''}" data-box="${boxId}" data-color="${c.key}" style="background:${c.bg}" title="${c.label}"></button>`
  ).join('');
+ const teacherBtn = teacherMode ? `<button type="button" class="hlColorBtn teacherFixBtn" data-box="${boxId}" style="background:#fff;color:#dc2626;border:1px solid #dc2626;font-weight:700;width:auto;padding:0 8px;font-size:11px" title="선택한 부분을 선생님이 고친 내용(빨간색)으로 표시">가 수정</button>` : '';
  return `<div class="toolbar hlToolbar" data-hltoolbar="${boxId}">
-  <span class="tiny muted">🖍 드래그 후 색 선택:</span>${swatches}
-  <span class="tiny muted" style="margin-left:4px">표시된 키워드를 클릭하면 지워집니다</span>
+  <span class="tiny muted">🖍 드래그 후 색 선택:</span>${swatches}${teacherBtn}
+  <span class="tiny muted" style="margin-left:4px">표시된 키워드${teacherMode?'·빨간 수정 표시':''}를 클릭하면 지워집니다</span>
+  ${teacherMode?'<div class="tiny muted" style="margin-top:4px">✏ 학생 답변을 직접 고친 뒤, 고친 부분을 드래그해서 선택하고 "가 수정" 버튼을 누르면 빨간색으로 표시됩니다. 그 위에 키워드 색칠도 그대로 할 수 있어요.</div>':''}
  </div>`;
 }
 // 하이라이트 툴바 + 답변 상자(boxId)에 대한 동작(드래그→색칠, 클릭→해제)을 연결. 같은 id의 상자/툴바가 매번 새로 렌더링된 뒤 호출.
@@ -1118,9 +1178,9 @@ function wireAnswerBox(boxId){
  if(!box) return;
  const toolbar=document.querySelector(`[data-hltoolbar="${boxId}"]`);
  if(toolbar){
-  toolbar.querySelectorAll('.hlColorBtn').forEach(btn=>{
+  toolbar.querySelectorAll('.hlColorBtn:not(.teacherFixBtn)').forEach(btn=>{
    btn.addEventListener('click',()=>{
-    toolbar.querySelectorAll('.hlColorBtn').forEach(b=>b.classList.remove('on'));
+    toolbar.querySelectorAll('.hlColorBtn:not(.teacherFixBtn)').forEach(b=>b.classList.remove('on'));
     btn.classList.add('on');
     const sel=window.getSelection();
     if(!sel || sel.rangeCount===0 || sel.isCollapsed){ box.focus(); return; }
@@ -1136,13 +1196,112 @@ function wireAnswerBox(boxId){
     sel.removeAllRanges();
    });
   });
+  const teacherBtn=toolbar.querySelector('.teacherFixBtn');
+  if(teacherBtn){
+   teacherBtn.addEventListener('click',()=>{
+    const sel=window.getSelection();
+    if(!sel || sel.rangeCount===0 || sel.isCollapsed){ box.focus(); return; }
+    const range=sel.getRangeAt(0);
+    if(!box.contains(range.commonAncestorContainer)){ return; }
+    const span=document.createElement('span');
+    span.className='teacherFix';
+    span.style.color='#dc2626';
+    span.style.fontWeight='600';
+    try{ range.surroundContents(span); }
+    catch(e){ span.appendChild(range.extractContents()); range.insertNode(span); }
+    sel.removeAllRanges();
+   });
+  }
  }
  box.addEventListener('click',(e)=>{
   if(e.target.tagName==='MARK'){
    const parent=e.target.parentNode;
    while(e.target.firstChild) parent.insertBefore(e.target.firstChild,e.target);
    parent.removeChild(e.target);
+  } else if(e.target.tagName==='SPAN' && e.target.classList.contains('teacherFix')){
+   const parent=e.target.parentNode;
+   while(e.target.firstChild) parent.insertBefore(e.target.firstChild,e.target);
+   parent.removeChild(e.target);
   }
+ });
+}
+
+// ---------- 음성 입력(마이크) 공통 유틸 ----------
+// 질문/답변 입력칸(타이핑 가능한 textarea 또는 contenteditable 상자) 옆에 붙일 마이크 버튼.
+// isTextarea=true면 textarea/input의 value에, false면 contenteditable 상자의 끝에 말한 내용을 추가해 준다.
+// 정확도를 높이기 위해: ① 짧은 침묵으로 인식기가 스스로 멈춰도 자동으로 다시 시작해 문장이 끊기지 않게 하고,
+// ② 공백/띄어쓰기를 정리해서 붙이고, ③ 문장이 끝날 때마다 바로 입력칸에 반영해 사람이 눈으로 바로 확인·수정할 수 있게 한다.
+function micButtonHTML(targetId){
+ return `<button type="button" class="btn sm micBtn" data-target="${targetId}" title="마이크 버튼을 누르고 말하면 자동으로 입력됩니다">🎤 음성으로 입력</button> <span class="tiny muted micStatus" data-target="${targetId}"></span>`;
+}
+function micTipHTML(){
+ return `<span class="tiny muted">💡 조용한 곳에서 문장 단위로 또렷하게 말하면 인식 정확도가 높아져요. 인식된 내용은 눈으로 확인하고 바로 고칠 수 있어요.</span>`;
+}
+function wireMicButton(targetId, isTextarea){
+ const btn=document.querySelector(`.micBtn[data-target="${targetId}"]`);
+ if(!btn) return;
+ const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+ if(!SR){ btn.disabled=true; btn.title='이 브라우저는 음성 입력을 지원하지 않습니다. Chrome 브라우저를 사용해 보세요.'; return; }
+ const statusEl=document.querySelector(`.micStatus[data-target="${targetId}"]`);
+ let recog=null, listening=false, manualStop=false, restartTimer=null;
+ function appendFinal(text){
+  const field=document.getElementById(targetId);
+  if(!field) return;
+  const clean=(text||'').replace(/\s+/g,' ').trim();
+  if(!clean) return;
+  if(isTextarea){
+   const cur=field.value||'';
+   field.value = (cur && !/[\s\n]$/.test(cur)) ? cur+' '+clean : cur+clean;
+   field.dispatchEvent(new Event('input',{bubbles:true}));
+  } else {
+   const needsSpace = field.textContent && !/\s$/.test(field.textContent);
+   field.innerHTML = field.innerHTML + (needsSpace?' ':'') + esc(clean) + ' ';
+  }
+ }
+ function startRecog(){
+  recog=new SR();
+  recog.lang='ko-KR'; recog.continuous=true; recog.interimResults=true; recog.maxAlternatives=1;
+  recog.onresult=(e)=>{
+   let interim='';
+   for(let i=e.resultIndex;i<e.results.length;i++){
+    const res=e.results[i];
+    if(res.isFinal) appendFinal(res[0].transcript);
+    else interim+=res[0].transcript;
+   }
+   if(statusEl) statusEl.textContent = interim ? ('🔴 듣는 중… '+interim.trim()) : '🔴 듣는 중…';
+  };
+  recog.onerror=(e)=>{
+   console.warn('mic error', e.error);
+   if(e.error==='not-allowed' || e.error==='service-not-allowed'){
+    manualStop=true; listening=false;
+    if(statusEl) statusEl.textContent='마이크 권한이 필요합니다. 브라우저 설정에서 허용해 주세요.';
+   }
+  };
+  recog.onend=()=>{
+   if(listening && !manualStop){
+    // 짧은 침묵 등으로 인식기가 스스로 멈춘 경우 — 문장이 끊기지 않도록 바로 다시 시작
+    clearTimeout(restartTimer);
+    restartTimer=setTimeout(()=>{ if(listening && !manualStop){ try{ startRecog(); }catch(e){} } }, 250);
+   } else {
+    btn.textContent='🎤 음성으로 입력'; btn.classList.remove('on');
+    if(statusEl) statusEl.textContent='';
+   }
+  };
+  try{ recog.start(); }catch(e){ console.error(e); }
+ }
+ btn.addEventListener('click',()=>{
+  const field=document.getElementById(targetId);
+  if(!field) return;
+  if(listening){
+   manualStop=true; listening=false;
+   clearTimeout(restartTimer);
+   if(recog){ try{ recog.stop(); }catch(e){} }
+   return;
+  }
+  manualStop=false; listening=true;
+  btn.textContent='⏹ 음성 입력 중지'; btn.classList.add('on');
+  if(statusEl) statusEl.textContent='🔴 듣는 중…';
+  startRecog();
  });
 }
 
@@ -1216,6 +1375,10 @@ function printHTML(title, bodyHtml){
     @media print{ body{padding:0} }
   </style></head><body>${bodyHtml}<script>window.onload=function(){setTimeout(function(){window.print();},250);}<\/script></body></html>`);
   win.document.close();
+}
+// 선생님이 직접 고친 부분(빨간색 표시)이 답변 안에 있는지 확인
+function hasTeacherFix(answerHtml){
+ return !!(answerHtml && answerHtml.indexOf('teacherFix')>=0);
 }
 // 피드백 이후 수정 여부를 비교해, 수정됐다면 원문 아래에 파란 글씨로 수정본을 보여준다
 function wasRevisedSinceFeedback(currentHtml, feedbackArr, followupId){
@@ -1391,17 +1554,17 @@ document.getElementById('btnStudentLogin').addEventListener('click', async ()=>{
       if(!data.passwordHash){
         // 선생님이 미리 등록해둔 계정 — 지금 입력한 비밀번호를 새로 설정하고 이어서 로그인
         await ref.update({passwordHash:hash});
-        CURRENT={key, school:data.school, number:data.number, name:data.name, questions:data.questions||[], schedule:data.schedule||[], debates:data.debates||[], mockInterviews:data.mockInterviews||[], research:data.research||[], presentations:data.presentations||[], knowledge:data.knowledge||[], mockPrepAttachments:data.mockPrepAttachments||[]};
+        CURRENT={key, school:data.school, number:data.number, name:data.name, questions:data.questions||[], schedule:data.schedule||[], debates:data.debates||[], mockInterviews:data.mockInterviews||[], research:data.research||[], presentations:data.presentations||[], knowledge:data.knowledge||[], mockPrepAttachments:data.mockPrepAttachments||[], selfPracticeLogs:data.selfPracticeLogs||[]};
       } else if(data.passwordHash!==hash){
         showSlMsg('비밀번호가 일치하지 않습니다.','error');return;
       } else {
-        CURRENT={key, school:data.school, number:data.number, name:data.name, questions:data.questions||[], schedule:data.schedule||[], debates:data.debates||[], mockInterviews:data.mockInterviews||[], research:data.research||[], presentations:data.presentations||[], knowledge:data.knowledge||[], mockPrepAttachments:data.mockPrepAttachments||[]};
+        CURRENT={key, school:data.school, number:data.number, name:data.name, questions:data.questions||[], schedule:data.schedule||[], debates:data.debates||[], mockInterviews:data.mockInterviews||[], research:data.research||[], presentations:data.presentations||[], knowledge:data.knowledge||[], mockPrepAttachments:data.mockPrepAttachments||[], selfPracticeLogs:data.selfPracticeLogs||[]};
       }
     } else {
       const newDoc={school, number, name, schoolNorm:safeSeg(school), numberNorm:safeSeg(number), nameNorm:safeSeg(name),
-        passwordHash:hash, questions:[], schedule:[], debates:[], mockInterviews:[], research:[], presentations:[], knowledge:[], updatedAt:Date.now()};
+        passwordHash:hash, questions:[], schedule:[], debates:[], mockInterviews:[], research:[], presentations:[], knowledge:[], selfPracticeLogs:[], updatedAt:Date.now()};
       await ref.set(newDoc);
-      CURRENT={key, school, number, name, questions:[], schedule:[], debates:[], mockInterviews:[], research:[], presentations:[], knowledge:[], mockPrepAttachments:[]};
+      CURRENT={key, school, number, name, questions:[], schedule:[], debates:[], mockInterviews:[], research:[], presentations:[], knowledge:[], mockPrepAttachments:[], selfPracticeLogs:[]};
     }
     document.getElementById('studentGreeting').textContent=`${CURRENT.school} · ${CURRENT.number}번 · ${CURRENT.name}님`;
     document.getElementById('slPassword').value='';
@@ -1417,7 +1580,7 @@ async function saveCurrent(){
   if(!fbReady||!CURRENT) return;
   const note=document.getElementById('savingNote'); note.textContent='저장 중…';
   try{
-    await db.collection('students').doc(CURRENT.key).update({questions:CURRENT.questions, schedule:CURRENT.schedule, debates:CURRENT.debates, mockInterviews:CURRENT.mockInterviews, research:CURRENT.research, presentations:CURRENT.presentations, knowledge:CURRENT.knowledge, mockPrepAttachments:CURRENT.mockPrepAttachments||[], updatedAt:Date.now()});
+    await db.collection('students').doc(CURRENT.key).update({questions:CURRENT.questions, schedule:CURRENT.schedule, debates:CURRENT.debates, mockInterviews:CURRENT.mockInterviews, research:CURRENT.research, presentations:CURRENT.presentations, knowledge:CURRENT.knowledge, mockPrepAttachments:CURRENT.mockPrepAttachments||[], selfPracticeLogs:CURRENT.selfPracticeLogs||[], updatedAt:Date.now()});
     note.textContent='저장됨 ✓';
     setTimeout(()=>{ if(note.textContent==='저장됨 ✓') note.textContent=''; },1500);
   }catch(e){ console.error(e); note.textContent=''; await uiAlert('저장 중 오류: '+e.message); }
@@ -1426,7 +1589,7 @@ async function refreshCurrent(afterRender){
   if(!fbReady||!CURRENT) return;
   try{
     const snap=await db.collection('students').doc(CURRENT.key).get();
-    if(snap.exists){ CURRENT.questions=snap.data().questions||[]; CURRENT.schedule=snap.data().schedule||[]; CURRENT.debates=snap.data().debates||[]; CURRENT.mockInterviews=snap.data().mockInterviews||[]; CURRENT.research=snap.data().research||[]; CURRENT.presentations=snap.data().presentations||[]; CURRENT.knowledge=snap.data().knowledge||[]; CURRENT.mockPrepAttachments=snap.data().mockPrepAttachments||[]; }
+    if(snap.exists){ CURRENT.questions=snap.data().questions||[]; CURRENT.schedule=snap.data().schedule||[]; CURRENT.debates=snap.data().debates||[]; CURRENT.mockInterviews=snap.data().mockInterviews||[]; CURRENT.research=snap.data().research||[]; CURRENT.presentations=snap.data().presentations||[]; CURRENT.knowledge=snap.data().knowledge||[]; CURRENT.mockPrepAttachments=snap.data().mockPrepAttachments||[]; CURRENT.selfPracticeLogs=snap.data().selfPracticeLogs||[]; }
     if(typeof afterRender==='function') afterRender(); else renderList();
   }catch(e){ console.error(e); }
 }
@@ -1495,6 +1658,8 @@ function populateQUnivSelect(selected){
 }
 document.getElementById('qAnswerToolbarWrap').innerHTML = highlightToolbarHTML('qAnswer');
 wireAnswerBox('qAnswer');
+wireMicButton('qText', true);
+wireMicButton('qAnswer', false);
 let editingId=null;
 // 새 질문을 작성하는 중일 때만(수정 중이 아닐 때만) 임시저장. 학생별로 구분해서 저장.
 const qDraft = setupDraftAutosave(
@@ -1726,6 +1891,7 @@ function renderList(){
       ${q.createdBy==='teacher'?`<span class="badge" style="background:#ede9fe;color:#6d28d9">👩‍🏫 ${esc(q.teacherName||'선생님')}이(가) 낸 질문</span>`:''}
       ${fbs.length?`<span class="badge warn">선생님 피드백 ${fbs.length}건</span>`:''}
       ${wasRevisedSinceFeedback(q.answerHtml, fbs, null)?`<span class="badge" style="background:#dbeafe;color:#1e3a8a">✏ 답변 수정됨</span>`:''}
+      ${hasTeacherFix(q.answerHtml)?`<span class="badge" style="background:#fee2e2;color:#dc2626">👩‍🏫 선생님이 고쳐주신 부분 있음</span>`:''}
     </div>
     <div class="qtext">Q. ${esc(q.text)}</div>
     ${q.teacherAttachments&&q.teacherAttachments.length?`<div class="tiny muted" style="margin-top:6px"><b>👩‍🏫 선생님이 첨부한 참고자료</b></div>${attachmentsHTML(q.teacherAttachments)}`:''}
@@ -2142,7 +2308,8 @@ function renderPracticeList(){
  const list=getPracticeQuestions();
  const wrap=document.getElementById('practiceSimpleList');
  document.getElementById('btnStartPractice').disabled = list.length===0;
- if(!list.length){ wrap.innerHTML='<div class="empty">조건에 맞는 질문이 없습니다. "질문 만들기" 탭에서 먼저 질문을 만들어 보세요.</div>'; return; }
+ if(!list.length){ wrap.innerHTML='<div class="empty">조건에 맞는 질문이 없습니다. "질문 만들기" 탭에서 먼저 질문을 만들어 보세요.</div>'; }
+ else {
  wrap.innerHTML=list.map((q,i)=>`<div class="practiceSimpleItem">
    <div class="row between" style="gap:8px">
      <div><b>${i+1}.</b> ${esc(q.text)} ${q.type==='basic'?'<span class="badge">기본질문</span>':`<span class="badge acc">생기부</span>${q.univ&&q.univ!=='공통'?`<span class="badge warn">${esc(q.univ)}</span>`:''}`}</div>
@@ -2164,25 +2331,94 @@ function renderPracticeList(){
      b.textContent='답변 보기';
    }
  }));
+ }
+ renderPracticeLogList();
 }
 document.querySelectorAll('#practiceFilterChips .chip').forEach(c=>{
  c.addEventListener('click',()=>{document.querySelectorAll('#practiceFilterChips .chip').forEach(x=>x.classList.remove('on'));c.classList.add('on');practiceTypeFilter=c.dataset.f;renderPracticeList();});
 });
 document.getElementById('practiceUnivFilter').addEventListener('change',(e)=>{ practiceUnivFilter=e.target.value; renderPracticeList(); });
 
+// ---------- 지난 연습 피드백 기록 (학생) ----------
+const EVAL_REASON_LABELS={stutter:'더듬음', missingKeyword:'키워드 누락', overtime:'시간 초과', thin:'내용 부족', unstructured:'두서없음', voice:'목소리/자신감 부족'};
+function evalReasonLabel(r){ return EVAL_REASON_LABELS[r]||r; }
+function practiceLogSummaryHTML(log){
+ return `${esc(log.date||'')} ${esc(log.time||'')} · 질문 ${(log.items||[]).length}개`;
+}
+function practiceLogDetailHTML(log){
+ return `
+  <div class="tiny muted" style="margin-bottom:8px">${esc(log.date||'')} ${esc(log.time||'')} 기록${log.updatedAt&&log.updatedAt!==log.createdAt?' (수정됨)':''}</div>
+  ${(log.items||[]).map((it,i)=>{
+    const resultLabel = it.eval&&it.eval.result==='good' ? '👍 잘했어요' : (it.eval&&it.eval.result==='bad' ? '👎 아쉬웠어요' : '<span class="muted">(평가 안 함)</span>');
+    const reasonsText = it.eval&&it.eval.reasons&&it.eval.reasons.length ? it.eval.reasons.map(evalReasonLabel).join(', ') : '';
+    return `<div class="item">
+      <div class="qtext">${i+1}. Q. ${esc(it.qtext)}</div>
+      <div class="answerBox">${(it.answerHtml&&it.answerHtml.trim())?it.answerHtml:'<span class="muted">(작성한 답변 없음)</span>'}</div>
+      <div class="tiny" style="margin-top:6px"><b>평가:</b> ${resultLabel}${reasonsText?` — ${esc(reasonsText)}`:''}${it.eval&&it.eval.note?`<div class="muted">메모: ${esc(it.eval.note)}</div>`:''}</div>
+    </div>`;
+  }).join('')}
+  <div class="fbBox" style="margin-top:10px">
+    <div><b>답변 구성</b><div>${log.feedback&&log.feedback.structure?esc(log.feedback.structure).replace(/\n/g,'<br>'):'<span class="muted">-</span>'}</div></div>
+    <div style="margin-top:8px"><b>태도</b><div>${log.feedback&&log.feedback.attitude?esc(log.feedback.attitude).replace(/\n/g,'<br>'):'<span class="muted">-</span>'}</div></div>
+    <div style="margin-top:8px"><b>총평</b><div>${log.feedback&&log.feedback.overall?esc(log.feedback.overall).replace(/\n/g,'<br>'):'<span class="muted">-</span>'}</div></div>
+  </div>
+ `;
+}
+function renderPracticeLogList(){
+ if(!CURRENT) return;
+ const wrap=document.getElementById('practiceLogListWrap');
+ if(!wrap) return;
+ const logs=(CURRENT.selfPracticeLogs||[]).slice().sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+ if(!logs.length){ wrap.innerHTML='<p class="tiny muted">아직 저장된 연습 피드백이 없습니다. 카드 연습을 마치면 스스로 피드백을 남길 수 있어요.</p>'; return; }
+ wrap.innerHTML = logs.map(log=>`
+   <div class="item">
+     <div class="row between">
+       <b>${practiceLogSummaryHTML(log)}</b>
+       <button class="btn sm" data-act="togglePracticeLog" data-id="${log.id}" type="button">펼치기 ▾</button>
+     </div>
+     <div class="practiceLogDetail" data-id="${log.id}" hidden style="margin-top:8px"></div>
+     <div class="row" style="margin-top:8px" data-logactions="${log.id}" hidden>
+       <button class="btn sm" data-act="editPracticeLog" data-id="${log.id}" type="button">수정</button>
+       <button class="btn sm danger" data-act="delPracticeLog" data-id="${log.id}" type="button">삭제</button>
+     </div>
+   </div>
+ `).join('');
+ wrap.querySelectorAll('button[data-act="togglePracticeLog"]').forEach(b=>b.addEventListener('click',()=>{
+   const id=b.dataset.id;
+   const log=logs.find(x=>x.id===id); if(!log) return;
+   const box=wrap.querySelector(`.practiceLogDetail[data-id="${id}"]`);
+   const actions=wrap.querySelector(`[data-logactions="${id}"]`);
+   const willShow=box.hidden;
+   if(willShow){ box.innerHTML=practiceLogDetailHTML(log); box.hidden=false; actions.hidden=false; b.textContent='접기 ▴'; }
+   else{ box.hidden=true; actions.hidden=true; b.textContent='펼치기 ▾'; }
+ }));
+ wrap.querySelectorAll('button[data-act="delPracticeLog"]').forEach(b=>b.addEventListener('click', async ()=>{
+   if(!(await uiConfirm('이 연습 피드백 기록을 삭제할까요?'))) return;
+   CURRENT.selfPracticeLogs=(CURRENT.selfPracticeLogs||[]).filter(x=>x.id!==b.dataset.id);
+   await saveCurrent();
+   renderPracticeLogList();
+ }));
+ wrap.querySelectorAll('button[data-act="editPracticeLog"]').forEach(b=>b.addEventListener('click', async ()=>{
+   const log=(CURRENT.selfPracticeLogs||[]).find(x=>x.id===b.dataset.id); if(!log) return;
+   const structure=await uiPrompt('답변 구성 피드백 수정', (log.feedback&&log.feedback.structure)||''); if(structure===null) return;
+   const attitude=await uiPrompt('태도 피드백 수정', (log.feedback&&log.feedback.attitude)||''); if(attitude===null) return;
+   const overall=await uiPrompt('총평 수정', (log.feedback&&log.feedback.overall)||''); if(overall===null) return;
+   log.feedback={structure:structure.trim(), attitude:attitude.trim(), overall:overall.trim()};
+   log.updatedAt=Date.now();
+   await saveCurrent();
+   renderPracticeLogList();
+ }));
+}
+
 // 카드 연습 모드
 let practiceDeck=[]; let practiceIdx=0; let practiceTimerHandle=null; let practiceSeconds=0;
-let practiceMode='sequential'; // 'sequential' | 'random'
-let practiceHistory=[]; // 랜덤 모드에서 "이전"으로 되돌아가기 위한 방문 기록
+let practiceMode='sequential'; // 'sequential' | 'random' (연습 시작 시 질문 순서를 섞을지 여부)
+let practiceQCount=null; // 연습 시작 시 설정한 질문 개수 (null=전체)
 let autoAdvanceTriggered=false; // 목표시간 도달로 이미 자동으로 다음 질문으로 넘어갔는지
-function pickRandomIdx(excludeIdx){
- if(practiceDeck.length<=1) return 0;
- let idx;
- do{ idx=Math.floor(Math.random()*practiceDeck.length); }while(idx===excludeIdx);
- return idx;
-}
+let sessionEval={}; // 이번 연습 세션 동안의 문항별 자가평가 {qid: {result, reasons:[], note}}
 let mediaStream=null; let mediaRecorder=null; let mediaChunks=[]; let mediaSupported = !!(navigator.mediaDevices && window.MediaRecorder);
 let practiceTargetSeconds=null; // 목표 답변 시간(초)
+let practiceTimerStarted=false; // "답변 시작" 버튼을 눌러 타이머가 시작됐는지
 let recordStartSeconds=0; // 녹음을 시작한 시점의 practiceSeconds
 let practiceRecognition=null;
 let practiceRecognitionSupported = !!(window.SpeechRecognition || window.webkitSpeechRecognition);
@@ -2195,60 +2431,90 @@ function extractKeywords(answerHtml){
  return [...div.querySelectorAll('mark.kw')].map(m=>(m.textContent||'').trim()).filter(Boolean);
 }
 function normForMatch(s){ return (s||'').replace(/\s+/g,'').toLowerCase(); }
-
+function shuffleArray(arr){
+ const a=arr.slice();
+ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); const t=a[i]; a[i]=a[j]; a[j]=t; }
+ return a;
+}
+// 첫 질문=자기소개/지원동기, 마지막 질문=마지막으로 하고싶은 말/뽑아야하는 이유로 고정하고,
+// 나머지는 순서대로(또는 랜덤이면 섞어서) 배치. count가 있으면 그 개수만큼만 사용.
+// - 같은 질문(동일 텍스트)이 한 사이클 안에서 중복되지 않도록 먼저 걸러내고,
+// - 자기소개/지원동기류, 마지막 인사류 질문이 여러 개 있어도 대표 1개만 맨앞/맨뒤에 쓰고
+//   나머지는 중간에 끼면 흐름이 어색하니 통째로 제외한다.
+const PRACTICE_INTRO_RE = /자기\s*소개|지원\s*동기/;
+const PRACTICE_CLOSING_RE = /마지막으로|하고\s*싶은\s*말|뽑아야/;
+function buildSessionDeck(baseList, mode, count){
+ const seenText=new Set();
+ let pool = baseList.filter(q=>{
+   const key=normForMatch(q.text);
+   if(seenText.has(key)) return false;
+   seenText.add(key);
+   return true;
+ });
+ const introIdx = pool.findIndex(q=>PRACTICE_INTRO_RE.test(q.text));
+ const intro = introIdx>=0 ? pool.splice(introIdx,1)[0] : null;
+ const closingIdx = pool.findIndex(q=>PRACTICE_CLOSING_RE.test(q.text));
+ const closing = closingIdx>=0 ? pool.splice(closingIdx,1)[0] : null;
+ pool = pool.filter(q=> !PRACTICE_INTRO_RE.test(q.text) && !PRACTICE_CLOSING_RE.test(q.text));
+ let middle = mode==='random' ? shuffleArray(pool) : pool;
+ if(count && count>0){
+   const middleCount = Math.max(0, count-(intro?1:0)-(closing?1:0));
+   middle = middle.slice(0, middleCount);
+ }
+ const deck=[];
+ if(intro) deck.push(intro);
+ deck.push(...middle);
+ if(closing) deck.push(closing);
+ return deck;
+}
 let cardTypeFilter='all'; let cardAreaFilter='all';
-function rebuildPracticeDeck(keepIdx){
- const prevQ = keepIdx && practiceDeck[practiceIdx] ? practiceDeck[practiceIdx] : null;
- practiceDeck = (CURRENT.questions||[]).filter(q=>
+function filterBaseQuestions(){
+ return (CURRENT.questions||[]).filter(q=>
    (cardTypeFilter==='all'||q.type===cardTypeFilter) &&
    (cardAreaFilter==='all'||q.area===cardAreaFilter) &&
    (practiceUnivFilter==='all'||(q.univ||'공통')===practiceUnivFilter)
  );
- if(!practiceDeck.length){
-   uiAlert('이 조건에 맞는 질문이 없습니다.');
-   return false;
- }
+}
+function readQCountInput(){
+ const el=document.getElementById('practiceQCountInput');
+ const v=Number(el.value);
+ return (el.value!=='' && v>0) ? v : null;
+}
+function populateJumpSelect(){
  const jumpSel=document.getElementById('practiceJumpSelect');
  jumpSel.innerHTML = practiceDeck.map((q,i)=>`<option value="${i}">${i+1}/${practiceDeck.length} · ${esc(q.text.length>18?q.text.slice(0,18)+'…':q.text)}</option>`).join('');
- const foundIdx = prevQ ? practiceDeck.indexOf(prevQ) : -1;
- practiceIdx = foundIdx>=0 ? foundIdx : 0;
- return true;
 }
-document.getElementById('btnStartPractice').addEventListener('click',()=>{
+function startSession(mode){
  cardTypeFilter = practiceTypeFilter;
  cardAreaFilter = 'all';
  document.querySelectorAll('#cardTypeFilterChips .chip').forEach(c=>c.classList.toggle('on', c.dataset.f===cardTypeFilter));
  document.getElementById('cardAreaFilter').value='all';
- if(!rebuildPracticeDeck(false)) return;
- practiceMode='sequential';
- practiceHistory=[];
+ const base=filterBaseQuestions();
+ if(!base.length){ uiAlert('이 조건에 맞는 질문이 없습니다.'); return; }
+ practiceMode=mode;
+ practiceQCount=readQCountInput();
+ practiceDeck=buildSessionDeck(base, mode, practiceQCount);
+ practiceIdx=0;
+ sessionEval={};
+ populateJumpSelect();
  document.getElementById('practiceListView').hidden=true;
  document.getElementById('practiceCardView').hidden=false;
  showPracticeCard();
-});
-document.getElementById('btnStartRandomPractice').addEventListener('click',()=>{
- cardTypeFilter = practiceTypeFilter;
- cardAreaFilter = 'all';
- document.querySelectorAll('#cardTypeFilterChips .chip').forEach(c=>c.classList.toggle('on', c.dataset.f===cardTypeFilter));
- document.getElementById('cardAreaFilter').value='all';
- if(!rebuildPracticeDeck(false)) return;
- practiceMode='random';
- practiceHistory=[];
- practiceIdx = Math.floor(Math.random()*practiceDeck.length);
- document.getElementById('practiceListView').hidden=true;
- document.getElementById('practiceCardView').hidden=false;
- showPracticeCard();
-});
+}
+document.getElementById('btnStartPractice').addEventListener('click',()=>startSession('sequential'));
+document.getElementById('btnStartRandomPractice').addEventListener('click',()=>startSession('random'));
 document.querySelectorAll('#cardTypeFilterChips .chip').forEach(c=>{
  c.addEventListener('click',()=>{
    document.querySelectorAll('#cardTypeFilterChips .chip').forEach(x=>x.classList.remove('on'));
    c.classList.add('on');
    cardTypeFilter=c.dataset.f;
    if(cardTypeFilter!=='record'){ cardAreaFilter='all'; document.getElementById('cardAreaFilter').value='all'; }
-   if(rebuildPracticeDeck(true)){
-     if(practiceMode==='random'){ practiceHistory=[]; practiceIdx=Math.floor(Math.random()*practiceDeck.length); }
-     showPracticeCard();
-   }
+   const base=filterBaseQuestions();
+   if(!base.length){ uiAlert('이 조건에 맞는 질문이 없습니다.'); return; }
+   practiceDeck=buildSessionDeck(base, practiceMode, practiceQCount);
+   practiceIdx=0;
+   populateJumpSelect();
+   showPracticeCard();
  });
 });
 document.getElementById('cardAreaFilter').addEventListener('change',(e)=>{
@@ -2257,38 +2523,75 @@ document.getElementById('cardAreaFilter').addEventListener('change',(e)=>{
    cardTypeFilter='record';
    document.querySelectorAll('#cardTypeFilterChips .chip').forEach(x=>x.classList.toggle('on', x.dataset.f==='record'));
  }
- if(rebuildPracticeDeck(true)){
-   if(practiceMode==='random'){ practiceHistory=[]; practiceIdx=Math.floor(Math.random()*practiceDeck.length); }
-   showPracticeCard();
- }
+ const base=filterBaseQuestions();
+ if(!base.length){ uiAlert('이 조건에 맞는 질문이 없습니다.'); return; }
+ practiceDeck=buildSessionDeck(base, practiceMode, practiceQCount);
+ practiceIdx=0;
+ populateJumpSelect();
+ showPracticeCard();
 });
 document.getElementById('practiceJumpSelect').addEventListener('change',(e)=>{
  practiceIdx = Number(e.target.value);
  showPracticeCard();
 });
+// ---------- 문항별 자가평가(잘함/아쉬움+이유) ----------
+function getCurrentEval(){
+ const q=practiceDeck[practiceIdx];
+ if(!q) return {result:null, reasons:[], note:''};
+ if(!sessionEval[q.id]) sessionEval[q.id]={result:null, reasons:[], note:''};
+ return sessionEval[q.id];
+}
+function loadEvalUIForCurrentQuestion(){
+ const ev=getCurrentEval();
+ document.getElementById('btnEvalGood').classList.toggle('primary', ev.result==='good');
+ document.getElementById('btnEvalBad').classList.toggle('danger', ev.result==='bad');
+ document.querySelectorAll('#practiceEvalReasons .chip').forEach(c=>{
+   c.classList.toggle('on', ev.reasons.includes(c.dataset.r));
+ });
+ document.getElementById('practiceEvalNote').value = ev.note||'';
+}
+document.getElementById('btnEvalGood').addEventListener('click',()=>{
+ const ev=getCurrentEval();
+ ev.result = ev.result==='good' ? null : 'good';
+ loadEvalUIForCurrentQuestion();
+});
+document.getElementById('btnEvalBad').addEventListener('click',()=>{
+ const ev=getCurrentEval();
+ ev.result = ev.result==='bad' ? null : 'bad';
+ loadEvalUIForCurrentQuestion();
+});
+document.querySelectorAll('#practiceEvalReasons .chip').forEach(c=>{
+ c.addEventListener('click',()=>{
+   const ev=getCurrentEval();
+   const r=c.dataset.r;
+   if(ev.reasons.includes(r)) ev.reasons=ev.reasons.filter(x=>x!==r);
+   else ev.reasons.push(r);
+   loadEvalUIForCurrentQuestion();
+ });
+});
+document.getElementById('practiceEvalNote').addEventListener('input',(e)=>{
+ getCurrentEval().note=e.target.value;
+});
 function showPracticeCard(){
  const q=practiceDeck[practiceIdx];
  autoAdvanceTriggered=false;
  document.getElementById('practiceJumpSelect').value = String(practiceIdx);
- document.getElementById('practiceJumpSelect').hidden = practiceMode==='random';
  document.getElementById('practiceRandomBadge').hidden = practiceMode!=='random';
  document.getElementById('practiceQText').textContent = q.text;
  const badges=document.getElementById('practiceCardBadges');
  badges.innerHTML = q.type==='basic' ? '<span class="badge">기본질문</span>' :
    `<span class="badge acc">생기부 기반</span><span class="badge gray">${esc(q.area||'')}</span>${q.univ&&q.univ!=='공통'?`<span class="badge warn">${esc(q.univ)}</span>`:'<span class="badge gray">공통</span>'}`;
- if(practiceMode==='random'){
-   document.getElementById('btnPracticePrev').disabled = practiceHistory.length===0;
-   document.getElementById('btnPracticeNext').textContent = '🔀 다음 랜덤 질문';
- } else {
-   document.getElementById('btnPracticePrev').disabled = practiceIdx===0;
-   document.getElementById('btnPracticeNext').textContent = practiceIdx===practiceDeck.length-1 ? '처음으로' : '다음 →';
- }
+ document.getElementById('btnPracticePrev').disabled = practiceIdx===0;
+ document.getElementById('btnPracticeNext').textContent = practiceIdx===practiceDeck.length-1 ? '✅ 연습 마치기' : '다음 →';
  document.getElementById('practiceHintBox').hidden=true;
  document.getElementById('practiceHintBox').innerHTML='';
  document.getElementById('practiceAnswerBox').hidden=true;
  document.getElementById('practiceAnswerBox').innerHTML='';
+ document.getElementById('btnPracticeBeginTimer').hidden=false;
+ document.getElementById('practiceRecordControls').hidden=true;
  resetRecordingUI();
  resetPracticeTimer();
+ loadEvalUIForCurrentQuestion();
 }
 document.getElementById('btnPracticeHint').addEventListener('click',()=>{
  const box=document.getElementById('practiceHintBox');
@@ -2323,28 +2626,37 @@ function tickTimer(){
  const over = !!(practiceTargetSeconds && practiceSeconds>=practiceTargetSeconds);
  timerEl.classList.toggle('acc', !over);
  timerEl.classList.toggle('warn', over);
- // 랜덤 연습 모드에서 목표시간에 도달하면 자동으로 다음(랜덤) 질문으로 넘어간다.
- if(practiceMode==='random' && over && !autoAdvanceTriggered){
+ // 목표시간에 도달하면 자동으로 다음 질문으로 넘어간다 (마지막 질문이면 바로 피드백 작성 화면으로).
+ if(over && !autoAdvanceTriggered){
    autoAdvanceTriggered=true;
-   autoAdvanceToNextRandom();
+   stopRecordingIfActive();
+   if(practiceIdx<practiceDeck.length-1){ practiceIdx++; showPracticeCard(); }
+   else { openPracticeSessionFeedback(); }
  }
-}
-function autoAdvanceToNextRandom(){
- stopRecordingIfActive();
- practiceHistory.push(practiceIdx);
- practiceIdx = pickRandomIdx(practiceIdx);
- showPracticeCard();
 }
 function resetPracticeTimer(){
  clearInterval(practiceTimerHandle);
+ practiceTimerHandle=null;
  practiceSeconds=0;
  practicePaused=false;
+ practiceTimerStarted=false;
  document.getElementById('btnPracticePause').textContent='⏸ 일시정지';
- document.getElementById('practiceTimer').textContent='00:00';
+ const timerEl=document.getElementById('practiceTimer');
+ timerEl.textContent='00:00';
+ timerEl.classList.add('acc'); timerEl.classList.remove('warn');
+}
+function startPracticeTimer(){
+ if(practiceTimerStarted) return;
+ practiceTimerStarted=true;
+ document.getElementById('btnPracticeBeginTimer').hidden=true;
+ document.getElementById('practiceRecordControls').hidden=false;
+ clearInterval(practiceTimerHandle);
  practiceTimerHandle=setInterval(tickTimer,1000);
 }
+document.getElementById('btnPracticeBeginTimer').addEventListener('click', startPracticeTimer);
 function stopPracticeTimer(){ clearInterval(practiceTimerHandle); }
 document.getElementById('btnPracticePause').addEventListener('click',()=>{
+ if(!practiceTimerStarted) return;
  practicePaused = !practicePaused;
  if(practicePaused){
    clearInterval(practiceTimerHandle);
@@ -2373,16 +2685,18 @@ function stopRecordingIfActive(){
  if(mediaStream){ mediaStream.getTracks().forEach(t=>t.stop()); mediaStream=null; }
  if(practiceRecognition){ try{ practiceRecognition.onend=null; practiceRecognition.onresult=null; practiceRecognition.stop(); }catch(e){} practiceRecognition=null; }
 }
-// 키워드 언급 여부 + 목표 시간 내 답변 여부를 확인해서 보여줌
+// 키워드 언급 여부 + 목표 시간 내 답변 여부를 확인해서 보여주고, 자가평가 이유를 참고로 미리 체크해 줌
 function showPracticeCheckResult(elapsedSec){
  const q=practiceDeck[practiceIdx];
  const box=document.getElementById('practiceCheckResult');
  const kws=extractKeywords(q.answerHtml);
+ const ev=getCurrentEval();
  let html='';
+ let missing=[];
  if(practiceRecognitionSupported){
    const norm=normForMatch(practiceTranscript);
    const found=kws.filter(k=>norm.includes(normForMatch(k)));
-   const missing=kws.filter(k=>!norm.includes(normForMatch(k)));
+   missing=kws.filter(k=>!norm.includes(normForMatch(k)));
    if(kws.length){
      html += found.length===kws.length
        ? `<div>✅ 표시된 키워드를 모두 말했어요! (${found.length}/${kws.length})</div>`
@@ -2400,6 +2714,9 @@ function showPracticeCheckResult(elapsedSec){
  }
  box.innerHTML = html || '<div class="muted">녹음을 마쳤습니다.</div>';
  box.hidden=false;
+ if(missing.length && !ev.reasons.includes('missingKeyword')) ev.reasons.push('missingKeyword');
+ if(practiceTargetSeconds && elapsedSec>practiceTargetSeconds && !ev.reasons.includes('overtime')) ev.reasons.push('overtime');
+ loadEvalUIForCurrentQuestion();
 }
 document.getElementById('btnRecStart').addEventListener('click', async ()=>{
  try{
@@ -2460,24 +2777,68 @@ document.getElementById('btnRecStop').addEventListener('click',()=>{
  }
 });
 document.getElementById('btnPracticePrev').addEventListener('click',()=>{
- if(practiceMode==='random'){
-   if(practiceHistory.length){ practiceIdx=practiceHistory.pop(); showPracticeCard(); }
- } else {
-   if(practiceIdx>0){ practiceIdx--; showPracticeCard(); }
- }
+ if(practiceIdx>0){ practiceIdx--; showPracticeCard(); }
 });
 document.getElementById('btnPracticeNext').addEventListener('click',()=>{
- if(practiceMode==='random'){
-   practiceHistory.push(practiceIdx);
-   practiceIdx=pickRandomIdx(practiceIdx);
-   showPracticeCard();
- } else if(practiceIdx<practiceDeck.length-1){ practiceIdx++; showPracticeCard(); }
- else { practiceIdx=0; showPracticeCard(); }
+ if(practiceIdx<practiceDeck.length-1){ practiceIdx++; showPracticeCard(); }
+ else { openPracticeSessionFeedback(); }
 });
 document.getElementById('btnPracticeEnd').addEventListener('click',()=>{
+ openPracticeSessionFeedback();
+});
+// ---------- 연습 종료 후 자가 피드백 작성 ----------
+function openPracticeSessionFeedback(){
  stopPracticeTimer(); stopRecordingIfActive();
  document.getElementById('practiceCardView').hidden=true;
+ document.getElementById('practiceSessionFeedbackView').hidden=false;
+ document.getElementById('psfDateTimeLabel').textContent = formatDateTime(Date.now());
+ const summary=document.getElementById('practiceSessionSummary');
+ summary.innerHTML = practiceDeck.map((q,i)=>{
+   const ev=sessionEval[q.id]||{result:null,reasons:[],note:''};
+   const resultLabel = ev.result==='good'?'👍 잘했어요':(ev.result==='bad'?'👎 아쉬웠어요':'<span class="muted">(평가 안 함)</span>');
+   const reasonsText = (ev.reasons||[]).map(evalReasonLabel).join(', ');
+   return `<div class="item">
+     <div class="qtext">${i+1}. Q. ${esc(q.text)}</div>
+     <div class="answerBox">${(q.answerHtml&&q.answerHtml.trim())?q.answerHtml:'<span class="muted">(작성한 답변 없음)</span>'}</div>
+     <div class="tiny" style="margin-top:6px"><b>평가:</b> ${resultLabel}${reasonsText?` — ${esc(reasonsText)}`:''}${ev.note?`<div class="muted">메모: ${esc(ev.note)}</div>`:''}</div>
+   </div>`;
+ }).join('');
+ document.getElementById('psfStructure').value='';
+ document.getElementById('psfAttitude').value='';
+ document.getElementById('psfOverall').value='';
+}
+document.getElementById('btnSavePracticeSession').addEventListener('click', async ()=>{
+ if(!CURRENT) return;
+ const now=new Date();
+ const log={
+   id: uid(),
+   date: `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`,
+   time: `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`,
+   createdAt: now.getTime(), updatedAt: now.getTime(),
+   targetSeconds: practiceTargetSeconds,
+   items: practiceDeck.map(q=>{
+     const ev=sessionEval[q.id];
+     return { qid:q.id, qtext:q.text, answerHtml:q.answerHtml||'',
+       eval: ev ? {result:ev.result||null, reasons:(ev.reasons||[]).slice(), note:ev.note||''} : {result:null,reasons:[],note:''} };
+   }),
+   feedback: {
+     structure: document.getElementById('psfStructure').value.trim(),
+     attitude: document.getElementById('psfAttitude').value.trim(),
+     overall: document.getElementById('psfOverall').value.trim()
+   }
+ };
+ CURRENT.selfPracticeLogs = CURRENT.selfPracticeLogs||[];
+ CURRENT.selfPracticeLogs.unshift(log);
+ await saveCurrent();
+ document.getElementById('practiceSessionFeedbackView').hidden=true;
  document.getElementById('practiceListView').hidden=false;
+ renderPracticeList();
+ await uiAlert('오늘의 연습 피드백을 저장했습니다.');
+});
+document.getElementById('btnDiscardPracticeSession').addEventListener('click',()=>{
+ document.getElementById('practiceSessionFeedbackView').hidden=true;
+ document.getElementById('practiceListView').hidden=false;
+ renderPracticeList();
 });
 
 function renderDebates(){
@@ -3125,6 +3486,7 @@ async function openTeacherWork(key){
  renderTeacherSchedule();
  renderTeacherMock();
  renderTeacherQList();
+ renderTeacherPracticeLogList();
  maybeRestoreTqDraft();
 }
 document.getElementById('btnSaveClassroom').addEventListener('click', async ()=>{
@@ -3162,6 +3524,8 @@ document.getElementById('tqAttachInput').addEventListener('change', async (e)=>{
 });
 document.getElementById('tqAnswerToolbarWrap').innerHTML = highlightToolbarHTML('tqAnswer');
 wireAnswerBox('tqAnswer');
+wireMicButton('tqText', true);
+wireMicButton('tqAnswer', false);
 let editingTeacherQid=null;
 // 새 질문을 작성하는 중일 때만(기존 질문 수정 중이 아닐 때만) 임시저장. 학생별로 구분해서 저장.
 const tqDraft = setupDraftAutosave(
@@ -3276,6 +3640,55 @@ async function saveTeacherQuestions(){
 async function saveTeacherMock(){
  if(!TCUR) return;
  await db.collection('students').doc(TCUR.key).update({mockInterviews:TCUR.data.mockInterviews||[], updatedAt:Date.now()});
+}
+async function saveTeacherSelfPracticeLogs(){
+ if(!TCUR) return;
+ await db.collection('students').doc(TCUR.key).update({selfPracticeLogs:TCUR.data.selfPracticeLogs||[], updatedAt:Date.now()});
+}
+function renderTeacherPracticeLogList(){
+ if(!TCUR) return;
+ const wrap=document.getElementById('teacherPracticeLogWrap');
+ if(!wrap) return;
+ const logs=(TCUR.data.selfPracticeLogs||[]).slice().sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+ if(!logs.length){ wrap.innerHTML='<p class="tiny muted">학생이 아직 작성한 연습 피드백이 없습니다.</p>'; return; }
+ wrap.innerHTML = logs.map(log=>`
+   <div class="item">
+     <div class="row between">
+       <b>${practiceLogSummaryHTML(log)}</b>
+       <button class="btn sm" data-act="toggleTPracticeLog" data-id="${log.id}" type="button">펼치기 ▾</button>
+     </div>
+     <div class="tPracticeLogDetail" data-id="${log.id}" hidden style="margin-top:8px"></div>
+     <div class="row" style="margin-top:8px" data-logactions="${log.id}" hidden>
+       <button class="btn sm" data-act="editTPracticeLog" data-id="${log.id}" type="button">수정</button>
+       <button class="btn sm danger" data-act="delTPracticeLog" data-id="${log.id}" type="button">삭제</button>
+     </div>
+   </div>
+ `).join('');
+ wrap.querySelectorAll('button[data-act="toggleTPracticeLog"]').forEach(b=>b.addEventListener('click',()=>{
+   const id=b.dataset.id;
+   const log=logs.find(x=>x.id===id); if(!log) return;
+   const box=wrap.querySelector(`.tPracticeLogDetail[data-id="${id}"]`);
+   const actions=wrap.querySelector(`[data-logactions="${id}"]`);
+   const willShow=box.hidden;
+   if(willShow){ box.innerHTML=practiceLogDetailHTML(log); box.hidden=false; actions.hidden=false; b.textContent='접기 ▴'; }
+   else{ box.hidden=true; actions.hidden=true; b.textContent='펼치기 ▾'; }
+ }));
+ wrap.querySelectorAll('button[data-act="delTPracticeLog"]').forEach(b=>b.addEventListener('click', async ()=>{
+   if(!(await uiConfirm('이 연습 피드백 기록을 삭제할까요?'))) return;
+   TCUR.data.selfPracticeLogs=(TCUR.data.selfPracticeLogs||[]).filter(x=>x.id!==b.dataset.id);
+   await saveTeacherSelfPracticeLogs();
+   renderTeacherPracticeLogList();
+ }));
+ wrap.querySelectorAll('button[data-act="editTPracticeLog"]').forEach(b=>b.addEventListener('click', async ()=>{
+   const log=(TCUR.data.selfPracticeLogs||[]).find(x=>x.id===b.dataset.id); if(!log) return;
+   const structure=await uiPrompt('답변 구성 피드백 수정', (log.feedback&&log.feedback.structure)||''); if(structure===null) return;
+   const attitude=await uiPrompt('태도 피드백 수정', (log.feedback&&log.feedback.attitude)||''); if(attitude===null) return;
+   const overall=await uiPrompt('총평 수정', (log.feedback&&log.feedback.overall)||''); if(overall===null) return;
+   log.feedback={structure:structure.trim(), attitude:attitude.trim(), overall:overall.trim()};
+   log.updatedAt=Date.now();
+   await saveTeacherSelfPracticeLogs();
+   renderTeacherPracticeLogList();
+ }));
 }
 let editingMockId=null;
 let mockLoadedDate=''; // 현재 폼에 불러온(또는 저장 직후인) 평가의 날짜 — 이 값과 다르게 날짜를 바꾸면 새 평가로 간주
@@ -3533,6 +3946,8 @@ function teacherAnswerEditorHTML(q){
  const boxId='tqEdit_'+q.id;
  return `<div class="answerBox" id="${boxId}" contenteditable="true">${q.answerHtml||''}</div>
   <div id="${boxId}_toolbar"></div>
+  <div class="row" style="margin-top:6px;align-items:center;flex-wrap:wrap">${micButtonHTML(boxId)}</div>
+  <p class="tiny muted" style="margin:2px 0 0">${micTipHTML()}</p>
   <div class="row" style="margin-top:6px">
     <button class="btn sm primary" data-act="saveTeacherAnswer" data-qid="${q.id}">저장</button>
     <button class="btn sm" data-act="cancelTeacherAnswer" data-qid="${q.id}">취소</button>
@@ -3579,6 +3994,7 @@ function renderTeacherQList(){
       ${q.type==='basic'?'<span class="badge">기본질문</span>':`<span class="badge acc">생기부 기반</span><span class="badge gray">${esc(q.area)}</span>${q.univ && q.univ!=="공통"?`<span class="badge warn">${esc(q.univ)}</span>`:`<span class="badge gray">공통</span>`}`}
       ${q.createdBy==='teacher'?`<span class="badge" style="background:#ede9fe;color:#6d28d9">👩‍🏫 ${esc(q.teacherName||'선생님')}이(가) 낸 질문</span>`:''}
       ${wasRevisedSinceFeedback(q.answerHtml, fbs, null)?`<span class="badge" style="background:#dbeafe;color:#1e3a8a">✏ 답변 수정됨</span>`:''}
+      ${hasTeacherFix(q.answerHtml)?`<span class="badge" style="background:#fee2e2;color:#dc2626">✎ 내가 고친 부분 있음</span>`:''}
     </div>
     <div class="qtext">Q. ${esc(q.text)}</div>
     ${q.createdBy==='teacher'?`<div class="row" style="margin-bottom:8px"><button class="btn sm" data-act="editTeacherQ" data-qid="${q.id}">질문 수정</button><button class="btn sm danger" data-act="delTeacherQ" data-qid="${q.id}">이 질문 삭제</button></div>`:''}
@@ -3650,7 +4066,8 @@ function renderTeacherQList(){
  if(teacherAnswerEditingQid){
    const boxId='tqEdit_'+teacherAnswerEditingQid;
    const tb=document.getElementById(boxId+'_toolbar');
-   if(tb){ tb.innerHTML=highlightToolbarHTML(boxId); wireAnswerBox(boxId); }
+   if(tb){ tb.innerHTML=highlightToolbarHTML(boxId, true); wireAnswerBox(boxId); }
+   wireMicButton(boxId, false);
  }
  wrap.querySelectorAll('button[data-act="editTeacherAnswer"]').forEach(b=>b.addEventListener('click',()=>{
    teacherAnswerEditingQid=b.dataset.qid; renderTeacherQList();
@@ -3793,7 +4210,7 @@ function renderTeacherQList(){
       if(snap.exists){
         const data = snap.data();
         CURRENT = {key:savedStudentKey, school:data.school, number:data.number, name:data.name,
-          questions:data.questions||[], schedule:data.schedule||[], debates:data.debates||[], mockInterviews:data.mockInterviews||[], research:data.research||[], presentations:data.presentations||[], knowledge:data.knowledge||[], mockPrepAttachments:data.mockPrepAttachments||[]};
+          questions:data.questions||[], schedule:data.schedule||[], debates:data.debates||[], mockInterviews:data.mockInterviews||[], research:data.research||[], presentations:data.presentations||[], knowledge:data.knowledge||[], mockPrepAttachments:data.mockPrepAttachments||[], selfPracticeLogs:data.selfPracticeLogs||[]};
         document.getElementById('studentGreeting').textContent = `${CURRENT.school} · ${CURRENT.number}번 · ${CURRENT.name}님`;
         show('viewStudentApp');
         goTab('guide');

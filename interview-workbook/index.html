@@ -421,8 +421,12 @@ table.tbl th{background:var(--surface2);color:var(--muted);font-weight:700;font-
       <div class="field"><label>내 답변 <span class="tiny muted">(작성 후 드래그로 선택해 핵심 키워드를 표시하세요)</span></label></div>
       <div class="answerBox" id="qAnswer" contenteditable="true" data-ph="여기에 답변을 직접 작성해 보세요."></div>
       <div id="qAnswerToolbarWrap"></div>
-      <button class="btn primary" id="btnSaveQ" type="button">질문 저장하기</button>
-      <span class="tiny muted" id="editingNote"></span>
+      <div class="row" style="align-items:center;gap:10px;flex-wrap:wrap">
+        <button class="btn primary" id="btnSaveQ" type="button">질문 저장하기</button>
+        <button class="btn sm" id="btnCancelQEdit" type="button" hidden>수정 취소</button>
+        <span class="tiny muted" id="editingNote"></span>
+        <span class="tiny muted" id="qDraftNote"></span>
+      </div>
       <p class="small muted" style="margin-top:10px">저장한 뒤 "내 질문 목록"에서 이 질문에 대한 <b>꼬리질문</b>을 추가할 수 있어요.</p>
     </div>
   </section>
@@ -849,7 +853,12 @@ table.tbl th{background:var(--surface2);color:var(--muted);font-weight:700;font-
       <div id="tqAttachPreview"></div>
       <input type="file" id="tqAttachInput" multiple accept="image/*,.pdf">
     </div>
-    <button class="btn primary" id="btnAddTeacherQ" type="button">질문 추가하기</button>
+    <div class="row" style="align-items:center;gap:10px">
+      <button class="btn primary" id="btnAddTeacherQ" type="button">질문 추가하기</button>
+      <button class="btn sm" id="btnCancelTeacherQEdit" type="button" hidden>수정 취소</button>
+      <span class="tiny muted" id="tqEditingNote"></span>
+      <span class="tiny muted" id="tqDraftNote"></span>
+    </div>
   </div>
   <div class="card">
     <div class="row between">
@@ -1040,6 +1049,33 @@ function swapArrayItemsById(arr, idA, idB){
  const tmp=arr[iA]; arr[iA]=arr[iB]; arr[iB]=tmp;
 }
 function esc(s){return (s==null?'':String(s)).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+
+// ---------- 작성 중 임시저장(초안) 공통 유틸 ----------
+// keyFn()이 저장소 key를 돌려주면(로그인한 사람별로 달라짐) 입력값을 localStorage에 주기적으로 저장하고 복원할 수 있게 해준다.
+function setupDraftAutosave(keyFn, getFields, noteElId, debounceMs){
+ let t=null;
+ function note(msg){ const el=document.getElementById(noteElId); if(el) el.textContent=msg; }
+ function save(){
+   try{
+     const key=keyFn(); if(!key) return;
+     localStorage.setItem(key, JSON.stringify({ts:Date.now(), fields:getFields()}));
+     note('임시 저장됨 '+new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'}));
+   }catch(e){}
+ }
+ function schedule(){ clearTimeout(t); t=setTimeout(save, debounceMs||900); }
+ function loadDraft(){
+   try{
+     const key=keyFn(); if(!key) return null;
+     const raw=localStorage.getItem(key);
+     return raw?JSON.parse(raw):null;
+   }catch(e){ return null; }
+ }
+ function clearDraft(){
+   try{ const key=keyFn(); if(key) localStorage.removeItem(key); }catch(e){}
+   note('');
+ }
+ return {schedule, loadDraft, clearDraft, save};
+}
 
 // ---------- 답변 하이라이트(키워드 표시) 공통 유틸 ----------
 const HL_COLORS=[
@@ -1383,7 +1419,7 @@ document.querySelectorAll('#viewStudentApp nav.tabs button').forEach(b=>b.addEve
 window.goTab=function(name){
  document.querySelectorAll('#viewStudentApp nav.tabs button').forEach(b=>b.classList.toggle('on', b.dataset.tab===name));
  document.querySelectorAll('#viewStudentApp section.view').forEach(s=>s.classList.toggle('on', s.id==='view-'+name));
- if(name==='build'){ toggleRecordFields(); populateQUnivSelect(); }
+ if(name==='build'){ toggleRecordFields(); populateQUnivSelect(); maybeRestoreQDraft(); }
  if(name==='list') renderList();
  if(name==='schedule') renderSchedule();
  if(name==='reviews') renderReviews();
@@ -1443,6 +1479,42 @@ function populateQUnivSelect(selected){
 document.getElementById('qAnswerToolbarWrap').innerHTML = highlightToolbarHTML('qAnswer');
 wireAnswerBox('qAnswer');
 let editingId=null;
+// 새 질문을 작성하는 중일 때만(수정 중이 아닐 때만) 임시저장. 학생별로 구분해서 저장.
+const qDraft = setupDraftAutosave(
+ ()=> CURRENT ? ('iw_qdraft_'+CURRENT.key) : null,
+ ()=>({
+   type:document.getElementById('qType').value,
+   area:document.getElementById('qArea').value,
+   univ:document.getElementById('qUniv').value,
+   text:document.getElementById('qText').value,
+   answerHtml:document.getElementById('qAnswer').innerHTML
+ }),
+ 'qDraftNote'
+);
+function scheduleQDraft(){ if(!editingId) qDraft.schedule(); }
+['qType','qArea','qUniv'].forEach(id=>document.getElementById(id).addEventListener('change', scheduleQDraft));
+document.getElementById('qText').addEventListener('input', scheduleQDraft);
+document.getElementById('qAnswer').addEventListener('input', scheduleQDraft);
+// 수정 중이 아니고, 입력칸이 비어 있을 때만 저장된 초안을 자동으로 불러온다 (기존에 쓰던 내용을 덮어쓰지 않기 위함).
+function maybeRestoreQDraft(){
+ if(editingId) return;
+ const textEl=document.getElementById('qText'), ansEl=document.getElementById('qAnswer');
+ if(textEl.value.trim() || ansEl.innerHTML.trim()) return;
+ const d=qDraft.loadDraft();
+ if(!d || !d.fields) return;
+ const f=d.fields;
+ document.getElementById('qType').value=f.type||'basic'; toggleRecordFields();
+ if(f.type==='record'){ document.getElementById('qArea').value=f.area||'교과세특'; populateQUnivSelect(f.univ); document.getElementById('qUniv').value=f.univ||'공통'; }
+ textEl.value=f.text||''; ansEl.innerHTML=f.answerHtml||'';
+ document.getElementById('qDraftNote').textContent='이전에 쓰던 임시저장 내용을 불러왔습니다.';
+}
+document.getElementById('btnCancelQEdit').addEventListener('click',()=>{
+ editingId=null;
+ document.getElementById('editingNote').textContent='';
+ document.getElementById('btnCancelQEdit').hidden=true;
+ document.getElementById('qText').value=''; document.getElementById('qAnswer').innerHTML='';
+ maybeRestoreQDraft();
+});
 document.getElementById('btnSaveQ').addEventListener('click', async ()=>{
  if(!CURRENT){await uiAlert('로그인이 필요합니다.');return;}
  const type=document.getElementById('qType').value;
@@ -1463,7 +1535,9 @@ document.getElementById('btnSaveQ').addEventListener('click', async ()=>{
  }
  await saveCurrent();
  editingId=null; document.getElementById('editingNote').textContent='';
+ document.getElementById('btnCancelQEdit').hidden=true;
  document.getElementById('qText').value=''; document.getElementById('qAnswer').innerHTML='';
+ qDraft.clearDraft();
  await uiAlert('저장되었습니다.');
  goTab('list');
 });
@@ -1711,6 +1785,7 @@ function renderList(){
    document.getElementById('qText').value=q.text;
    document.getElementById('qAnswer').innerHTML=q.answerHtml||'';
    document.getElementById('editingNote').textContent='✏ 이 질문을 수정하고 있습니다.';
+   document.getElementById('btnCancelQEdit').hidden=false;
  }));
  wrap.querySelectorAll('button[data-act="del"]').forEach(b=>b.addEventListener('click', async ()=>{
    if(!(await uiConfirm('이 질문을 삭제할까요? 꼬리질문과 피드백도 함께 삭제됩니다.')))return;
@@ -2820,10 +2895,13 @@ async function openTeacherWork(key){
  document.getElementById('tClassroomInput').value=TCUR.data.classroom||'';
  show('viewTeacherWork');
  teacherCalState=null;
+ teacherAnswerEditingQid=null;
+ resetTeacherQForm();
  populateTqUnivSelect();
  renderTeacherSchedule();
  renderTeacherMock();
  renderTeacherQList();
+ maybeRestoreTqDraft();
 }
 document.getElementById('btnSaveClassroom').addEventListener('click', async ()=>{
  if(!TCUR){return;}
@@ -2860,27 +2938,84 @@ document.getElementById('tqAttachInput').addEventListener('change', async (e)=>{
 });
 document.getElementById('tqAnswerToolbarWrap').innerHTML = highlightToolbarHTML('tqAnswer');
 wireAnswerBox('tqAnswer');
+let editingTeacherQid=null;
+// 새 질문을 작성하는 중일 때만(기존 질문 수정 중이 아닐 때만) 임시저장. 학생별로 구분해서 저장.
+const tqDraft = setupDraftAutosave(
+ ()=> TCUR ? ('iw_tqdraft_'+TCUR.key) : null,
+ ()=>({
+   type:document.getElementById('tqType').value,
+   area:document.getElementById('tqArea').value,
+   univ:document.getElementById('tqUniv').value,
+   text:document.getElementById('tqText').value,
+   answerHtml:document.getElementById('tqAnswer').innerHTML
+ }),
+ 'tqDraftNote'
+);
+function scheduleTqDraft(){ if(!editingTeacherQid) tqDraft.schedule(); }
+['tqType','tqArea','tqUniv'].forEach(id=>document.getElementById(id).addEventListener('change', scheduleTqDraft));
+document.getElementById('tqText').addEventListener('input', scheduleTqDraft);
+document.getElementById('tqAnswer').addEventListener('input', scheduleTqDraft);
+// 수정 중이 아니고 입력칸이 비어 있을 때만 저장된 초안을 자동으로 불러온다.
+function maybeRestoreTqDraft(){
+ if(editingTeacherQid) return;
+ const textEl=document.getElementById('tqText'), ansEl=document.getElementById('tqAnswer');
+ if(textEl.value.trim() || ansEl.innerHTML.trim()) return;
+ const d=tqDraft.loadDraft();
+ if(!d || !d.fields) return;
+ const f=d.fields;
+ document.getElementById('tqType').value=f.type||'basic';
+ document.getElementById('tqAreaWrap').hidden = document.getElementById('tqType').value!=='record';
+ if(f.type==='record'){ document.getElementById('tqArea').value=f.area||'교과세특'; }
+ populateTqUnivSelect(); document.getElementById('tqUniv').value=f.univ||'공통';
+ textEl.value=f.text||''; ansEl.innerHTML=f.answerHtml||'';
+ document.getElementById('tqDraftNote').textContent='이전에 쓰던 임시저장 내용을 불러왔습니다.';
+}
+function resetTeacherQForm(){
+ editingTeacherQid=null;
+ document.getElementById('tqEditingNote').textContent='';
+ document.getElementById('btnCancelTeacherQEdit').hidden=true;
+ document.getElementById('btnAddTeacherQ').textContent='질문 추가하기';
+ document.getElementById('tqText').value='';
+ document.getElementById('tqAnswer').innerHTML='';
+ tqPendingAttach=[];
+ renderTqAttachPreview();
+}
+document.getElementById('btnCancelTeacherQEdit').addEventListener('click',()=>{
+ resetTeacherQForm();
+ maybeRestoreTqDraft();
+});
 document.getElementById('btnAddTeacherQ').addEventListener('click', async ()=>{
  if(!TCUR){await uiAlert('학생 정보가 없습니다.');return;}
  const text=document.getElementById('tqText').value.trim();
  if(!text){await uiAlert('질문 내용을 입력해 주세요.');return;}
  const type=document.getElementById('tqType').value;
+ const area = type==='record'?document.getElementById('tqArea').value:null;
+ const univ = document.getElementById('tqUniv').value;
  const answerHtml=document.getElementById('tqAnswer').innerHTML.trim();
- const newQ={
-   id:uid(), type, area: type==='record'?document.getElementById('tqArea').value:null,
-   univ:document.getElementById('tqUniv').value,
-   text, answerHtml, followups:[], feedback:[], memos:[], teacherAttachments:tqPendingAttach.slice(),
-   createdBy:'teacher', teacherName:TEACHER_SESSION?TEACHER_SESSION.displayName:'선생님',
-   createdAt:Date.now(), updatedAt:Date.now()
- };
  TCUR.data.questions=TCUR.data.questions||[];
- TCUR.data.questions.unshift(newQ);
- await saveTeacherQuestions();
- document.getElementById('tqText').value='';
- document.getElementById('tqAnswer').innerHTML='';
- tqPendingAttach=[];
- renderTqAttachPreview();
- await uiAlert('질문을 추가했습니다. 학생이 "내 질문 목록"에서 확인하고 답변할 수 있어요.');
+ if(editingTeacherQid){
+   const q=TCUR.data.questions.find(x=>x.id===editingTeacherQid);
+   if(q){
+     q.type=type; q.area=area; q.univ=univ; q.text=text; q.answerHtml=answerHtml;
+     q.teacherAttachments=(q.teacherAttachments||[]).concat(tqPendingAttach);
+     q.updatedAt=Date.now();
+   }
+   await saveTeacherQuestions();
+   resetTeacherQForm();
+   await uiAlert('질문을 수정했습니다.');
+ } else {
+   const newQ={
+     id:uid(), type, area, univ,
+     text, answerHtml, followups:[], feedback:[], memos:[], teacherAttachments:tqPendingAttach.slice(),
+     createdBy:'teacher', teacherName:TEACHER_SESSION?TEACHER_SESSION.displayName:'선생님',
+     createdAt:Date.now(), updatedAt:Date.now()
+   };
+   TCUR.data.questions.unshift(newQ);
+   await saveTeacherQuestions();
+   resetTeacherQForm();
+   tqDraft.clearDraft();
+   await uiAlert('질문을 추가했습니다. 학생이 "내 질문 목록"에서 확인하고 답변할 수 있어요.');
+ }
  renderTeacherQList();
 });
 let teacherCalState=null;
@@ -3217,7 +3352,7 @@ function renderTeacherQList(){
       ${wasRevisedSinceFeedback(q.answerHtml, fbs, null)?`<span class="badge" style="background:#dbeafe;color:#1e3a8a">✏ 답변 수정됨</span>`:''}
     </div>
     <div class="qtext">Q. ${esc(q.text)}</div>
-    ${q.createdBy==='teacher'?`<div class="row" style="margin-bottom:8px"><button class="btn sm danger" data-act="delTeacherQ" data-qid="${q.id}">이 질문 삭제</button></div>`:''}
+    ${q.createdBy==='teacher'?`<div class="row" style="margin-bottom:8px"><button class="btn sm" data-act="editTeacherQ" data-qid="${q.id}">질문 수정</button><button class="btn sm danger" data-act="delTeacherQ" data-qid="${q.id}">이 질문 삭제</button></div>`:''}
     ${q.teacherAttachments&&q.teacherAttachments.length?`<div class="tiny muted" style="margin-top:4px"><b>👩‍🏫 첨부한 참고자료</b></div>${attachmentsHTML(q.teacherAttachments)}`:''}
     <div class="answerEditWrap" data-qid="${q.id}">
       ${teacherAnswerEditingQid===q.id ? teacherAnswerEditorHTML(q) : `
@@ -3329,6 +3464,30 @@ function renderTeacherQList(){
    TCUR.data.questions=(TCUR.data.questions||[]).filter(x=>x.id!==b.dataset.qid);
    await saveTeacherQuestions();
    renderTeacherQList();
+ }));
+ wrap.querySelectorAll('button[data-act="editTeacherQ"]').forEach(b=>b.addEventListener('click',()=>{
+   const q=TCUR.data.questions.find(x=>x.id===b.dataset.qid); if(!q)return;
+   editingTeacherQid=q.id;
+   document.getElementById('tqType').value=q.type;
+   document.getElementById('tqAreaWrap').hidden = q.type!=='record';
+   if(q.type==='record'){
+     const areaSel=document.getElementById('tqArea');
+     if(q.area && ![...areaSel.options].some(o=>o.value===q.area)){
+       areaSel.innerHTML += `<option value="${esc(q.area)}">${esc(q.area)} (이전 분류)</option>`;
+     }
+     areaSel.value=q.area;
+   }
+   populateTqUnivSelect();
+   if(q.univ && ![...document.getElementById('tqUniv').options].some(o=>o.value===q.univ)){
+     document.getElementById('tqUniv').innerHTML += `<option value="${esc(q.univ)}">${esc(q.univ)}</option>`;
+   }
+   document.getElementById('tqUniv').value=q.univ||'공통';
+   document.getElementById('tqText').value=q.text;
+   document.getElementById('tqAnswer').innerHTML=q.answerHtml||'';
+   document.getElementById('tqEditingNote').textContent='✏ 이 질문을 수정하고 있습니다.';
+   document.getElementById('btnCancelTeacherQEdit').hidden=false;
+   document.getElementById('btnAddTeacherQ').textContent='질문 수정 저장';
+   document.getElementById('tqText').scrollIntoView({behavior:'smooth', block:'center'});
  }));
  wrap.querySelectorAll('button[data-act="tqUp"]').forEach(b=>b.addEventListener('click', async ()=>{
    const i=list.findIndex(x=>x.id===b.dataset.id); if(i<=0)return;

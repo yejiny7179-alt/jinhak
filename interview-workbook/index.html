@@ -486,6 +486,11 @@ table.tbl th{background:var(--surface2);color:var(--muted);font-weight:700;font-
           <label class="tiny muted" style="display:flex;align-items:center;gap:4px">질문 개수<input type="number" id="practiceQCountInput" min="1" max="50" placeholder="전체" style="width:60px"></label>
           <span class="tiny muted">비워두면 조건에 맞는 질문 전체로 연습해요. (아래에서 질문을 직접 선택했다면 선택한 질문만 연습하고, 이 개수는 무시돼요)</span>
         </div>
+        <div class="row" style="gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
+          <label class="tiny muted" style="display:flex;align-items:center;gap:4px">⏳ 면접 총 시간(분)<input type="number" id="practiceTotalMinInput" min="1" max="120" placeholder="제한 없음" style="width:70px"></label>
+          <label class="tiny muted" style="display:flex;align-items:center;gap:4px">🎯 질문당 기본 시간(초)<input type="number" id="practiceDefaultSecInput" min="5" max="600" step="5" placeholder="예: 60" style="width:70px"></label>
+          <span class="tiny muted">질문마다 연습 화면에서 따로 바꿀 수 있어요. 총 시간만 정하면 질문 수로 똑같이 나눠요. 총 시간이 끝나면 연습이 자동으로 마무리돼요.</span>
+        </div>
         <div class="row" style="gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
           <button class="btn sm" id="btnPracticeSelectAll" type="button">☑ 보이는 질문 모두 선택</button>
           <button class="btn sm" id="btnPracticeSelectNone" type="button">☐ 선택 해제</button>
@@ -545,6 +550,7 @@ table.tbl th{background:var(--surface2);color:var(--muted);font-weight:700;font-
           <div class="row" style="gap:6px;align-items:center">
             <label class="tiny muted" style="display:flex;align-items:center;gap:4px">🎯 목표시간(초)<input type="number" id="practiceTargetInput" min="5" max="600" step="5" placeholder="예: 60" style="width:64px"></label>
             <span class="badge acc" id="practiceTimer">00:00</span>
+            <span class="badge gray" id="practiceTotalTimer" hidden title="면접 전체 남은 시간">⏳ 남은 00:00</span>
             <button class="btn sm" id="btnPracticePause" type="button">⏸ 일시정지</button>
           </div>
         </div>
@@ -2367,12 +2373,12 @@ function practiceLogSummaryHTML(log){
 }
 function practiceLogDetailHTML(log){
  return `
-  <div class="tiny muted" style="margin-bottom:8px">${esc(log.date||'')} ${esc(log.time||'')} 기록${log.updatedAt&&log.updatedAt!==log.createdAt?' (수정됨)':''}</div>
+  <div class="tiny muted" style="margin-bottom:8px">${esc(log.date||'')} ${esc(log.time||'')} 기록${log.totalSeconds?` · 면접 총 ${Math.round(log.totalSeconds/60)}분 중 ${Math.ceil((log.usedSeconds||0)/60)}분 사용`:''}${log.updatedAt&&log.updatedAt!==log.createdAt?' (수정됨)':''}</div>
   ${(log.items||[]).map((it,i)=>{
     const resultLabel = it.eval&&it.eval.result==='good' ? '👍 잘했어요' : (it.eval&&it.eval.result==='bad' ? '👎 아쉬웠어요' : '<span class="muted">(평가 안 함)</span>');
     const reasonsText = it.eval&&it.eval.reasons&&it.eval.reasons.length ? it.eval.reasons.map(evalReasonLabel).join(', ') : '';
     return `<div class="item">
-      <div class="qtext">${i+1}. Q. ${esc(it.qtext)}</div>
+      <div class="qtext">${i+1}. Q. ${esc(it.qtext)}${it.targetSec?` <span class="badge gray">목표 ${it.targetSec}초</span>`:''}</div>
       <div class="answerBox">${(it.answerHtml&&it.answerHtml.trim())?it.answerHtml:'<span class="muted">(작성한 답변 없음)</span>'}</div>
       <div class="tiny" style="margin-top:6px"><b>평가:</b> ${resultLabel}${reasonsText?` — ${esc(reasonsText)}`:''}${it.eval&&it.eval.note?`<div class="muted">메모: ${esc(it.eval.note)}</div>`:''}</div>
     </div>`;
@@ -2437,7 +2443,36 @@ let practiceQCount=null; // 연습 시작 시 설정한 질문 개수 (null=전�
 let autoAdvanceTriggered=false; // 목표시간 도달로 이미 자동으로 다음 질문으로 넘어갔는지
 let sessionEval={}; // 이번 연습 세션 동안의 문항별 자가평가 {qid: {result, reasons:[], note}}
 let mediaStream=null; let mediaRecorder=null; let mediaChunks=[]; let mediaSupported = !!(navigator.mediaDevices && window.MediaRecorder);
-let practiceTargetSeconds=null; // 목표 답변 시간(초)
+let practiceTargetSeconds=null; // 현재 질문의 목표 답변 시간(초)
+let perQTarget={}; // 질문별 목표 시간(초) {qid: 초}
+let practiceDefaultSec=null; // 질문당 기본 시간(초)
+let practiceTotalSeconds=null; // 면접 총 시간(초), null이면 제한 없음
+let lastSessionTiming={totalSeconds:null,usedSeconds:null};
+let totalRemaining=0; let totalTimerHandle=null; let totalStarted=false;
+function fmtMMSS(n){ n=Math.max(0,n); return String(Math.floor(n/60)).padStart(2,'0')+':'+String(n%60).padStart(2,'0'); }
+function stopTotalTimer(){ clearInterval(totalTimerHandle); totalTimerHandle=null; totalStarted=false; }
+function startTotalTimerIfNeeded(){
+ if(!practiceTotalSeconds || totalStarted) return;
+ totalStarted=true;
+ totalTimerHandle=setInterval(async ()=>{
+   if(practicePaused) return;
+   totalRemaining--;
+   const el=document.getElementById('practiceTotalTimer');
+   el.textContent='⏳ 남은 '+fmtMMSS(totalRemaining);
+   el.classList.toggle('warn', totalRemaining<=60);
+   if(totalRemaining<=0){
+     stopTotalTimer();
+     openPracticeSessionFeedback();
+     await uiAlert('정해둔 면접 시간이 끝났어요. 오늘의 연습을 돌아보며 피드백을 남겨 보세요.');
+   }
+ },1000);
+}
+function applyTargetForCurrentQuestion(){
+ const q=practiceDeck[practiceIdx]; if(!q) return;
+ const v = perQTarget[q.id]!=null ? perQTarget[q.id] : practiceDefaultSec;
+ practiceTargetSeconds = v||null;
+ document.getElementById('practiceTargetInput').value = v||'';
+}
 let practiceTimerStarted=false; // "답변 시작" 버튼을 눌러 타이머가 시작됐는지
 let recordStartSeconds=0; // 녹음을 시작한 시점의 practiceSeconds
 let practiceRecognition=null;
@@ -2529,6 +2564,13 @@ function startSession(mode){
  practiceDeck=buildSessionDeck(base, mode, practiceQCount, !!practiceSessionSelection);
  practiceIdx=0;
  sessionEval={};
+ perQTarget={};
+ stopTotalTimer();
+ { const tm=Number(document.getElementById('practiceTotalMinInput').value); practiceTotalSeconds = tm>0 ? Math.round(tm*60) : null;
+   const ds=Number(document.getElementById('practiceDefaultSecInput').value);
+   practiceDefaultSec = ds>0 ? ds : (practiceTotalSeconds ? Math.max(5,Math.floor(practiceTotalSeconds/Math.max(1,practiceDeck.length))) : null);
+   totalRemaining=practiceTotalSeconds||0;
+   const tt=document.getElementById('practiceTotalTimer'); tt.hidden=!practiceTotalSeconds; tt.classList.remove('warn'); tt.textContent='⏳ 남은 '+fmtMMSS(totalRemaining); }
  populateJumpSelect();
  document.getElementById('practiceListView').hidden=true;
  document.getElementById('practiceCardView').hidden=false;
@@ -2632,6 +2674,7 @@ function showPracticeCard(){
  document.getElementById('practiceRecordControls').hidden=true;
  resetRecordingUI();
  resetPracticeTimer();
+ applyTargetForCurrentQuestion();
  loadEvalUIForCurrentQuestion();
 }
 document.getElementById('btnPracticeHint').addEventListener('click',()=>{
@@ -2656,6 +2699,8 @@ document.getElementById('btnPracticeShowAnswer').addEventListener('click',()=>{
 document.getElementById('practiceTargetInput').addEventListener('input',(e)=>{
  const v=Number(e.target.value);
  practiceTargetSeconds = (e.target.value!=='' && v>0) ? v : null;
+ const q=practiceDeck[practiceIdx];
+ if(q){ if(practiceTargetSeconds) perQTarget[q.id]=practiceTargetSeconds; else perQTarget[q.id]=0; }
 });
 let practicePaused=false;
 function tickTimer(){
@@ -2689,6 +2734,7 @@ function resetPracticeTimer(){
 function startPracticeTimer(){
  if(practiceTimerStarted) return;
  practiceTimerStarted=true;
+ startTotalTimerIfNeeded();
  document.getElementById('btnPracticeBeginTimer').hidden=true;
  document.getElementById('practiceRecordControls').hidden=false;
  clearInterval(practiceTimerHandle);
@@ -2829,7 +2875,7 @@ document.getElementById('btnPracticeEnd').addEventListener('click',()=>{
 });
 document.getElementById('btnPracticeBackToSetup').addEventListener('click', async ()=>{
  if(!(await uiConfirm('지금까지의 연습 내용은 저장되지 않습니다. 순서대로/랜덤을 다시 선택하는 화면으로 돌아갈까요?'))) return;
- stopPracticeTimer(); stopRecordingIfActive();
+ stopPracticeTimer(); stopRecordingIfActive(); stopTotalTimer();
  document.getElementById('practiceCardView').hidden=true;
  document.getElementById('practiceSessionFeedbackView').hidden=true;
  document.getElementById('practiceListView').hidden=false;
@@ -2838,6 +2884,9 @@ document.getElementById('btnPracticeBackToSetup').addEventListener('click', asyn
 // ---------- 연습 종료 후 자가 피드백 작성 ----------
 function openPracticeSessionFeedback(){
  stopPracticeTimer(); stopRecordingIfActive();
+ const usedTotalSec = practiceTotalSeconds ? practiceTotalSeconds-Math.max(0,totalRemaining) : null;
+ lastSessionTiming={totalSeconds:practiceTotalSeconds, usedSeconds:usedTotalSec};
+ stopTotalTimer();
  document.getElementById('practiceCardView').hidden=true;
  document.getElementById('practiceSessionFeedbackView').hidden=false;
  document.getElementById('psfDateTimeLabel').textContent = formatDateTime(Date.now());
@@ -2865,9 +2914,10 @@ document.getElementById('btnSavePracticeSession').addEventListener('click', asyn
    time: `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`,
    createdAt: now.getTime(), updatedAt: now.getTime(),
    targetSeconds: practiceTargetSeconds,
+   totalSeconds: lastSessionTiming.totalSeconds, usedSeconds: lastSessionTiming.usedSeconds,
    items: practiceDeck.map(q=>{
      const ev=sessionEval[q.id];
-     return { qid:q.id, qtext:q.text, answerHtml:q.answerHtml||'',
+     return { qid:q.id, qtext:q.text, answerHtml:q.answerHtml||'', targetSec:(perQTarget[q.id]!=null?perQTarget[q.id]:practiceDefaultSec)||null,
        eval: ev ? {result:ev.result||null, reasons:(ev.reasons||[]).slice(), note:ev.note||''} : {result:null,reasons:[],note:''} };
    }),
    feedback: {

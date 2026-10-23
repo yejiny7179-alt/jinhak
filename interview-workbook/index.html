@@ -453,6 +453,7 @@ table.tbl th{background:var(--surface2);color:var(--muted);font-weight:700;font-
           </select>
           <select id="listUnivFilter"><option value="all">모든 대학</option></select>
           <button class="btn sm" id="btnRefreshList" type="button">↻ 새로고침(피드백 확인)</button>
+          <button class="btn sm" id="btnPrintQList" type="button">🖨 질문·답변 인쇄</button>
         </div>
       </div>
     </div>
@@ -474,8 +475,11 @@ table.tbl th{background:var(--surface2);color:var(--muted);font-weight:700;font-
             <select id="practiceUnivFilter"><option value="all">모든 대학</option></select>
           </div>
         </div>
-        <p class="small muted" style="margin-top:8px">아래 목록으로 한 번에 훑어보거나, 카드 연습으로 하나씩 실전처럼 연습해 보세요.</p>
-        <button class="btn primary" id="btnStartPractice" type="button">🎴 카드로 연습 시작</button>
+        <p class="small muted" style="margin-top:8px">아래 목록으로 한 번에 훑어보거나, 카드 연습으로 하나씩 실전처럼 연습해 보세요. 랜덤 연습은 질문이 무작위 순서로 나오고, 목표시간을 설정해두면 시간이 되면 자동으로 다음 질문으로 넘어가요.</p>
+        <div class="row" style="gap:8px;flex-wrap:wrap">
+          <button class="btn primary" id="btnStartPractice" type="button">🎴 순서대로 연습 시작</button>
+          <button class="btn accent" id="btnStartRandomPractice" type="button">🔀 랜덤으로 연습 시작</button>
+        </div>
       </div>
       <div id="practiceSimpleList"></div>
     </div>
@@ -499,7 +503,10 @@ table.tbl th{background:var(--surface2);color:var(--muted);font-weight:700;font-
           </select>
         </div>
         <div class="row between" style="margin-bottom:10px;margin-top:4px;flex-wrap:wrap;gap:8px">
-          <select id="practiceJumpSelect" class="selectPill" style="max-width:220px"></select>
+          <div class="row" style="gap:6px;align-items:center">
+            <select id="practiceJumpSelect" class="selectPill" style="max-width:220px"></select>
+            <span class="badge acc" id="practiceRandomBadge" hidden>🔀 랜덤 연습 중</span>
+          </div>
           <div class="row" style="gap:6px;align-items:center">
             <label class="tiny muted" style="display:flex;align-items:center;gap:4px">🎯 목표시간(초)<input type="number" id="practiceTargetInput" min="5" max="600" step="5" placeholder="예: 60" style="width:64px"></label>
             <span class="badge acc" id="practiceTimer">00:00</span>
@@ -508,10 +515,12 @@ table.tbl th{background:var(--surface2);color:var(--muted);font-weight:700;font-
         </div>
         <div id="practiceCardBadges" class="row" style="margin-bottom:10px"></div>
         <div class="practiceQText" id="practiceQText">질문</div>
-        <div class="row" style="justify-content:center;margin-top:10px">
+        <div class="row" style="justify-content:center;margin-top:10px;gap:8px">
           <button class="btn sm accent" id="btnPracticeHint" type="button">💡 힌트 보기 (키워드)</button>
+          <button class="btn sm" id="btnPracticeShowAnswer" type="button">✍ 내 답변 보기</button>
         </div>
         <div id="practiceHintBox" class="tiny" style="text-align:center;margin-top:8px" hidden></div>
+        <div id="practiceAnswerBox" class="tiny" style="text-align:left;margin-top:8px" hidden></div>
         <div class="toolbar" id="practiceRecordControls" style="justify-content:center;margin-top:18px">
           <button class="btn accent sm" id="btnRecStart" type="button">🎙 녹음 시작</button>
           <button class="btn danger sm" id="btnRecStop" type="button" hidden>⏹ 녹음 정지</button>
@@ -887,6 +896,7 @@ table.tbl th{background:var(--surface2);color:var(--muted);font-weight:700;font-
           <option value="행동특성및종합의견">행동특성 및 종합의견</option>
         </select>
         <select id="tQUnivFilter"><option value="all">모든 대학</option></select>
+        <button class="btn sm" id="btnPrintTeacherQList" type="button">🖨 질문·답변 인쇄</button>
       </div>
     </div>
   </div>
@@ -1202,6 +1212,7 @@ function printHTML(title, bodyHtml){
     .mockQNum{font-weight:700;font-size:12.5px;color:#444}
     .fbEntry{background:#fffbea;border:1px solid #fde68a;border-radius:8px;padding:8px 10px;margin-top:6px;font-size:13px}
     .attachList{display:none} /* 인쇄물에는 첨부파일 링크 대신 목록만 필요 없으므로 숨김 */
+    mark{padding:0 2px;border-radius:3px}
     @media print{ body{padding:0} }
   </style></head><body>${bodyHtml}<script>window.onload=function(){setTimeout(function(){window.print();},250);}<\/script></body></html>`);
   win.document.close();
@@ -1411,12 +1422,12 @@ async function saveCurrent(){
     setTimeout(()=>{ if(note.textContent==='저장됨 ✓') note.textContent=''; },1500);
   }catch(e){ console.error(e); note.textContent=''; await uiAlert('저장 중 오류: '+e.message); }
 }
-async function refreshCurrent(){
+async function refreshCurrent(afterRender){
   if(!fbReady||!CURRENT) return;
   try{
     const snap=await db.collection('students').doc(CURRENT.key).get();
     if(snap.exists){ CURRENT.questions=snap.data().questions||[]; CURRENT.schedule=snap.data().schedule||[]; CURRENT.debates=snap.data().debates||[]; CURRENT.mockInterviews=snap.data().mockInterviews||[]; CURRENT.research=snap.data().research||[]; CURRENT.presentations=snap.data().presentations||[]; CURRENT.knowledge=snap.data().knowledge||[]; CURRENT.mockPrepAttachments=snap.data().mockPrepAttachments||[]; }
-    renderList();
+    if(typeof afterRender==='function') afterRender(); else renderList();
   }catch(e){ console.error(e); }
 }
 
@@ -1426,14 +1437,14 @@ window.goTab=function(name){
  document.querySelectorAll('#viewStudentApp nav.tabs button').forEach(b=>b.classList.toggle('on', b.dataset.tab===name));
  document.querySelectorAll('#viewStudentApp section.view').forEach(s=>s.classList.toggle('on', s.id==='view-'+name));
  if(name==='build'){ toggleRecordFields(); populateQUnivSelect(); maybeRestoreQDraft(); }
- if(name==='list') renderList();
+ if(name==='list') refreshCurrent(); // 탭을 열 때마다 최신 데이터를 다시 불러와, 선생님이 추가한 질문도 바로 보이게 함
  if(name==='schedule') renderSchedule();
  if(name==='reviews') renderReviews();
  if(name==='debate') renderDebates();
  if(name==='presentation'){ renderPresentations(); renderKnowledge(); }
  if(name==='research') renderResearch();
  if(name==='mock') renderMockList();
- if(name==='practice') renderPracticeList();
+ if(name==='practice') refreshCurrent(renderPracticeList); // 선생님이 추가한 질문도 연습 목록에 바로 포함되도록 최신 데이터를 불러옴
 };
 
 // ---------- 질문 만들기 ----------
@@ -1697,6 +1708,7 @@ function renderList(){
  univSel.value = [...univSel.options].some(o=>o.value===prevVal) ? prevVal : 'all';
  listUnivFilter = univSel.value;
  const list=(CURRENT.questions||[]).filter(q=>(listFilter==='all'||q.type===listFilter) && (listUnivFilter==='all'|| (q.univ||'공통')===listUnivFilter) && (listAreaFilter==='all'|| q.area===listAreaFilter));
+ lastQListForPrint=list;
  const wrap=document.getElementById('qList');
  document.getElementById('cntQ').textContent=(CURRENT.questions||[]).length;
  if(!list.length){wrap.innerHTML='<div class="empty">아직 만든 질문이 없습니다. "질문 만들기" 탭에서 시작해 보세요.</div>';return;}
@@ -2051,6 +2063,27 @@ function printAllMocks(list, studentName){
    (list.length? list.map(m=>`<div class="item">${mockCardBodyHTML(m)}</div>`).join('<hr style="margin:22px 0;border:none;border-top:1px solid #ccc">') : '<p>등록된 모의 면접 평가가 없습니다.</p>');
  printHTML(`${studentName||''} 모의 면접 전체 기록`, body);
 }
+// ---------- 질문·답변 모아 인쇄 (표시된 키워드 포함) ----------
+let lastQListForPrint=[];
+let lastTeacherQListForPrint=[];
+function questionPrintCardHTML(q){
+ const followups=q.followups||[];
+ const ansHtml = (q.answerHtml && q.answerHtml.trim()) ? q.answerHtml : '<span class="muted">(작성한 답변 없음)</span>';
+ return `<div class="item">
+   <div class="head">${q.type==='basic'?'<span class="badge">기본질문</span>':`<span class="badge acc">생기부 기반</span><span class="badge gray">${esc(q.area||'')}</span>${q.univ&&q.univ!=='공통'?`<span class="badge warn">${esc(q.univ)}</span>`:'<span class="badge gray">공통</span>'}`}${q.createdBy==='teacher'?'<span class="badge gray">선생님이 낸 질문</span>':''}</div>
+   <h2>Q. ${esc(q.text)}</h2>
+   <div class="answerBox">${ansHtml}</div>
+   ${followups.map(fu=>{
+     const fuAnsHtml = fu.answerHtml!=null ? fu.answerHtml : (fu.answerText?esc(fu.answerText):'');
+     return `<div class="mockQRow"><div class="mockQNum">↳ ${esc(fu.text)}</div><div class="answerBox">${(fuAnsHtml&&fuAnsHtml.trim())?fuAnsHtml:'<span class="muted">(작성한 답변 없음)</span>'}</div></div>`;
+   }).join('')}
+ </div>`;
+}
+function printQuestions(list, title){
+ if(!list || !list.length){ uiAlert('인쇄할 질문이 없습니다. (현재 선택된 필터 조건을 확인해 주세요)'); return; }
+ const body = `<h1>${esc(title)}</h1><p class="tiny" style="color:#666;margin:-6px 0 14px">표시한 키워드는 답변 안에 강조되어 함께 인쇄됩니다.</p>` + list.map(questionPrintCardHTML).join('');
+ printHTML(title, body);
+}
 let mockPrepAttach=[];
 function renderMockPrepList(){
  const box=document.getElementById('mockPrepList');
@@ -2073,6 +2106,10 @@ document.getElementById('btnPrintAllMock').addEventListener('click',()=>{
  if(!CURRENT) return;
  const list=(CURRENT.mockInterviews||[]).slice().sort((a,b)=>(b.date||'').localeCompare(a.date||''));
  printAllMocks(list, CURRENT.name);
+});
+document.getElementById('btnPrintQList').addEventListener('click',()=>{
+ if(!CURRENT) return;
+ printQuestions(lastQListForPrint, `${CURRENT.name}님의 질문·답변 모음`);
 });
 function renderMockList(){
  if(!CURRENT) return;
@@ -2135,6 +2172,15 @@ document.getElementById('practiceUnivFilter').addEventListener('change',(e)=>{ p
 
 // 카드 연습 모드
 let practiceDeck=[]; let practiceIdx=0; let practiceTimerHandle=null; let practiceSeconds=0;
+let practiceMode='sequential'; // 'sequential' | 'random'
+let practiceHistory=[]; // 랜덤 모드에서 "이전"으로 되돌아가기 위한 방문 기록
+let autoAdvanceTriggered=false; // 목표시간 도달로 이미 자동으로 다음 질문으로 넘어갔는지
+function pickRandomIdx(excludeIdx){
+ if(practiceDeck.length<=1) return 0;
+ let idx;
+ do{ idx=Math.floor(Math.random()*practiceDeck.length); }while(idx===excludeIdx);
+ return idx;
+}
 let mediaStream=null; let mediaRecorder=null; let mediaChunks=[]; let mediaSupported = !!(navigator.mediaDevices && window.MediaRecorder);
 let practiceTargetSeconds=null; // 목표 답변 시간(초)
 let recordStartSeconds=0; // 녹음을 시작한 시점의 practiceSeconds
@@ -2174,6 +2220,21 @@ document.getElementById('btnStartPractice').addEventListener('click',()=>{
  document.querySelectorAll('#cardTypeFilterChips .chip').forEach(c=>c.classList.toggle('on', c.dataset.f===cardTypeFilter));
  document.getElementById('cardAreaFilter').value='all';
  if(!rebuildPracticeDeck(false)) return;
+ practiceMode='sequential';
+ practiceHistory=[];
+ document.getElementById('practiceListView').hidden=true;
+ document.getElementById('practiceCardView').hidden=false;
+ showPracticeCard();
+});
+document.getElementById('btnStartRandomPractice').addEventListener('click',()=>{
+ cardTypeFilter = practiceTypeFilter;
+ cardAreaFilter = 'all';
+ document.querySelectorAll('#cardTypeFilterChips .chip').forEach(c=>c.classList.toggle('on', c.dataset.f===cardTypeFilter));
+ document.getElementById('cardAreaFilter').value='all';
+ if(!rebuildPracticeDeck(false)) return;
+ practiceMode='random';
+ practiceHistory=[];
+ practiceIdx = Math.floor(Math.random()*practiceDeck.length);
  document.getElementById('practiceListView').hidden=true;
  document.getElementById('practiceCardView').hidden=false;
  showPracticeCard();
@@ -2184,7 +2245,10 @@ document.querySelectorAll('#cardTypeFilterChips .chip').forEach(c=>{
    c.classList.add('on');
    cardTypeFilter=c.dataset.f;
    if(cardTypeFilter!=='record'){ cardAreaFilter='all'; document.getElementById('cardAreaFilter').value='all'; }
-   if(rebuildPracticeDeck(true)) showPracticeCard();
+   if(rebuildPracticeDeck(true)){
+     if(practiceMode==='random'){ practiceHistory=[]; practiceIdx=Math.floor(Math.random()*practiceDeck.length); }
+     showPracticeCard();
+   }
  });
 });
 document.getElementById('cardAreaFilter').addEventListener('change',(e)=>{
@@ -2193,7 +2257,10 @@ document.getElementById('cardAreaFilter').addEventListener('change',(e)=>{
    cardTypeFilter='record';
    document.querySelectorAll('#cardTypeFilterChips .chip').forEach(x=>x.classList.toggle('on', x.dataset.f==='record'));
  }
- if(rebuildPracticeDeck(true)) showPracticeCard();
+ if(rebuildPracticeDeck(true)){
+   if(practiceMode==='random'){ practiceHistory=[]; practiceIdx=Math.floor(Math.random()*practiceDeck.length); }
+   showPracticeCard();
+ }
 });
 document.getElementById('practiceJumpSelect').addEventListener('change',(e)=>{
  practiceIdx = Number(e.target.value);
@@ -2201,15 +2268,25 @@ document.getElementById('practiceJumpSelect').addEventListener('change',(e)=>{
 });
 function showPracticeCard(){
  const q=practiceDeck[practiceIdx];
+ autoAdvanceTriggered=false;
  document.getElementById('practiceJumpSelect').value = String(practiceIdx);
+ document.getElementById('practiceJumpSelect').hidden = practiceMode==='random';
+ document.getElementById('practiceRandomBadge').hidden = practiceMode!=='random';
  document.getElementById('practiceQText').textContent = q.text;
  const badges=document.getElementById('practiceCardBadges');
  badges.innerHTML = q.type==='basic' ? '<span class="badge">기본질문</span>' :
    `<span class="badge acc">생기부 기반</span><span class="badge gray">${esc(q.area||'')}</span>${q.univ&&q.univ!=='공통'?`<span class="badge warn">${esc(q.univ)}</span>`:'<span class="badge gray">공통</span>'}`;
- document.getElementById('btnPracticePrev').disabled = practiceIdx===0;
- document.getElementById('btnPracticeNext').textContent = practiceIdx===practiceDeck.length-1 ? '처음으로' : '다음 →';
+ if(practiceMode==='random'){
+   document.getElementById('btnPracticePrev').disabled = practiceHistory.length===0;
+   document.getElementById('btnPracticeNext').textContent = '🔀 다음 랜덤 질문';
+ } else {
+   document.getElementById('btnPracticePrev').disabled = practiceIdx===0;
+   document.getElementById('btnPracticeNext').textContent = practiceIdx===practiceDeck.length-1 ? '처음으로' : '다음 →';
+ }
  document.getElementById('practiceHintBox').hidden=true;
  document.getElementById('practiceHintBox').innerHTML='';
+ document.getElementById('practiceAnswerBox').hidden=true;
+ document.getElementById('practiceAnswerBox').innerHTML='';
  resetRecordingUI();
  resetPracticeTimer();
 }
@@ -2221,6 +2298,15 @@ document.getElementById('btnPracticeHint').addEventListener('click',()=>{
  box.innerHTML = kws.length
    ? '💡 '+kws.map(k=>`<span class="badge" style="background:#fde68a;color:#78350f;margin:2px">${esc(k)}</span>`).join(' ')
    : '<span class="muted">이 질문의 답변에는 표시된 키워드가 없어요.</span>';
+ box.hidden=false;
+});
+document.getElementById('btnPracticeShowAnswer').addEventListener('click',()=>{
+ const box=document.getElementById('practiceAnswerBox');
+ if(!box.hidden){ box.hidden=true; return; }
+ const q=practiceDeck[practiceIdx];
+ box.innerHTML = (q.answerHtml && q.answerHtml.trim())
+   ? `<div class="answerBox">${q.answerHtml}</div>`
+   : '<p class="tiny muted" style="text-align:center">아직 작성한 답변이 없습니다.</p>';
  box.hidden=false;
 });
 document.getElementById('practiceTargetInput').addEventListener('input',(e)=>{
@@ -2237,6 +2323,17 @@ function tickTimer(){
  const over = !!(practiceTargetSeconds && practiceSeconds>=practiceTargetSeconds);
  timerEl.classList.toggle('acc', !over);
  timerEl.classList.toggle('warn', over);
+ // 랜덤 연습 모드에서 목표시간에 도달하면 자동으로 다음(랜덤) 질문으로 넘어간다.
+ if(practiceMode==='random' && over && !autoAdvanceTriggered){
+   autoAdvanceTriggered=true;
+   autoAdvanceToNextRandom();
+ }
+}
+function autoAdvanceToNextRandom(){
+ stopRecordingIfActive();
+ practiceHistory.push(practiceIdx);
+ practiceIdx = pickRandomIdx(practiceIdx);
+ showPracticeCard();
 }
 function resetPracticeTimer(){
  clearInterval(practiceTimerHandle);
@@ -2363,10 +2460,18 @@ document.getElementById('btnRecStop').addEventListener('click',()=>{
  }
 });
 document.getElementById('btnPracticePrev').addEventListener('click',()=>{
- if(practiceIdx>0){ practiceIdx--; showPracticeCard(); }
+ if(practiceMode==='random'){
+   if(practiceHistory.length){ practiceIdx=practiceHistory.pop(); showPracticeCard(); }
+ } else {
+   if(practiceIdx>0){ practiceIdx--; showPracticeCard(); }
+ }
 });
 document.getElementById('btnPracticeNext').addEventListener('click',()=>{
- if(practiceIdx<practiceDeck.length-1){ practiceIdx++; showPracticeCard(); }
+ if(practiceMode==='random'){
+   practiceHistory.push(practiceIdx);
+   practiceIdx=pickRandomIdx(practiceIdx);
+   showPracticeCard();
+ } else if(practiceIdx<practiceDeck.length-1){ practiceIdx++; showPracticeCard(); }
  else { practiceIdx=0; showPracticeCard(); }
 });
 document.getElementById('btnPracticeEnd').addEventListener('click',()=>{
@@ -3137,6 +3242,10 @@ document.getElementById('btnAddTeacherQ').addEventListener('click', async ()=>{
  }
  renderTeacherQList();
 });
+document.getElementById('btnPrintTeacherQList').addEventListener('click',()=>{
+ if(!TCUR) return;
+ printQuestions(lastTeacherQListForPrint, `${TCUR.data.name} 학생의 질문·답변 모음`);
+});
 let teacherCalState=null;
 function renderTeacherSchedule(){
  if(!teacherCalState){ const now=new Date(); teacherCalState={year:now.getFullYear(), month:now.getMonth()}; }
@@ -3452,6 +3561,7 @@ function renderTeacherQList(){
  const list = showQuestions ? allQ.filter(q=>qTypeMatch(q) && univMatch(q.univ) && areaMatch(q)) : [];
  const dlist = showDebates ? allD.filter(d=>univMatch(d.univ)) : [];
  const rlist = showResearch ? allR.filter(r=>univMatch(r.univ)) : [];
+ lastTeacherQListForPrint=list;
 
  if(!allQ.length && !allD.length && !allR.length){wrap.innerHTML='<div class="card"><div class="empty">이 학생이 아직 만든 질문이 없습니다.</div></div>';return;}
  if(!list.length && !dlist.length && !rlist.length){wrap.innerHTML='<div class="card"><div class="empty">조건에 맞는 항목이 없습니다.</div></div>';return;}

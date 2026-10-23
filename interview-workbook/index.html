@@ -484,7 +484,12 @@ table.tbl th{background:var(--surface2);color:var(--muted);font-weight:700;font-
         <p class="small muted" style="margin-top:8px">아래 목록으로 한 번에 훑어보거나, 카드 연습으로 하나씩 실전처럼 연습해 보세요. 랜덤 연습은 질문 순서가 섞여서 나오고, 목표시간을 설정해두면 시간이 되면 자동으로 다음 질문으로 넘어가요. 첫 질문은 항상 자기소개·지원동기 질문으로, 마지막 질문은 마지막으로 하고 싶은 말·지원자를 뽑아야 하는 이유 질문으로 고정돼요 (해당 질문을 만들어 두었다면).</p>
         <div class="row" style="gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
           <label class="tiny muted" style="display:flex;align-items:center;gap:4px">질문 개수<input type="number" id="practiceQCountInput" min="1" max="50" placeholder="전체" style="width:60px"></label>
-          <span class="tiny muted">비워두면 조건에 맞는 질문 전체로 연습해요.</span>
+          <span class="tiny muted">비워두면 조건에 맞는 질문 전체로 연습해요. (아래에서 질문을 직접 선택했다면 선택한 질문만 연습하고, 이 개수는 무시돼요)</span>
+        </div>
+        <div class="row" style="gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
+          <button class="btn sm" id="btnPracticeSelectAll" type="button">☑ 보이는 질문 모두 선택</button>
+          <button class="btn sm" id="btnPracticeSelectNone" type="button">☐ 선택 해제</button>
+          <b class="tiny" id="practiceSelectedCount" style="color:var(--primary)">선택한 질문 없음 (전체로 연습)</b>
         </div>
         <div class="row" style="gap:8px;flex-wrap:wrap">
           <button class="btn primary" id="btnStartPractice" type="button">🎴 순서대로 연습 시작</button>
@@ -578,8 +583,9 @@ table.tbl th{background:var(--surface2);color:var(--muted);font-weight:700;font-
           </div>
           <textarea id="practiceEvalNote" placeholder="메모(선택)" style="margin-top:8px"></textarea>
         </div>
-        <div class="row between" style="margin-top:22px">
+        <div class="row between" style="margin-top:22px;flex-wrap:wrap;gap:8px">
           <button class="btn" id="btnPracticePrev" type="button">← 이전</button>
+          <button class="btn" id="btnPracticeBackToSetup" type="button">🔁 처음 선택 화면으로</button>
           <button class="btn" id="btnPracticeEnd" type="button">연습 종료</button>
           <button class="btn primary" id="btnPracticeNext" type="button">다음 →</button>
         </div>
@@ -2297,8 +2303,18 @@ function getPracticeQuestions(){
    (practiceUnivFilter==='all'||(q.univ||'공통')===practiceUnivFilter)
  );
 }
+let practiceSelectedIds=new Set(); // 목록에서 직접 고른 연습 질문 id
+let practiceSessionSelection=null; // 이번 연습 세션에 적용된 선택 (null이면 선택 없이 전체)
+function updatePracticeSelectedCount(){
+ const el=document.getElementById('practiceSelectedCount');
+ if(!el) return;
+ const valid=(CURRENT&&CURRENT.questions||[]).filter(q=>practiceSelectedIds.has(q.id)).length;
+ el.textContent = valid ? `선택한 질문 ${valid}개로 연습해요` : '선택한 질문 없음 (전체로 연습)';
+}
 function renderPracticeList(){
  if(!CURRENT) return;
+ practiceSelectedIds=new Set([...practiceSelectedIds].filter(id=>(CURRENT.questions||[]).some(q=>q.id===id)));
+ setTimeout(updatePracticeSelectedCount,0);
  const univSel=document.getElementById('practiceUnivFilter');
  const univs=[...new Set((CURRENT.questions||[]).map(q=>q.univ).filter(Boolean))];
  const prevVal=univSel.value;
@@ -2312,11 +2328,15 @@ function renderPracticeList(){
  else {
  wrap.innerHTML=list.map((q,i)=>`<div class="practiceSimpleItem">
    <div class="row between" style="gap:8px">
-     <div><b>${i+1}.</b> ${esc(q.text)} ${q.type==='basic'?'<span class="badge">기본질문</span>':`<span class="badge acc">생기부</span>${q.univ&&q.univ!=='공통'?`<span class="badge warn">${esc(q.univ)}</span>`:''}`}</div>
+     <div><input type="checkbox" class="practiceSelChk" data-qid="${q.id}" ${practiceSelectedIds.has(q.id)?'checked':''} style="margin-right:6px;vertical-align:middle"><b>${i+1}.</b> ${esc(q.text)}${q.type==='basic'?'<span class="badge">기본질문</span>':`<span class="badge acc">생기부</span>${q.univ&&q.univ!=='공통'?`<span class="badge warn">${esc(q.univ)}</span>`:''}`}</div>
      <button class="btn sm" data-act="togglePracticeAnswer" data-qid="${q.id}" type="button">답변 보기</button>
    </div>
    <div class="practiceAnswerPreview" data-qid="${q.id}" hidden style="margin-top:8px"></div>
  </div>`).join('');
+ wrap.querySelectorAll('.practiceSelChk').forEach(chk=>chk.addEventListener('change',()=>{
+   if(chk.checked) practiceSelectedIds.add(chk.dataset.qid); else practiceSelectedIds.delete(chk.dataset.qid);
+   updatePracticeSelectedCount();
+ }));
  wrap.querySelectorAll('button[data-act="togglePracticeAnswer"]').forEach(b=>b.addEventListener('click',()=>{
    const qid=b.dataset.qid;
    const q=(CURRENT.questions||[]).find(x=>x.id===qid); if(!q)return;
@@ -2443,7 +2463,16 @@ function shuffleArray(arr){
 //   나머지는 중간에 끼면 흐름이 어색하니 통째로 제외한다.
 const PRACTICE_INTRO_RE = /자기\s*소개|지원\s*동기/;
 const PRACTICE_CLOSING_RE = /마지막으로|하고\s*싶은\s*말|뽑아야/;
-function buildSessionDeck(baseList, mode, count){
+// keepExtras=true(질문을 직접 골랐을 때): 고른 질문은 하나도 빼지 않고, 자기소개류는 맨 앞쪽, 마지막 인사류는 맨 뒤쪽에 모아 흐름을 유지한다.
+function buildSessionDeck(baseList, mode, count, keepExtras){
+ if(keepExtras){
+   const seen=new Set();
+   const all=baseList.filter(q=>{ const k=normForMatch(q.text); if(seen.has(k)) return false; seen.add(k); return true; });
+   const closingLike=all.filter(q=>PRACTICE_CLOSING_RE.test(q.text) && !PRACTICE_INTRO_RE.test(q.text));
+   const introLike=all.filter(q=>PRACTICE_INTRO_RE.test(q.text));
+   const rest=all.filter(q=>!closingLike.includes(q) && !introLike.includes(q));
+   return [...introLike, ...(mode==='random'?shuffleArray(rest):rest), ...closingLike];
+ }
  const seenText=new Set();
  let pool = baseList.filter(q=>{
    const key=normForMatch(q.text);
@@ -2469,10 +2498,12 @@ function buildSessionDeck(baseList, mode, count){
 }
 let cardTypeFilter='all'; let cardAreaFilter='all';
 function filterBaseQuestions(){
+ const sel=practiceSessionSelection;
  return (CURRENT.questions||[]).filter(q=>
+   (!sel || sel.has(q.id)) &&
    (cardTypeFilter==='all'||q.type===cardTypeFilter) &&
    (cardAreaFilter==='all'||q.area===cardAreaFilter) &&
-   (practiceUnivFilter==='all'||(q.univ||'공통')===practiceUnivFilter)
+   (sel || practiceUnivFilter==='all'||(q.univ||'공통')===practiceUnivFilter)
  );
 }
 function readQCountInput(){
@@ -2485,15 +2516,17 @@ function populateJumpSelect(){
  jumpSel.innerHTML = practiceDeck.map((q,i)=>`<option value="${i}">${i+1}/${practiceDeck.length} · ${esc(q.text.length>18?q.text.slice(0,18)+'…':q.text)}</option>`).join('');
 }
 function startSession(mode){
- cardTypeFilter = practiceTypeFilter;
+ const picked=(CURRENT.questions||[]).filter(q=>practiceSelectedIds.has(q.id)).map(q=>q.id);
+ practiceSessionSelection = picked.length ? new Set(picked) : null;
+ cardTypeFilter = practiceSessionSelection ? 'all' : practiceTypeFilter;
  cardAreaFilter = 'all';
  document.querySelectorAll('#cardTypeFilterChips .chip').forEach(c=>c.classList.toggle('on', c.dataset.f===cardTypeFilter));
  document.getElementById('cardAreaFilter').value='all';
  const base=filterBaseQuestions();
  if(!base.length){ uiAlert('이 조건에 맞는 질문이 없습니다.'); return; }
  practiceMode=mode;
- practiceQCount=readQCountInput();
- practiceDeck=buildSessionDeck(base, mode, practiceQCount);
+ practiceQCount=practiceSessionSelection?null:readQCountInput();
+ practiceDeck=buildSessionDeck(base, mode, practiceQCount, !!practiceSessionSelection);
  practiceIdx=0;
  sessionEval={};
  populateJumpSelect();
@@ -2501,6 +2534,14 @@ function startSession(mode){
  document.getElementById('practiceCardView').hidden=false;
  showPracticeCard();
 }
+document.getElementById('btnPracticeSelectAll').addEventListener('click',()=>{
+ getPracticeQuestions().forEach(q=>practiceSelectedIds.add(q.id));
+ renderPracticeList();
+});
+document.getElementById('btnPracticeSelectNone').addEventListener('click',()=>{
+ practiceSelectedIds=new Set();
+ renderPracticeList();
+});
 document.getElementById('btnStartPractice').addEventListener('click',()=>startSession('sequential'));
 document.getElementById('btnStartRandomPractice').addEventListener('click',()=>startSession('random'));
 document.querySelectorAll('#cardTypeFilterChips .chip').forEach(c=>{
@@ -2511,7 +2552,7 @@ document.querySelectorAll('#cardTypeFilterChips .chip').forEach(c=>{
    if(cardTypeFilter!=='record'){ cardAreaFilter='all'; document.getElementById('cardAreaFilter').value='all'; }
    const base=filterBaseQuestions();
    if(!base.length){ uiAlert('이 조건에 맞는 질문이 없습니다.'); return; }
-   practiceDeck=buildSessionDeck(base, practiceMode, practiceQCount);
+   practiceDeck=buildSessionDeck(base, practiceMode, practiceQCount, !!practiceSessionSelection);
    practiceIdx=0;
    populateJumpSelect();
    showPracticeCard();
@@ -2525,7 +2566,7 @@ document.getElementById('cardAreaFilter').addEventListener('change',(e)=>{
  }
  const base=filterBaseQuestions();
  if(!base.length){ uiAlert('이 조건에 맞는 질문이 없습니다.'); return; }
- practiceDeck=buildSessionDeck(base, practiceMode, practiceQCount);
+ practiceDeck=buildSessionDeck(base, practiceMode, practiceQCount, !!practiceSessionSelection);
  practiceIdx=0;
  populateJumpSelect();
  showPracticeCard();
@@ -2785,6 +2826,14 @@ document.getElementById('btnPracticeNext').addEventListener('click',()=>{
 });
 document.getElementById('btnPracticeEnd').addEventListener('click',()=>{
  openPracticeSessionFeedback();
+});
+document.getElementById('btnPracticeBackToSetup').addEventListener('click', async ()=>{
+ if(!(await uiConfirm('지금까지의 연습 내용은 저장되지 않습니다. 순서대로/랜덤을 다시 선택하는 화면으로 돌아갈까요?'))) return;
+ stopPracticeTimer(); stopRecordingIfActive();
+ document.getElementById('practiceCardView').hidden=true;
+ document.getElementById('practiceSessionFeedbackView').hidden=true;
+ document.getElementById('practiceListView').hidden=false;
+ renderPracticeList();
 });
 // ---------- 연습 종료 후 자가 피드백 작성 ----------
 function openPracticeSessionFeedback(){

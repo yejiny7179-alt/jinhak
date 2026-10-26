@@ -21,9 +21,9 @@ button,input,select,textarea{font:inherit;color:inherit}
 h1,h2,h3,h4{margin:0;font-weight:700;letter-spacing:-.01em}
 .practiceCols{display:block}
 @media(min-width:1000px){
-  .app:has(#practiceCardView:not([hidden])){max-width:1500px}
-  .practiceCard{max-width:none}
-  .practiceCols{display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:28px;align-items:start}
+  .app:has(#practiceCardView:not([hidden])){max-width:none;padding-left:16px;padding-right:16px}
+  .card.practiceCard{max-width:none;width:100%;margin:0}
+  .practiceCols{display:grid;grid-template-columns:minmax(0,1fr) minmax(380px,34%);gap:32px;align-items:start}
   .practiceColSide{position:sticky;top:12px}
   .practiceColSide #practiceEvalBox{margin-top:0!important;border-top:none!important;padding:0 0 0 22px!important;border-left:1px dashed var(--line2)}
   .practiceColSide #practiceEvalNote{width:100%;min-height:110px}

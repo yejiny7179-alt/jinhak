@@ -602,7 +602,7 @@ table.tbl th{background:var(--surface2);color:var(--muted);font-weight:700;font-
         <div class="row" style="justify-content:center;margin-top:18px">
           <button class="btn primary" id="btnPracticeBeginTimer" type="button">▶ 답변 시작 (타이머 시작)</button>
         </div>
-        <div class="toolbar" id="practiceRecordControls" style="justify-content:center;margin-top:18px" hidden>
+        <div class="toolbar" id="practiceRecordControls" style="justify-content:center;margin-top:18px">
           <button class="btn accent sm" id="btnRecStart" type="button">🎙 녹음 시작</button>
           <button class="btn danger sm" id="btnRecStop" type="button" hidden>⏹ 녹음 정지</button>
         </div>
@@ -2997,7 +2997,7 @@ function showPracticeCard(){
  document.getElementById('practiceAnswerBox').hidden=true;
  document.getElementById('practiceAnswerBox').innerHTML='';
  document.getElementById('btnPracticeBeginTimer').hidden=false;
- document.getElementById('practiceRecordControls').hidden=true;
+ document.getElementById('practiceRecordControls').hidden=false;
  resetRecordingUI();
  resetPracticeTimer();
  updateFollowupButton();
@@ -3151,6 +3151,7 @@ document.getElementById('btnRecStart').addEventListener('click', async ()=>{
      dlLink.download='면접연습_'+(practiceDeck[practiceIdx]?practiceDeck[practiceIdx].text.slice(0,15).replace(/[^\w가-힣]/g,''):'답변')+'.webm';
      dlLink.style.display='inline-flex';
    };
+   startPracticeTimer(); // 타이머가 아직 안 켜졌으면 녹음과 함께 시작
    mediaRecorder.start();
    recordStartSeconds = practiceSeconds;
    practiceTranscript='';

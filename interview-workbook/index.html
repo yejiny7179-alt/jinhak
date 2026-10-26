@@ -3467,6 +3467,23 @@ document.getElementById('btnTeacherLogout').addEventListener('click',()=>{
  localStorage.removeItem('iw_teacher_session_key');
  show('viewLanding');
 });
+// 학교명 검색: '백운고', '백운고등학교', '백운' 어느 쪽으로 입력해도 학교명에 '백운'이 들어가는 학생이 모두 검색되도록 핵심 이름만 비교한다.
+function schoolCore(s){
+ let t=safeSeg(s).replace(/[()（）]/g,'');
+ t=t.replace(/(고등학교|중학교|초등학교|학교|고등|고|중|초)$/,'');
+ return t || safeSeg(s);
+}
+function schoolMatches(storedSchool, typedSchool){
+ const a=schoolCore(storedSchool), b=schoolCore(typedSchool);
+ if(!a||!b) return false;
+ return a.includes(b) || b.includes(a) || safeSeg(storedSchool).includes(safeSeg(typedSchool));
+}
+async function fetchStudentDocsBySchool(school){
+ const snap=await db.collection('students').get();
+ const docs=[];
+ snap.forEach(doc=>{ if(schoolMatches(doc.data().school, school)) docs.push(doc); });
+ return docs;
+}
 document.getElementById('btnTeacherSearch').addEventListener('click', async ()=>{
  if(!fbReady){await uiAlert('아직 Firebase 설정이 되어 있지 않아 조회가 동작하지 않습니다.');return;}
  const school=document.getElementById('tfSchool').value;
@@ -3476,11 +3493,11 @@ document.getElementById('btnTeacherSearch').addEventListener('click', async ()=>
  const resultsWrap=document.getElementById('teacherResults');
  resultsWrap.innerHTML='<p class="muted small">조회 중…</p>';
  try{
-   let q=db.collection('students').where('schoolNorm','==', safeSeg(school));
-   if(norm(number)) q=q.where('numberNorm','==', safeSeg(number));
-   if(norm(name)) q=q.where('nameNorm','==', safeSeg(name));
-   const snap=await q.get();
-   if(snap.empty){
+   let docs=await fetchStudentDocsBySchool(school);
+   if(norm(number)) docs=docs.filter(d=>safeSeg(d.data().number)===safeSeg(number));
+   if(norm(name)) docs=docs.filter(d=>safeSeg(d.data().name)===safeSeg(name));
+   docs.sort((a,b)=>(a.data().school||'').localeCompare(b.data().school||'','ko') || (Number(a.data().number)||0)-(Number(b.data().number)||0));
+   if(!docs.length){
      if(norm(number) && norm(name)){
        resultsWrap.innerHTML=`<div class="empty small">일치하는 학생이 없습니다.<br>아직 로그인한 적 없는 학생이라면, 미리 등록해서 모의 면접 평가를 먼저 남길 수 있어요.</div>
          <button class="btn sm primary" id="btnPreRegister" type="button" style="margin-top:10px">"${esc(school)} ${esc(number)}번 ${esc(name)}" 학생 미리 등록하기</button>`;
@@ -3502,7 +3519,7 @@ document.getElementById('btnTeacherSearch').addEventListener('click', async ()=>
      return;
    }
    resultsWrap.innerHTML='';
-   snap.forEach(doc=>{
+   docs.forEach(doc=>{
      const d=doc.data();
      const row=document.createElement('div'); row.className='studentRow';
      row.innerHTML=`<span><b>${esc(d.name)}</b> <span class="muted small">· ${esc(d.school)} · ${esc(d.number)}번</span></span><button class="btn sm primary">질문 보기</button>`;
@@ -3524,9 +3541,9 @@ document.getElementById('btnLoadAllSchedule').addEventListener('click', async ()
  const school=document.getElementById('allSchSchool').value;
  if(!norm(school)){await uiAlert('학교를 입력해 주세요.');return;}
  try{
-   const snap=await db.collection('students').where('schoolNorm','==', safeSeg(school)).get();
+   const docs=await fetchStudentDocsBySchool(school);
    ALL_SCH_STUDENTS=[];
-   snap.forEach(doc=>{
+   docs.forEach(doc=>{
      const d=doc.data();
      ALL_SCH_STUDENTS.push({name:d.name, number:d.number, classroom:d.classroom||'', schedule:d.schedule||[], mockInterviews:d.mockInterviews||[]});
    });

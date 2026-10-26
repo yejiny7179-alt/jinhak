@@ -3935,7 +3935,8 @@ document.getElementById('btnAddTeacherQ').addEventListener('click', async ()=>{
      q.teacherAttachments=(q.teacherAttachments||[]).concat(tqPendingAttach);
      q.updatedAt=Date.now(); stampEdit(q,'teacher');
    }
-   await saveTeacherQuestions();
+   try{ await saveTeacherQuestions(); }
+   catch(e){ console.error(e); await uiAlert('질문을 저장하지 못했습니다.\n('+(e&&e.message?e.message:e)+')'); return; }
    resetTeacherQForm();
    await uiAlert('질문을 수정했습니다.');
  } else {
@@ -3947,10 +3948,16 @@ document.getElementById('btnAddTeacherQ').addEventListener('click', async ()=>{
      createdAt:Date.now(), updatedAt:Date.now()
    };
    TCUR.data.questions.unshift(newQ);
-   await saveTeacherQuestions();
+   try{ await saveTeacherQuestions(); }
+   catch(e){
+     console.error(e);
+     TCUR.data.questions=TCUR.data.questions.filter(x=>x.id!==newQ.id);
+     await uiAlert('질문을 저장하지 못했습니다. 입력한 내용은 그대로 두었으니 잠시 뒤 다시 눌러 주세요.\n('+(e&&e.message?e.message:e)+')');
+     return;
+   }
    resetTeacherQForm();
    tqDraft.clearDraft();
-   await uiAlert('질문을 추가했습니다. 학생이 "내 질문 목록"에서 확인하고 답변할 수 있어요.');
+   await uiAlert('질문 "'+text.slice(0,30)+(text.length>30?'…':'')+'"을(를) 추가했습니다'+(newQ.followups.length?` (꼬리질문 ${newQ.followups.length}개 포함)`:'')+'. 학생이 "내 질문 목록"에서 확인하고 답변할 수 있어요.');
  }
  renderTeacherQList();
 });

@@ -1470,6 +1470,29 @@ function showMockDayModal(items){
    document.getElementById('uiOkBtn').addEventListener('click',()=>{ uiRoot.innerHTML=''; resolve(true); });
  });
 }
+// 질문/답변/꼬리질문을 누가 언제 수정했는지 기록·표시
+function stampEdit(obj, role){
+ const name = role==='teacher' ? (TEACHER_SESSION?TEACHER_SESSION.displayName:'선생님') : (CURRENT?CURRENT.name:'학생');
+ const entry={role, name, at:Date.now()};
+ obj.editLog=(obj.editLog||[]).concat(entry).slice(-30);
+ obj.lastEdit=entry;
+}
+function editStampBadge(obj){
+ const e=obj&&obj.lastEdit; if(!e) return '';
+ const teacher=e.role==='teacher';
+ const hist=(obj.editLog||[e]).map(x=>`${x.role==='teacher'?'선생님':'학생'} ${x.name} · ${formatDateTime(x.at)}`).join('\n');
+ return `<span class="badge" style="background:#fef3c7;color:#92400e" title="${esc(hist)}">✏ 마지막 수정: ${teacher?'😊':'😄'} ${esc(e.name)} · ${esc(formatDateTime(e.at))}${(obj.editLog||[]).length>1?` (총 ${(obj.editLog||[]).length}회)`:''}</span>`;
+}
+// 꼬리질문 작성자 표시 (선생님이 쓴 것인지, 학생이 쓴 것인지)
+function followupAuthorLabel(fu, studentName){
+ if(fu.createdBy==='teacher') return '😊 '+(fu.teacherName||'선생님');
+ return '😄 '+(studentName||'학생');
+}
+function followupAuthorBadge(fu, studentName){
+ const t=fu.createdAt?(' · '+formatDateTime(fu.createdAt)):'';
+ const teacher=fu.createdBy==='teacher';
+ return `<span class="badge" style="background:${teacher?'#ede9fe':'#dcfce7'};color:${teacher?'#6d28d9':'#166534'}">${esc(followupAuthorLabel(fu, studentName))} 작성${esc(t)}</span>`;
+}
 function openFollowupEditor(initialText, initialAnswerHtml){
  return new Promise(resolve=>{
    uiRoot.innerHTML=`<div class="uiOverlay"><div class="uiBox" style="max-width:540px">
@@ -1715,7 +1738,7 @@ document.getElementById('btnSaveQ').addEventListener('click', async ()=>{
    const idx=CURRENT.questions.findIndex(x=>x.id===editingId);
    if(idx>-1){ CURRENT.questions[idx].type=type; CURRENT.questions[idx].area = type==='record'?document.getElementById('qArea').value:null;
      CURRENT.questions[idx].univ=univ;
-     CURRENT.questions[idx].text=text; CURRENT.questions[idx].answerHtml=answerHtml; CURRENT.questions[idx].updatedAt=Date.now(); }
+     CURRENT.questions[idx].text=text; CURRENT.questions[idx].answerHtml=answerHtml; CURRENT.questions[idx].updatedAt=Date.now(); stampEdit(CURRENT.questions[idx],'student'); }
  } else {
    CURRENT.questions.unshift({
      id:uid(), type, area: type==='record'?document.getElementById('qArea').value:null, univ,
@@ -1895,13 +1918,14 @@ function renderList(){
         <button class="btn sm" data-act="qDown" data-id="${q.id}" ${qi===list.length-1?'disabled':''} title="아래로">▼</button>
       </span>
       ${q.type==='basic'?'<span class="badge">기본질문</span>':`<span class="badge acc">생기부 기반</span><span class="badge gray">${esc(q.area)}</span>${q.univ && q.univ!=="공통"?`<span class="badge warn">${esc(q.univ)}</span>`:`<span class="badge gray">공통</span>`}`}
-      ${q.createdBy==='teacher'?`<span class="badge" style="background:#ede9fe;color:#6d28d9">👩‍🏫 ${esc(q.teacherName||'선생님')}이(가) 낸 질문</span>`:''}
+      ${q.createdBy==='teacher'?`<span class="badge" style="background:#ede9fe;color:#6d28d9">😊 ${esc(q.teacherName||'선생님')}이(가) 낸 질문</span>`:''}
       ${fbs.length?`<span class="badge warn">선생님 피드백 ${fbs.length}건</span>`:''}
       ${wasRevisedSinceFeedback(q.answerHtml, fbs, null)?`<span class="badge" style="background:#dbeafe;color:#1e3a8a">✏ 답변 수정됨</span>`:''}
-      ${hasTeacherFix(q.answerHtml)?`<span class="badge" style="background:#fee2e2;color:#dc2626">👩‍🏫 선생님이 고쳐주신 부분 있음</span>`:''}
+      ${hasTeacherFix(q.answerHtml)?`<span class="badge" style="background:#fee2e2;color:#dc2626">😊 선생님이 고쳐주신 부분 있음</span>`:''}
+      ${editStampBadge(q)}
     </div>
     <div class="qtext">Q. ${esc(q.text)}</div>
-    ${q.teacherAttachments&&q.teacherAttachments.length?`<div class="tiny muted" style="margin-top:6px"><b>👩‍🏫 선생님이 첨부한 참고자료</b></div>${attachmentsHTML(q.teacherAttachments)}`:''}
+    ${q.teacherAttachments&&q.teacherAttachments.length?`<div class="tiny muted" style="margin-top:6px"><b>😊 선생님이 첨부한 참고자료</b></div>${attachmentsHTML(q.teacherAttachments)}`:''}
     ${answerWithRevision(q.answerHtml, fbs, null, q.updatedAt)}
     <div class="attachPickWrap">
       <div class="tiny muted"><b>내 참고 자료</b> <span class="attachHint">답변에 참고한 자료나 사진을 첨부해 보세요 (파일당 ${formatFileSize(ATTACH_MAX_BYTES)} 이하).</span></div>
@@ -1923,7 +1947,7 @@ function renderList(){
           <div class="fhead">
             <input type="checkbox" data-act="chkfollow" data-qid="${q.id}" data-fid="${fu.id}" ${fu.checked?'checked':''}>
             <div style="flex:1">
-              <div class="ftext">${esc(fu.text)} ${wasRevisedSinceFeedback(fuAnswerHtml, fbs, fu.id)?`<span class="badge" style="background:#dbeafe;color:#1e3a8a">✏ 답변 수정됨</span>`:''}</div>
+              <div class="ftext">${esc(fu.text)} ${followupAuthorBadge(fu, CURRENT.name)} ${editStampBadge(fu)} ${wasRevisedSinceFeedback(fuAnswerHtml, fbs, fu.id)?`<span class="badge" style="background:#dbeafe;color:#1e3a8a">✏ 답변 수정됨</span>`:''}</div>
               ${answerWithRevision(fuAnswerHtml, fbs, fu.id, fu.updatedAt)}
               <div class="row" style="margin-top:6px">
                 <button class="btn sm" data-act="editfollow" data-qid="${q.id}" data-fid="${fu.id}">수정</button>
@@ -1987,7 +2011,7 @@ function renderList(){
    const result=await openFollowupEditor('', '');
    if(!result) return;
    const q=CURRENT.questions.find(x=>x.id===b.dataset.id);
-   q.followups=q.followups||[]; q.followups.push({id:uid(), text:result.text, answerHtml:result.answerHtml, checked:false, updatedAt:Date.now()});
+   q.followups=q.followups||[]; q.followups.push({id:uid(), text:result.text, answerHtml:result.answerHtml, checked:false, createdBy:'student', createdAt:Date.now(), updatedAt:Date.now()});
    await saveCurrent(); renderList();
  }));
  wrap.querySelectorAll('input[data-act="chkfollow"]').forEach(c=>c.addEventListener('change', async ()=>{
@@ -1999,7 +2023,7 @@ function renderList(){
    const initHtml = fu.answerHtml!=null ? fu.answerHtml : (fu.answerText?esc(fu.answerText):'');
    const result=await openFollowupEditor(fu.text, initHtml);
    if(!result) return;
-   fu.text=result.text; fu.answerHtml=result.answerHtml; delete fu.answerText; fu.updatedAt=Date.now();
+   fu.text=result.text; fu.answerHtml=result.answerHtml; delete fu.answerText; fu.updatedAt=Date.now(); stampEdit(fu,'student');
    await saveCurrent(); renderList();
  }));
  wrap.querySelectorAll('button[data-act="delfollow"]').forEach(b=>b.addEventListener('click', async ()=>{
@@ -2671,7 +2695,7 @@ document.getElementById('btnPracticeFollowup').addEventListener('click',()=>{
  if(!fus.length) return;
  const items=fus.filter(fu=>!practiceDeck.some(d=>d.id===q.id+'__'+fu.id)).map(fu=>({
    id:q.id+'__'+fu.id, text:fu.text, answerHtml: fu.answerHtml!=null?fu.answerHtml:(fu.answerText?esc(fu.answerText):''),
-   type:q.type, area:q.area, univ:q.univ, isFollowup:true, parentText:q.text, followups:[]
+   type:q.type, area:q.area, univ:q.univ, isFollowup:true, parentText:q.text, followups:[], authorBadge:followupAuthorBadge(fu, CURRENT.name)
  }));
  practiceDeck.splice(practiceIdx+1, 0, ...items);
  populateJumpSelect();
@@ -2688,7 +2712,7 @@ function showPracticeCard(){
  document.getElementById('practiceRandomBadge').hidden = practiceMode!=='random';
  document.getElementById('practiceQText').textContent = q.text;
  const badges=document.getElementById('practiceCardBadges');
- badges.innerHTML = (q.isFollowup?'<span class="badge" style="background:#ede9fe;color:#6d28d9">↳ 꼬리질문</span>':'') + (q.type==='basic' ? '<span class="badge">기본질문</span>' :
+ badges.innerHTML = (q.isFollowup?'<span class="badge" style="background:#ede9fe;color:#6d28d9">↳ 꼬리질문</span>'+(q.authorBadge||''):'') + (q.type==='basic' ? '<span class="badge">기본질문</span>' :
    `<span class="badge acc">생기부 기반</span><span class="badge gray">${esc(q.area||'')}</span>${q.univ&&q.univ!=='공통'?`<span class="badge warn">${esc(q.univ)}</span>`:'<span class="badge gray">공통</span>'}`);
  document.getElementById('btnPracticePrev').disabled = practiceIdx===0;
  document.getElementById('btnPracticeNext').textContent = practiceIdx===practiceDeck.length-1 ? '✅ 연습 마치기' : '다음 →';
@@ -3729,7 +3753,7 @@ document.getElementById('btnAddTeacherQ').addEventListener('click', async ()=>{
    if(q){
      q.type=type; q.area=area; q.univ=univ; q.text=text; q.answerHtml=answerHtml;
      q.teacherAttachments=(q.teacherAttachments||[]).concat(tqPendingAttach);
-     q.updatedAt=Date.now();
+     q.updatedAt=Date.now(); stampEdit(q,'teacher');
    }
    await saveTeacherQuestions();
    resetTeacherQForm();
@@ -4135,13 +4159,14 @@ function renderTeacherQList(){
         <button class="btn sm" data-act="tqDown" data-id="${q.id}" ${qi===list.length-1?'disabled':''} title="아래로">▼</button>
       </span>
       ${q.type==='basic'?'<span class="badge">기본질문</span>':`<span class="badge acc">생기부 기반</span><span class="badge gray">${esc(q.area)}</span>${q.univ && q.univ!=="공통"?`<span class="badge warn">${esc(q.univ)}</span>`:`<span class="badge gray">공통</span>`}`}
-      ${q.createdBy==='teacher'?`<span class="badge" style="background:#ede9fe;color:#6d28d9">👩‍🏫 ${esc(q.teacherName||'선생님')}이(가) 낸 질문</span>`:''}
+      ${q.createdBy==='teacher'?`<span class="badge" style="background:#ede9fe;color:#6d28d9">😊 ${esc(q.teacherName||'선생님')}이(가) 낸 질문</span>`:''}
       ${wasRevisedSinceFeedback(q.answerHtml, fbs, null)?`<span class="badge" style="background:#dbeafe;color:#1e3a8a">✏ 답변 수정됨</span>`:''}
       ${hasTeacherFix(q.answerHtml)?`<span class="badge" style="background:#fee2e2;color:#dc2626">✎ 내가 고친 부분 있음</span>`:''}
+      ${editStampBadge(q)}
     </div>
     <div class="qtext">Q. ${esc(q.text)}</div>
     ${q.createdBy==='teacher'?`<div class="row" style="margin-bottom:8px"><button class="btn sm" data-act="editTeacherQ" data-qid="${q.id}">질문 수정</button><button class="btn sm danger" data-act="delTeacherQ" data-qid="${q.id}">이 질문 삭제</button></div>`:''}
-    ${q.teacherAttachments&&q.teacherAttachments.length?`<div class="tiny muted" style="margin-top:4px"><b>👩‍🏫 첨부한 참고자료</b></div>${attachmentsHTML(q.teacherAttachments)}`:''}
+    ${q.teacherAttachments&&q.teacherAttachments.length?`<div class="tiny muted" style="margin-top:4px"><b>😊 첨부한 참고자료</b></div>${attachmentsHTML(q.teacherAttachments)}`:''}
     <div class="answerEditWrap" data-qid="${q.id}">
       ${teacherAnswerEditingQid===q.id ? teacherAnswerEditorHTML(q) : `
         ${answerWithRevision(q.answerHtml, fbs, null, q.updatedAt)}
@@ -4156,7 +4181,7 @@ function renderTeacherQList(){
       const fuAnswerHtml = fu.answerHtml!=null ? fu.answerHtml : (fu.answerText?esc(fu.answerText):'');
       return `<div class="followItem">
         <div class="fhead"><input type="checkbox" disabled ${fu.checked?'checked':''}>
-        <div style="flex:1"><div class="ftext">${esc(fu.text)} ${fu.createdBy==='teacher'?'<span class="badge" style="background:#ede9fe;color:#6d28d9">👩‍🏫 선생님 꼬리질문</span>':''} ${wasRevisedSinceFeedback(fuAnswerHtml, fbs, fu.id)?`<span class="badge" style="background:#dbeafe;color:#1e3a8a">✏ 답변 수정됨</span>`:''}</div>
+        <div style="flex:1"><div class="ftext">${esc(fu.text)} ${followupAuthorBadge(fu, TCUR.data.name)} ${editStampBadge(fu)} ${wasRevisedSinceFeedback(fuAnswerHtml, fbs, fu.id)?`<span class="badge" style="background:#dbeafe;color:#1e3a8a">✏ 답변 수정됨</span>`:''}</div>
         ${answerWithRevision(fuAnswerHtml, fbs, fu.id, fu.updatedAt)}
         <div class="row" style="margin-top:6px"><button class="btn sm" data-act="tEditFollow" data-qid="${q.id}" data-fid="${fu.id}" type="button">수정</button><button class="btn sm danger" data-act="tDelFollow" data-qid="${q.id}" data-fid="${fu.id}" type="button">삭제</button></div>
         ${fufbs.length?`<div class="fbBox">${fufbs.map(f=>fbHtml(f,q.id,'teacher')).join('')}</div>`:''}
@@ -4218,7 +4243,7 @@ function renderTeacherQList(){
    const result=await openFollowupEditor('', '');
    if(!result) return;
    q.followups=q.followups||[];
-   q.followups.push({id:uid(), text:result.text, answerHtml:result.answerHtml, checked:false, createdBy:'teacher', updatedAt:Date.now()});
+   q.followups.push({id:uid(), text:result.text, answerHtml:result.answerHtml, checked:false, createdBy:'teacher', teacherName:TEACHER_SESSION?TEACHER_SESSION.displayName:'선생님', createdAt:Date.now(), updatedAt:Date.now()});
    await saveTeacherQuestions(); renderTeacherQList();
  }));
  wrap.querySelectorAll('button[data-act="tEditFollow"]').forEach(b=>b.addEventListener('click', async ()=>{
@@ -4226,7 +4251,7 @@ function renderTeacherQList(){
    const initHtml = fu.answerHtml!=null ? fu.answerHtml : (fu.answerText?esc(fu.answerText):'');
    const result=await openFollowupEditor(fu.text, initHtml);
    if(!result) return;
-   fu.text=result.text; fu.answerHtml=result.answerHtml; delete fu.answerText; fu.updatedAt=Date.now();
+   fu.text=result.text; fu.answerHtml=result.answerHtml; delete fu.answerText; fu.updatedAt=Date.now(); stampEdit(fu,'teacher');
    await saveTeacherQuestions(); renderTeacherQList();
  }));
  wrap.querySelectorAll('button[data-act="tDelFollow"]').forEach(b=>b.addEventListener('click', async ()=>{
@@ -4247,7 +4272,7 @@ function renderTeacherQList(){
    const q=TCUR.data.questions.find(x=>x.id===qid); if(!q)return;
    const box=document.getElementById('tqEdit_'+qid);
    q.answerHtml = box ? box.innerHTML : q.answerHtml;
-   q.updatedAt=Date.now();
+   q.updatedAt=Date.now(); stampEdit(q,'teacher');
    teacherAnswerEditingQid=null;
    await saveTeacherQuestions();
    renderTeacherQList();

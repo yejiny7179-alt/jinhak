@@ -548,6 +548,7 @@ table.tbl th{background:var(--surface2);color:var(--muted);font-weight:700;font-
       <div class="card">
         <h2>오늘의 연습 피드백</h2>
         <p class="small muted" id="psfDateTimeLabel"></p>
+        <p class="tiny" style="color:var(--accent,#2563eb)">🎙 각 문항에서 녹음한 내용은 아래에서 다시 들을 수 있고, 키워드를 말했는지 자동으로 확인해 총평에 적어 드려요. (녹음 파일은 저장되지 않고 이 화면에서만 들을 수 있어요)</p>
         <div id="practiceSessionSummary"></div>
         <div class="field"><label>답변 구성</label><textarea id="psfStructure" placeholder="답변의 구성(서론-본론-결론, 논리적 흐름 등)에 대해 스스로 평가해 보세요."></textarea></div>
         <div class="field"><label>태도</label><textarea id="psfAttitude" placeholder="목소리, 시선, 자신감, 말하는 속도 등 태도에 대해 스스로 평가해 보세요."></textarea></div>
@@ -2676,6 +2677,7 @@ function practiceLogDetailHTML(log){
       <div class="qtext">${i+1}. Q. ${esc(it.qtext)}${it.targetSec?` <span class="badge gray">목표 ${it.targetSec}초</span>`:''}</div>
       <div class="answerBox">${(it.answerHtml&&it.answerHtml.trim())?it.answerHtml:'<span class="muted">(작성한 답변 없음)</span>'}</div>
       <div class="tiny" style="margin-top:6px"><b>평가:</b> ${resultLabel}${reasonsText?` — ${esc(reasonsText)}`:''}${it.eval&&it.eval.note?`<div class="muted">메모: ${esc(it.eval.note)}</div>`:''}</div>
+      ${it.kw?kwResultLine({checked:true,found:it.kw.found||[],missing:it.kw.missing||[],total:it.kw.total||0}):''}
     </div>`;
   }).join('')}
   <div class="fbBox" style="margin-top:10px">
@@ -2736,6 +2738,7 @@ let practiceDeck=[]; let practiceIdx=0; let practiceTimerHandle=null; let practi
 let practiceMode='sequential'; // 'sequential' | 'random' (연습 시작 시 질문 순서를 섞을지 여부)
 let practiceQCount=null; // 연습 시작 시 설정한 질문 개수 (null=전체)
 let autoAdvanceTriggered=false; // 목표시간 도달로 이미 자동으로 다음 질문으로 넘어갔는지
+let sessionRec={}; // 이번 연습 세션의 질문별 녹음·키워드 확인 {qid:{url,sec,found,missing,total,checked}} (녹음 파일은 저장되지 않음)
 let sessionEval={}; // 이번 연습 세션 동안의 문항별 자가평가 {qid: {result, reasons:[], note}}
 let mediaStream=null; let mediaRecorder=null; let mediaChunks=[]; let mediaSupported = !!(navigator.mediaDevices && window.MediaRecorder);
 let practiceTargetSeconds=null; // 현재 질문의 목표 답변 시간(초)
@@ -2858,7 +2861,7 @@ function startSession(mode){
  practiceQCount=practiceSessionSelection?null:readQCountInput();
  practiceDeck=buildSessionDeck(base, mode, practiceQCount, !!practiceSessionSelection);
  practiceIdx=0;
- sessionEval={};
+ sessionEval={}; sessionRec={};
  perQTarget={};
  stopTotalTimer();
  { const tm=Number(document.getElementById('practiceTotalMinInput').value); practiceTotalSeconds = tm>0 ? Math.round(tm*60) : null;
@@ -3112,6 +3115,7 @@ function showPracticeCheckResult(elapsedSec){
    const norm=normForMatch(practiceTranscript);
    const found=kws.filter(k=>norm.includes(normForMatch(k)));
    missing=kws.filter(k=>!norm.includes(normForMatch(k)));
+   sessionRec[q.id]=Object.assign(sessionRec[q.id]||{}, {found:found.slice(), missing:missing.slice(), total:kws.length, checked:true});
    if(kws.length){
      html += found.length===kws.length
        ? `<div>✅ 표시된 키워드를 모두 말했어요! (${found.length}/${kws.length})</div>`
@@ -3122,6 +3126,7 @@ function showPracticeCheckResult(elapsedSec){
  } else {
    html += `<div class="muted">이 브라우저는 음성 인식을 지원하지 않아 키워드 자동 확인은 어려워요. 녹음을 들어보고 직접 확인해 주세요.</div>`;
  }
+ sessionRec[q.id]=Object.assign(sessionRec[q.id]||{}, {sec:elapsedSec});
  if(practiceTargetSeconds){
    html += elapsedSec<=practiceTargetSeconds
      ? `<div>⏱ 목표 시간(${practiceTargetSeconds}초) 안에 답변을 마쳤어요. (${elapsedSec}초 소요)</div>`
@@ -3142,6 +3147,7 @@ document.getElementById('btnRecStart').addEventListener('click', async ()=>{
    mediaRecorder.ondataavailable = (e)=>{ if(e.data.size>0) mediaChunks.push(e.data); };
    mediaRecorder.onstop = ()=>{
      const blob = new Blob(mediaChunks, {type:'audio/webm'});
+     if(recQid){ const prev=sessionRec[recQid]; if(prev&&prev.url) URL.revokeObjectURL(prev.url); sessionRec[recQid]=Object.assign(prev||{}, {url:URL.createObjectURL(blob)}); }
      if(!practiceDeck[practiceIdx] || practiceDeck[practiceIdx].id!==recQid) return; // 이미 다른 질문으로 넘어갔으면 화면은 건드리지 않음
      const url = URL.createObjectURL(blob);
      const audioEl=document.getElementById('practiceAudioPlayback');
@@ -3222,6 +3228,25 @@ document.getElementById('btnPracticeBackToSetup').addEventListener('click', asyn
  renderPracticeList();
 });
 // ---------- 연습 종료 후 자가 피드백 작성 ----------
+function kwResultLine(r){
+ if(!r || !r.checked) return '';
+ if(!r.total) return '<div class="tiny muted">🔑 표시한 키워드가 없어 확인을 생략했어요.</div>';
+ return r.missing.length
+   ? `<div class="tiny">🔑 키워드 ${r.found.length}/${r.total} — <span style="color:#b45309">빠뜨린 키워드: ${r.missing.map(esc).join(', ')}</span></div>`
+   : `<div class="tiny">🔑 키워드 ${r.found.length}/${r.total} — ✅ 모두 말했어요</div>`;
+}
+function recReviewHTML(r){
+ if(!r) return '<div class="tiny muted" style="margin-top:6px">🎙 이 질문은 녹음하지 않았어요.</div>';
+ return `<div style="margin-top:8px">${r.url?`<audio controls src="${r.url}" style="width:100%"></audio>`:''}${kwResultLine(r)}${r.sec!=null?`<div class="tiny muted">답변 시간 ${r.sec}초</div>`:''}</div>`;
+}
+function buildAutoKeywordFeedback(){
+ const rows=practiceDeck.map((q,i)=>({i:i+1,r:sessionRec[q.id]})).filter(x=>x.r&&x.r.checked&&x.r.total);
+ if(!rows.length) return '';
+ const ok=rows.filter(x=>!x.r.missing.length).length;
+ let t=`[키워드 자동 확인] 녹음한 ${rows.length}문항 중 ${ok}문항은 키워드를 모두 말했어요.`;
+ rows.filter(x=>x.r.missing.length).forEach(x=>{ t+=`\n- ${x.i}번 질문: 빠뜨린 키워드 → ${x.r.missing.join(', ')}`; });
+ return t;
+}
 function openPracticeSessionFeedback(){
  stopPracticeTimer(); stopRecordingIfActive();
  const usedTotalSec = practiceTotalSeconds ? practiceTotalSeconds-Math.max(0,totalRemaining) : null;
@@ -3239,11 +3264,12 @@ function openPracticeSessionFeedback(){
      <div class="qtext">${i+1}. Q. ${esc(q.text)}</div>
      <div class="answerBox">${(q.answerHtml&&q.answerHtml.trim())?q.answerHtml:'<span class="muted">(작성한 답변 없음)</span>'}</div>
      <div class="tiny" style="margin-top:6px"><b>평가:</b> ${resultLabel}${reasonsText?` — ${esc(reasonsText)}`:''}${ev.note?`<div class="muted">메모: ${esc(ev.note)}</div>`:''}</div>
+     ${recReviewHTML(sessionRec[q.id])}
    </div>`;
  }).join('');
  document.getElementById('psfStructure').value='';
  document.getElementById('psfAttitude').value='';
- document.getElementById('psfOverall').value='';
+ document.getElementById('psfOverall').value=buildAutoKeywordFeedback();
 }
 document.getElementById('btnSavePracticeSession').addEventListener('click', async ()=>{
  if(!CURRENT) return;
@@ -3258,6 +3284,7 @@ document.getElementById('btnSavePracticeSession').addEventListener('click', asyn
    items: practiceDeck.map(q=>{
      const ev=sessionEval[q.id];
      return { qid:q.id, qtext:q.text, answerHtml:q.answerHtml||'', targetSec:(perQTarget[q.id]!=null?perQTarget[q.id]:practiceDefaultSec)||null,
+       kw: (sessionRec[q.id]&&sessionRec[q.id].checked) ? {found:sessionRec[q.id].found||[], missing:sessionRec[q.id].missing||[], total:sessionRec[q.id].total||0, sec:sessionRec[q.id].sec!=null?sessionRec[q.id].sec:null} : null,
        eval: ev ? {result:ev.result||null, reasons:(ev.reasons||[]).slice(), note:ev.note||''} : {result:null,reasons:[],note:''} };
    }),
    feedback: {

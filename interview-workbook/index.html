@@ -2481,6 +2481,7 @@ function renderList(){
                 <button class="btn sm danger" data-act="delfollow" data-qid="${q.id}" data-fid="${fu.id}">삭제</button>
               </div>
               ${fufbs.length?`<div class="fbBox">${fufbs.map(f=>fbHtml(f,q.id,'student')).join('')}</div>`:''}
+              ${memoBlockHTML(fu, q.id+'__'+fu.id, 'student')}
             </div>
           </div>
         </div>`;
@@ -2562,7 +2563,7 @@ function renderList(){
    q.feedback=(q.feedback||[]).filter(f=>f.followupId!==b.dataset.fid);
    await saveCurrent(); renderList();
  }));
- wireMemoBlock(wrap, (qid)=>CURRENT.questions.find(x=>x.id===qid), saveCurrent, renderList, 'student');
+ wireMemoBlock(wrap, (qid)=>{ const [a,b]=String(qid).split('__'); const q=CURRENT.questions.find(x=>x.id===a); return b&&q?(q.followups||[]).find(f=>f.id===b):q; }, saveCurrent, renderList, 'student');
  wrap.querySelectorAll('button[data-act="replyfb"]').forEach(b=>b.addEventListener('click', async ()=>{
    const text=await uiPrompt('답글을 입력하세요.'); if(!text||!text.trim())return;
    const q=CURRENT.questions.find(x=>x.id===b.dataset.qid); if(!q)return;
@@ -4939,6 +4940,7 @@ function renderTeacherQList(){
         ${fuKwLine(fuAnswerHtml)}
         <div class="row" style="margin-top:6px"><button class="btn sm" data-act="tEditFollow" data-qid="${q.id}" data-fid="${fu.id}" type="button">수정</button><button class="btn sm danger" data-act="tDelFollow" data-qid="${q.id}" data-fid="${fu.id}" type="button">삭제</button></div>
         ${fufbs.length?`<div class="fbBox">${fufbs.map(f=>fbHtml(f,q.id,'teacher')).join('')}</div>`:''}
+        ${memoBlockHTML(fu, q.id+'__'+fu.id, 'teacher')}
         </div></div></div>`;
     }).join('')}</div>
     <div class="fbBox">
@@ -5094,7 +5096,7 @@ function renderTeacherQList(){
    swapArrayItemsById(TCUR.data.questions, list[i].id, list[i+1].id);
    await saveTeacherQuestions(); renderTeacherQList();
  }));
- wireMemoBlock(wrap, (qid)=>TCUR.data.questions.find(x=>x.id===qid), saveTeacherQuestions, renderTeacherQList, 'teacher');
+ wireMemoBlock(wrap, (qid)=>{ const [a,b]=String(qid).split('__'); const q=TCUR.data.questions.find(x=>x.id===a); return b&&q?(q.followups||[]).find(f=>f.id===b):q; }, saveTeacherQuestions, renderTeacherQList, 'teacher');
  wrap.querySelectorAll('button[data-act="savefb"]').forEach(b=>b.addEventListener('click', async ()=>{
    const qid=b.dataset.qid;
    const tname=TEACHER_SESSION?TEACHER_SESSION.displayName:'';

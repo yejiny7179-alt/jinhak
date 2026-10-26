@@ -1649,6 +1649,46 @@ function followupAuthorBadge(fu, studentName){
  return `<span class="badge" style="background:${teacher?'#ede9fe':'#dcfce7'};color:${teacher?'#6d28d9':'#166534'}">${esc(followupAuthorLabel(fu, studentName))} 작성${esc(t)}</span>`;
 }
 function fuKwLine(html){ const k=extractKeywords(html); return k.length?`<div class="tiny" style="margin-top:4px">🔑 ${k.map(x=>`<span class="badge" style="background:#fde68a;color:#78350f">${esc(x)}</span>`).join(' ')}</div>`:''; }
+// ---------- 질문 수정 창 (목록에서 그 자리에서 바로 수정) ----------
+function openQuestionEditor(q, scheduleList, role){
+ const univs=[...new Set((scheduleList||[]).map(it=>it.univ).filter(Boolean))];
+ const curUniv=q.univ||'공통';
+ const univOpts=['공통',...univs.filter(u=>u!=='공통')]; if(!univOpts.includes(curUniv)) univOpts.push(curUniv);
+ const areas=[['교과세특','교과세특'],['자율활동','자율활동'],['동아리활동','동아리활동'],['진로활동','진로활동'],['봉사활동','봉사활동'],['행동특성및종합의견','행동특성 및 종합의견']];
+ if(q.area && !areas.some(a=>a[0]===q.area)) areas.push([q.area,q.area+' (이전 분류)']);
+ return new Promise(resolve=>{
+   uiRoot.innerHTML=`<div class="uiOverlay"><div class="uiBox" style="max-width:640px">
+     <p style="font-weight:700;margin-bottom:10px">✏ 질문 수정</p>
+     <div class="grid c2">
+       <div class="field"><label>유형</label><select id="qeType"><option value="basic">기본질문</option><option value="record">생기부 기반</option></select></div>
+       <div class="field" id="qeAreaWrap"><label>생기부 영역</label><select id="qeArea">${areas.map(a=>`<option value="${esc(a[0])}">${esc(a[1])}</option>`).join('')}</select></div>
+       <div class="field" id="qeCatWrap"><label>분류</label><select id="qeCat"><option value="">분류 선택 안 함</option><option value="academic">학업</option><option value="major">전공적합성</option><option value="community">공동체 역량</option></select></div>
+       <div class="field"><label>대학</label><select id="qeUniv">${univOpts.map(u=>`<option value="${esc(u)}">${u==='공통'?'공통 (모든 대학에 해당)':esc(u)}</option>`).join('')}</select></div>
+     </div>
+     <div class="field"><label>질문</label><textarea id="qeText" rows="2" style="margin-bottom:6px">${esc(q.text||'')}</textarea>
+       <div class="row" style="justify-content:flex-start"><button type="button" class="btn sm micBtn" data-target="qeText">🎤 음성으로 입력</button> <span class="tiny muted micStatus"></span></div></div>
+     <div class="field"><label>답변 <span class="tiny muted">(키워드로 쓸 단어를 드래그한 뒤 색을 누르세요)</span></label></div>
+     <div id="qeToolbarWrap" style="margin-bottom:6px"></div>
+     <div class="answerBox" id="qeAnswer" contenteditable="true" style="max-height:34vh;overflow-y:auto;margin-bottom:6px" data-ph="답변을 입력해 보세요">${q.answerHtml||''}</div>
+     <div class="row" style="justify-content:flex-start;margin-bottom:10px"><button type="button" class="btn sm micBtn" data-target="qeAnswer">🎤 음성으로 입력</button> <span class="tiny muted micStatus"></span></div>
+     <div class="row stickyBtns"><button class="btn" id="uiCancelBtn" type="button">취소</button><button class="btn primary" id="uiOkBtn" type="button">저장</button></div>
+   </div></div>`;
+   const $=id=>document.getElementById(id);
+   $('qeType').value=q.type||'basic'; $('qeArea').value=q.area||'교과세특'; $('qeCat').value=q.category||''; $('qeUniv').value=curUniv;
+   const sync=()=>{ const rec=$('qeType').value==='record'; $('qeAreaWrap').hidden=!rec; $('qeCatWrap').hidden=!rec; };
+   $('qeType').addEventListener('change',sync); sync();
+   $('qeToolbarWrap').innerHTML=highlightToolbarHTML('qeAnswer');
+   wireAnswerBox('qeAnswer'); wireMicButton('qeText',true); wireMicButton('qeAnswer',false);
+   $('qeText').focus();
+   $('uiOkBtn').addEventListener('click',()=>{
+     const text=$('qeText').value.trim(); if(!text){ $('qeText').focus(); return; }
+     const rec=$('qeType').value==='record';
+     const out={type:$('qeType').value, area:rec?$('qeArea').value:null, category:rec?($('qeCat').value||null):null, univ:$('qeUniv').value, text, answerHtml:$('qeAnswer').innerHTML};
+     uiRoot.innerHTML=''; resolve(out);
+   });
+   $('uiCancelBtn').addEventListener('click',()=>{ uiRoot.innerHTML=''; resolve(null); });
+ });
+}
 function openFollowupEditor(initialText, initialAnswerHtml, teacherMode){
  return new Promise(resolve=>{
    uiRoot.innerHTML=`<div class="uiOverlay"><div class="uiBox" style="max-width:540px">
@@ -2524,25 +2564,13 @@ function renderList(){
    swapArrayItemsById(CURRENT.questions, list[i].id, list[i+1].id);
    await saveCurrent(); renderList();
  }));
- wrap.querySelectorAll('button[data-act="edit"]').forEach(b=>b.addEventListener('click',()=>{
+ wrap.querySelectorAll('button[data-act="edit"]').forEach(b=>b.addEventListener('click', async ()=>{
    const q=CURRENT.questions.find(x=>x.id===b.dataset.id); if(!q)return;
-   editingId=q.id;
-   goTab('build');
-   document.getElementById('qType').value=q.type; toggleRecordFields();
-   if(q.type==='record'){
-     const areaSel=document.getElementById('qArea');
-     if(q.area && ![...areaSel.options].some(o=>o.value===q.area)){
-       areaSel.innerHTML += `<option value="${esc(q.area)}">${esc(q.area)} (이전 분류)</option>`;
-     }
-     areaSel.value=q.area;
-     populateQUnivSelect(q.univ);
-     document.getElementById('qCategory').value=q.category||'';
-   }
-   qPendingFollowups=[]; renderPendingFollowups(qPendingFollowups,'qPendingFollowups');
-   document.getElementById('qText').value=q.text;
-   document.getElementById('qAnswer').innerHTML=q.answerHtml||'';
-   document.getElementById('editingNote').textContent='✏ 이 질문을 수정하고 있습니다.';
-   document.getElementById('btnCancelQEdit').hidden=false;
+   const r=await openQuestionEditor(q, CURRENT.schedule, 'student'); if(!r) return;
+   const y=window.scrollY;
+   q.type=r.type; q.area=r.area; q.category=r.category; q.univ=r.type==='record'?r.univ:null; q.text=r.text; q.answerHtml=r.answerHtml;
+   q.updatedAt=Date.now(); stampEdit(q,'student');
+   await saveCurrent(); renderList(); window.scrollTo(0,y);
  }));
  wrap.querySelectorAll('button[data-act="del"]').forEach(b=>b.addEventListener('click', async ()=>{
    if(!(await uiConfirm('이 질문을 삭제할까요? 꼬리질문과 피드백도 함께 삭제됩니다.')))return;
@@ -5075,32 +5103,16 @@ function renderTeacherQList(){
    await saveTeacherQuestions();
    renderTeacherQList();
  }));
- wrap.querySelectorAll('button[data-act="editTeacherQ"]').forEach(b=>b.addEventListener('click',()=>{
+ wrap.querySelectorAll('button[data-act="editTeacherQ"]').forEach(b=>b.addEventListener('click', async ()=>{
    const q=TCUR.data.questions.find(x=>x.id===b.dataset.qid); if(!q)return;
-   editingTeacherQid=q.id;
-   document.getElementById('tqType').value=q.type;
-   document.getElementById('tqAreaWrap').hidden = q.type!=='record';
-   document.getElementById('tqCategoryWrap').hidden = q.type!=='record';
-   document.getElementById('tqCategory').value=q.category||'';
-   tqPendingFollowups=[]; renderPendingFollowups(tqPendingFollowups,'tqPendingFollowups');
-   if(q.type==='record'){
-     const areaSel=document.getElementById('tqArea');
-     if(q.area && ![...areaSel.options].some(o=>o.value===q.area)){
-       areaSel.innerHTML += `<option value="${esc(q.area)}">${esc(q.area)} (이전 분류)</option>`;
-     }
-     areaSel.value=q.area;
-   }
-   populateTqUnivSelect();
-   if(q.univ && ![...document.getElementById('tqUniv').options].some(o=>o.value===q.univ)){
-     document.getElementById('tqUniv').innerHTML += `<option value="${esc(q.univ)}">${esc(q.univ)}</option>`;
-   }
-   document.getElementById('tqUniv').value=q.univ||'공통';
-   document.getElementById('tqText').value=q.text;
-   document.getElementById('tqAnswer').innerHTML=q.answerHtml||'';
-   document.getElementById('tqEditingNote').textContent='✏ 이 질문을 수정하고 있습니다.';
-   document.getElementById('btnCancelTeacherQEdit').hidden=false;
-   document.getElementById('btnAddTeacherQ').textContent='질문 수정 저장';
-   document.getElementById('tqText').scrollIntoView({behavior:'smooth', block:'center'});
+   const r=await openQuestionEditor(q, TCUR.data.schedule, 'teacher'); if(!r) return;
+   const y=window.scrollY;
+   const snap={type:q.type,area:q.area,category:q.category,univ:q.univ,text:q.text,answerHtml:q.answerHtml,updatedAt:q.updatedAt,lastEdit:q.lastEdit,editLog:q.editLog};
+   q.type=r.type; q.area=r.area; q.category=r.category; q.univ=r.univ; q.text=r.text; q.answerHtml=r.answerHtml;
+   q.updatedAt=Date.now(); stampEdit(q,'teacher');
+   try{ await saveTeacherQuestions(); }
+   catch(e){ console.error(e); Object.assign(q,snap); await uiAlert('질문을 저장하지 못했습니다.\n('+(e&&e.message?e.message:e)+')'); }
+   renderTeacherQList(); window.scrollTo(0,y);
  }));
  wrap.querySelectorAll('button[data-act="tqUp"]').forEach(b=>b.addEventListener('click', async ()=>{
    const i=list.findIndex(x=>x.id===b.dataset.id); if(i<=0)return;

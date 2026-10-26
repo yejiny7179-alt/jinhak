@@ -3149,13 +3149,6 @@ document.getElementById('btnRecStart').addEventListener('click', async ()=>{
      const blob = new Blob(mediaChunks, {type:'audio/webm'});
      if(recQid){ const prev=sessionRec[recQid]; if(prev&&prev.url) URL.revokeObjectURL(prev.url); sessionRec[recQid]=Object.assign(prev||{}, {url:URL.createObjectURL(blob)}); }
      if(!practiceDeck[practiceIdx] || practiceDeck[practiceIdx].id!==recQid) return; // 이미 다른 질문으로 넘어갔으면 화면은 건드리지 않음
-     const url = URL.createObjectURL(blob);
-     const audioEl=document.getElementById('practiceAudioPlayback');
-     audioEl.src=url; audioEl.style.display='block';
-     const dlLink=document.getElementById('practiceDownloadLink');
-     dlLink.href=url;
-     dlLink.download='면접연습_'+(practiceDeck[practiceIdx]?practiceDeck[practiceIdx].text.slice(0,15).replace(/[^\w가-힣]/g,''):'답변')+'.webm';
-     dlLink.style.display='inline-flex';
    };
    startPracticeTimer(); // 타이머가 아직 안 켜졌으면 녹음과 함께 시작
    mediaRecorder.start();
@@ -3195,7 +3188,7 @@ document.getElementById('btnRecStop').addEventListener('click',()=>{
  const elapsedSec = Math.max(0, practiceSeconds - recordStartSeconds);
  document.getElementById('btnRecStart').hidden=false;
  document.getElementById('btnRecStop').hidden=true;
- document.getElementById('practiceRecNote').textContent='내 답변을 들어보세요 (다운로드하지 않으면 다음 질문으로 넘어갈 때 사라져요)';
+ document.getElementById('practiceRecNote').textContent='✅ 녹음됐어요. 다음 질문으로 넘어가세요! 연습이 끝나면 피드백 화면에서 한 번에 들을 수 있어요.';
  const rec=mediaRecorder, stream=mediaStream, sr=practiceRecognition;
  mediaRecorder=null; mediaStream=null; practiceRecognition=null;
  if(rec && rec.state!=='inactive'){ try{ rec.stop(); }catch(e){} }
@@ -3231,20 +3224,20 @@ document.getElementById('btnPracticeBackToSetup').addEventListener('click', asyn
 function kwResultLine(r){
  if(!r || !r.checked) return '';
  if(!r.total) return '<div class="tiny muted">🔑 표시한 키워드가 없어 확인을 생략했어요.</div>';
- return r.missing.length
-   ? `<div class="tiny">🔑 키워드 ${r.found.length}/${r.total} — <span style="color:#b45309">빠뜨린 키워드: ${r.missing.map(esc).join(', ')}</span></div>`
-   : `<div class="tiny">🔑 키워드 ${r.found.length}/${r.total} — ✅ 모두 말했어요</div>`;
+ return `<div class="tiny" style="margin-top:4px"><b>🔑 키워드 ${r.found.length}/${r.total}</b>${r.missing.length?'':' — ✅ 모두 말했어요'}
+   <div><span style="color:#15803d">✅ 말한 키워드:</span> ${r.found.length?r.found.map(esc).join(', '):'<span class="muted">없음</span>'}</div>
+   <div><span style="color:#b45309">⚠ 말하지 않은 키워드:</span> ${r.missing.length?r.missing.map(esc).join(', '):'<span class="muted">없음</span>'}</div></div>`;
 }
-function recReviewHTML(r){
+function recReviewHTML(r,i){
  if(!r) return '<div class="tiny muted" style="margin-top:6px">🎙 이 질문은 녹음하지 않았어요.</div>';
- return `<div style="margin-top:8px">${r.url?`<audio controls src="${r.url}" style="width:100%"></audio>`:''}${kwResultLine(r)}${r.sec!=null?`<div class="tiny muted">답변 시간 ${r.sec}초</div>`:''}</div>`;
+ return `<div style="margin-top:8px">${r.url?`<audio controls src="${r.url}" style="width:100%"></audio> <a class="btn sm" href="${r.url}" download="면접연습_${i+1}번.webm" style="margin-top:4px">⬇ 다운로드</a>`:''}${kwResultLine(r)}${r.sec!=null?`<div class="tiny muted">답변 시간 ${r.sec}초</div>`:''}</div>`;
 }
 function buildAutoKeywordFeedback(){
  const rows=practiceDeck.map((q,i)=>({i:i+1,r:sessionRec[q.id]})).filter(x=>x.r&&x.r.checked&&x.r.total);
  if(!rows.length) return '';
  const ok=rows.filter(x=>!x.r.missing.length).length;
  let t=`[키워드 자동 확인] 녹음한 ${rows.length}문항 중 ${ok}문항은 키워드를 모두 말했어요.`;
- rows.filter(x=>x.r.missing.length).forEach(x=>{ t+=`\n- ${x.i}번 질문: 빠뜨린 키워드 → ${x.r.missing.join(', ')}`; });
+ rows.forEach(x=>{ t+=`\n- ${x.i}번 질문 — 말한 키워드: ${x.r.found.join(', ')||'없음'} / 말하지 않은 키워드: ${x.r.missing.join(', ')||'없음'}`; });
  return t;
 }
 function openPracticeSessionFeedback(){
@@ -3264,7 +3257,7 @@ function openPracticeSessionFeedback(){
      <div class="qtext">${i+1}. Q. ${esc(q.text)}</div>
      <div class="answerBox">${(q.answerHtml&&q.answerHtml.trim())?q.answerHtml:'<span class="muted">(작성한 답변 없음)</span>'}</div>
      <div class="tiny" style="margin-top:6px"><b>평가:</b> ${resultLabel}${reasonsText?` — ${esc(reasonsText)}`:''}${ev.note?`<div class="muted">메모: ${esc(ev.note)}</div>`:''}</div>
-     ${recReviewHTML(sessionRec[q.id])}
+     ${recReviewHTML(sessionRec[q.id],i)}
    </div>`;
  }).join('');
  document.getElementById('psfStructure').value='';

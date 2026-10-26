@@ -139,6 +139,9 @@ textarea{resize:vertical;min-height:70px}
 .guideBox{border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:var(--surface2);margin-bottom:8px;font-size:13.5px;line-height:1.8}
 .guideBox b.tag{display:inline-block;background:var(--primary);color:#fff;border-radius:6px;padding:1px 7px;font-size:12px;margin-right:6px}
 .studentRow{border:1px solid var(--line2);border-radius:10px;padding:10px 14px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:10px;cursor:pointer}
+.favStar{background:none;border:none;font-size:22px;line-height:1;cursor:pointer;padding:2px 6px;color:#cbd5e1}
+.favStar.on{color:#f59e0b}
+.favStar:hover{transform:scale(1.15)}
 .studentRow:hover{border-color:var(--primary);background:var(--primary-2)}
 footer{text-align:center;color:var(--muted);font-size:12px;margin-top:36px;padding-top:14px;border-top:1px solid var(--line)}
 .configWarn{background:#fee2e2;border:1px solid #fca5a5;color:#7f1d1d;padding:14px 18px;border-radius:12px;margin:20px auto;max-width:700px;font-size:13.5px;line-height:1.8}
@@ -163,6 +166,7 @@ table.tbl th{background:var(--surface2);color:var(--muted);font-weight:700;font-
 .uiBox p{margin:0 0 16px;line-height:1.6;white-space:pre-wrap}
 .uiBox input,.uiBox textarea{width:100%;border:1px solid var(--line2);border-radius:8px;padding:8px 10px;font-size:14px;margin-bottom:16px}
 .uiBox .row{justify-content:flex-end}
+.uiBox input[type=checkbox],.uiBox input[type=radio]{width:auto;margin:0 6px 0 0;padding:0;vertical-align:middle}
 .slMsgBox{margin:10px 0;padding:10px 14px;border-radius:9px;font-size:13px;line-height:1.6}
 .slMsgBox.info{background:var(--primary-2);color:#1e3a8a;border:1px solid var(--primary-3)}
 .slMsgBox.error{background:var(--danger-2);color:#7f1d1d;border:1px solid #fca5a5}
@@ -403,7 +407,7 @@ table.tbl th{background:var(--surface2);color:var(--muted);font-weight:700;font-
       <div id="areaTemplateChips"></div>
     </div>
     <div class="card">
-      <div class="row between"><h2 style="margin:0">새 질문 만들기</h2><button class="btn sm accent" id="btnBulkQ" type="button">📄 글·파일로 한꺼번에 등록</button></div>
+      <div class="row between"><h2 style="margin:0">새 질문 만들기</h2><div class="row" style="gap:6px"><button class="btn sm accent" id="btnPdfQ" type="button">📑 자료 PDF로 질문 자동 만들기</button><button class="btn sm accent" id="btnBulkQ" type="button">📄 글·파일로 한꺼번에 등록</button></div></div>
       <div class="field"><label>질문 유형</label>
         <select id="qType">
           <option value="basic">기본질문 (자기소개·지원동기 등 공통 질문)</option>
@@ -879,6 +883,10 @@ table.tbl th{background:var(--surface2);color:var(--muted);font-weight:700;font-
     <button class="btn" id="btnTeacherGuide" type="button">사용법</button>
     <button class="btn" id="btnTeacherLogout" type="button">로그아웃</button>
   </header>
+  <div class="card" id="teacherFavCard" hidden>
+    <h2>⭐ 즐겨찾기 학생 <span class="hint">별표를 누른 학생이 여기와 검색 결과 맨 위에 나와요</span></h2>
+    <div id="teacherFavList"></div>
+  </div>
   <div class="card">
     <h2>학생 찾기</h2>
     <div class="grid c2">
@@ -952,6 +960,7 @@ table.tbl th{background:var(--surface2);color:var(--muted);font-weight:700;font-
   <header class="top">
     <div class="brand"><h1 id="teacherStudentTitle">학생 정보</h1><small>선생님 모드</small></div>
     <div class="spacer"></div>
+    <button class="btn" id="btnTeacherFavToggle" type="button" title="즐겨찾기">☆ 즐겨찾기</button>
     <button class="btn" id="btnBackToSearch" type="button">← 학생 목록으로</button>
   </header>
   <div class="card">
@@ -968,7 +977,7 @@ table.tbl th{background:var(--surface2);color:var(--muted);font-weight:700;font-
     <div id="teacherPracticeLogWrap"></div>
   </div>
   <div class="card">
-    <div class="row between"><h2 style="margin:0">선생님이 질문 추가하기 <span class="hint">학생의 질문 목록에 바로 추가되어, 학생이 답변을 작성할 수 있습니다</span></h2><button class="btn sm accent" id="btnBulkTq" type="button">📄 글·파일로 한꺼번에 등록</button></div>
+    <div class="row between"><h2 style="margin:0">선생님이 질문 추가하기 <span class="hint">학생의 질문 목록에 바로 추가되어, 학생이 답변을 작성할 수 있습니다</span></h2><div class="row" style="gap:6px"><button class="btn sm accent" id="btnPdfTq" type="button">📑 자료 PDF로 질문 자동 만들기</button><button class="btn sm accent" id="btnBulkTq" type="button">📄 글·파일로 한꺼번에 등록</button></div></div>
     <div class="grid c2">
       <div class="field"><label>질문 유형</label>
         <select id="tqType">
@@ -1629,21 +1638,26 @@ function followupAuthorBadge(fu, studentName){
  const teacher=fu.createdBy==='teacher';
  return `<span class="badge" style="background:${teacher?'#ede9fe':'#dcfce7'};color:${teacher?'#6d28d9':'#166534'}">${esc(followupAuthorLabel(fu, studentName))} 작성${esc(t)}</span>`;
 }
-function openFollowupEditor(initialText, initialAnswerHtml){
+function fuKwLine(html){ const k=extractKeywords(html); return k.length?`<div class="tiny" style="margin-top:4px">🔑 ${k.map(x=>`<span class="badge" style="background:#fde68a;color:#78350f">${esc(x)}</span>`).join(' ')}</div>`:''; }
+function openFollowupEditor(initialText, initialAnswerHtml, teacherMode){
  return new Promise(resolve=>{
    uiRoot.innerHTML=`<div class="uiOverlay"><div class="uiBox" style="max-width:540px">
      <p style="font-weight:700;margin-bottom:10px">꼬리질문 작성</p>
      <div class="field"><label>꼬리질문 내용</label><input id="ufText" value="${esc(initialText||'')}"></div>
-     <div class="field"><label>답변 <span class="tiny muted">(드래그 후 아래 버튼으로 키워드 표시)</span></label></div>
-     <div class="answerBox" id="ufAnswer" contenteditable="true" style="margin-bottom:10px" data-ph="답변을 입력해 보세요 (비워둬도 됩니다)">${initialAnswerHtml||''}</div>
+     <div class="field"><label>답변 <span class="tiny muted">(키워드로 쓸 단어를 드래그한 뒤 색을 누르면 키워드로 표시돼요)</span></label></div>
      <div id="ufToolbarWrap" style="margin-bottom:6px"></div>
+     <div class="answerBox" id="ufAnswer" contenteditable="true" style="margin-bottom:6px" data-ph="답변을 입력해 보세요 (비워둬도 됩니다)">${initialAnswerHtml||''}</div>
+     <div class="tiny" id="ufKwPreview" style="margin-bottom:10px"></div>
      <div class="row" style="align-items:center;flex-wrap:wrap;margin-bottom:14px"><button type="button" class="btn sm micBtn" data-target="ufAnswer">🎤 음성으로 입력</button> <span class="tiny muted micStatus" data-target="ufAnswer"></span></div>
      <div class="row"><button class="btn" id="uiCancelBtn" type="button">취소</button><button class="btn primary" id="uiOkBtn" type="button">저장</button></div>
    </div></div>`;
    document.getElementById('ufText').focus();
-   document.getElementById('ufToolbarWrap').innerHTML=highlightToolbarHTML('ufAnswer');
+   document.getElementById('ufToolbarWrap').innerHTML=highlightToolbarHTML('ufAnswer', !!teacherMode);
    wireAnswerBox('ufAnswer');
    wireMicButton('ufAnswer', false);
+   const updUfKw=()=>{ const k=extractKeywords(document.getElementById('ufAnswer').innerHTML); document.getElementById('ufKwPreview').innerHTML = k.length ? '🔑 표시된 키워드: '+k.map(x=>`<span class="badge" style="background:#fde68a;color:#78350f">${esc(x)}</span>`).join(' ') : '<span class="muted">🔑 아직 표시한 키워드가 없어요</span>'; };
+   new MutationObserver(updUfKw).observe(document.getElementById('ufAnswer'),{childList:true,subtree:true,attributes:true,characterData:true});
+   updUfKw();
    document.getElementById('uiOkBtn').addEventListener('click',()=>{
      const text=document.getElementById('ufText').value.trim();
      const answerHtml=document.getElementById('ufAnswer').innerHTML;
@@ -1768,6 +1782,208 @@ function buildBulkQuestionObjects(res, role){
    return q;
  });
 }
+// ---------- 면접 준비 자료(PDF)로 질문·꼬리질문 자동 만들기 ----------
+function prepPdfLines(items){
+ const rows=[];
+ items.filter(i=>i.s!=='').forEach(i=>{
+   let r=rows.find(r=>Math.abs(r.y-i.y)<2.5); if(!r){ r={y:i.y,items:[]}; rows.push(r); } r.items.push(i);
+ });
+ rows.sort((a,b)=>b.y-a.y);
+ const joinItems=arr=>{ let t='',prev=null; arr.forEach(i=>{ if(prev && prev.x+prev.w < i.x-1.5 && !/^\s/.test(i.s) && !/\s$/.test(prev.s)) t+=' '; t+=i.s; prev=i; }); return t.replace(/\s+/g,' ').trim(); };
+ const joinRaw=arr=>{ let t='',prev=null; arr.forEach(i=>{ if(prev && prev.x+prev.w < i.x-1.5 && !/^\s/.test(i.s) && !/\s$/.test(prev.s)) t+=' '; t+=i.s; prev=i; }); return t.replace(/\s+/g,' '); };
+ return rows.map(r=>{
+   r.items.sort((a,b)=>a.x-b.x);
+   const real=r.items.filter(i=>i.s.trim());
+   const L=r.items.filter(i=>i.x<135), R=r.items.filter(i=>i.x>=135);
+   const rr=R.find(i=>i.s.trim()), ll=L.find(i=>i.s.trim());
+   return {y:r.y, L:joinItems(L), R:joinItems(R), Rraw:joinRaw(R), hL:ll?ll.h:0, hR:rr?rr.h:0, all:joinItems(r.items), hMax:Math.max(0,...real.map(i=>i.h))};
+ });
+}
+function parsePrepPdf(pagesItems){
+ const out={concepts:[],books:[],debates:[],research:[],found:false};
+ let kind=null, secName='', cur=null, stop=false;
+ const SUFFIX=new Set(['으로','에서','에게','이다','에는','하는','하고','하며','하여','했다','한다','입니다','이며','이고','인지','으며','에도','까지','부터','보다','처럼','마다','되는','되고','된다','하게','해서','이나','이라','라고']);
+ const addSp=(a,b)=>{ if(!a) return b.replace(/^\s+/,''); if(/\s$/.test(a)||/^\s/.test(b)) return a+b;
+   const first=(b.match(/^[가-힣A-Za-z0-9]+/)||[''])[0];
+   return (first.length<=1||SUFFIX.has(first)||!first)?a+b:a+' '+b; };
+ const finish=()=>{ cur=null; };
+ for(const items of pagesItems){
+   if(stop) break;
+   const lines=prepPdfLines(items); let prev=null;
+   for(const ln of lines){
+     if(/반드시/.test(ln.all) && /생기부/.test(ln.all)){ stop=true; break; }
+     if(ln.hMax>=13 && /(\d+)\s*개$/.test(ln.all)){
+       secName=ln.all.replace(/\s*\d+\s*개$/,'').trim(); const k=secName.replace(/\s/g,'');
+       kind = k==='탐구주제'?'research' : (/^책/.test(k)?'book' : (k==='토론논제'?'debate':'concept'));
+       cur=null; prev=ln; out.found=true; continue;
+     }
+     if(!kind){ prev=ln; continue; }
+     const gap = prev?prev.y-ln.y:99;
+     if(kind==='concept'){
+       if(ln.L && (!cur || gap>=23)){ cur={term:ln.L, def:ln.Rraw, sec:secName}; out.concepts.push(cur); }
+       else if(cur){ if(ln.L) cur.term+=ln.L; if(ln.R) cur.def=addSp(cur.def,ln.Rraw); }
+     } else {
+       const bucket = kind==='research'?out.research:(kind==='book'?out.books:out.debates);
+       if(ln.L && ln.hR>=10.2){ cur={label:ln.L, title:ln.Rraw, desc:''}; bucket.push(cur); }
+       else if(cur){
+         if(ln.L) cur.label+=ln.L;
+         if(ln.R){ if(!ln.L && ln.hR>=10.2) cur.title=addSp(cur.title,ln.Rraw); else cur.desc=addSp(cur.desc,ln.Rraw); }
+       }
+     }
+     prev=ln;
+   }
+ }
+ out.concepts.forEach(c=>{ c.term=c.term.replace(/\s+/g,' ').trim(); c.def=c.def.replace(/\s+/g,' ').trim(); });
+ [out.books,out.debates,out.research].forEach(a=>a.forEach(x=>{ x.label=x.label.replace(/\s+/g,' ').trim(); x.title=x.title.replace(/\s+/g,' ').trim(); x.desc=x.desc.replace(/\s+/g,' ').trim(); }));
+ return out;
+}
+const PREP_STOP=new Set(['그리고','하지만','또는','이를','이에','이후','위해','대한','통한','현상','방법','정도','하는','있는','대한','위한','통해','경우','때문','이상','이하','사이','정도','다른','모든','각각','같은','않는','되는','하여','하며','등을','것이','따라','대해','관련','활용','과정','내용']);
+function prepKeywords(text, hints, max){
+ let t=String(text||''); const picked=[];
+ (hints||[]).forEach(h=>{ h=String(h||'').trim(); if(h.length>=2 && t.includes(h) && !picked.includes(h)) picked.push(h); });
+ // 명사처럼 보이는 단어만 후보로: 조사가 붙었거나 쉼표·마침표 앞에 있는 2~8글자 한글 단어
+ const PART='(?:들|은|는|이|가|을|를|의|에|에서|에게|으로|로|와|과|도|만|까지|부터|보다|이며|에는|에도|으로서|으로써)';
+ const cand=[];
+ t.split(/\s+/).forEach(w=>{
+   const m=w.match(new RegExp('^[\\u0027"(\\[‘“]*([가-힣]{2,8}?)('+PART+')?([,.;:)\\]\\u0027"’”]*)$'));
+   if(!m) return; const stem=m[1], part=m[2], punc=m[3];
+   if(!part && !/[,.;:)]/.test(punc)) return;
+   if(PREP_STOP.has(stem) || /(고|며|면|어|아|여|다|라|한|할|된|될|함|됨|인|던|런|게|지|오|해|니|네|서|만|는|은|하|되|르|없|있|같|많|적)$/.test(stem)) return;
+   cand.push(stem);
+ });
+ [...new Set(cand)].sort((a,b)=>b.length-a.length).forEach(w=>{ if(picked.length<(max||3) && !picked.some(p=>p.includes(w)||w.includes(p))) picked.push(w); });
+ picked.sort((a,b)=>b.length-a.length).forEach(w=>{ const i=t.indexOf(w); if(i>=0 && !/\*\*/.test(t.slice(Math.max(0,i-2),i+w.length+2))) t=t.slice(0,i)+'**'+w+'**'+t.slice(i+w.length); });
+ return t;
+}
+function prepAreaOf(label){
+ const s=String(label||'').replace(/\s/g,'');
+ if(/자율/.test(s)) return '자율활동'; if(/동아리/.test(s)) return '동아리활동'; if(/진로/.test(s)) return '진로활동';
+ if(/봉사/.test(s)) return '봉사활동'; if(/행동특성/.test(s)) return '행동특성및종합의견'; return '교과세특';
+}
+function prepCategoryOf(area){ return area==='교과세특'?'academic':((area==='진로활동'||area==='동아리활동')?'major':'community'); }
+// 파싱 결과 → 질문 묶음 목록 [{kind, groupLabel, area, category, text, answer, followups:[{text,answer}], dupKey}]
+function buildPrepQuestions(parsed){
+ const out=[]; const seen=new Set();
+ const secAreaOf=n=>{ const k=String(n).replace(/\s/g,''); return /^(자율|동아리|진로|봉사)활동$/.test(k)?k:'교과세특'; };
+ parsed.concepts.forEach(c=>{
+   const key=c.term.replace(/\s/g,'')+'|'+c.def.slice(0,30); if(seen.has(key)) return; seen.add(key);
+   const area=secAreaOf(c.sec); const subj=/^(자율|동아리|진로|봉사)활동$/.test(c.sec.replace(/\s/g,''))?'':` (${c.sec})`;
+   out.push({kind:'concept', groupLabel:'교과 개념', area, category:'academic',
+     text:`'${c.term}'에 대해 설명해 보세요.${subj}`, answer:prepKeywords(c.def,[c.term],3),
+     followups:[{text:`'${c.term}'과(와) 관련해 수업이나 활동에서 직접 접한 사례가 있나요?`, answer:''},{text:`'${c.term}'이(가) 지원 전공과 어떻게 연결되나요?`, answer:''}]});
+ });
+ parsed.books.forEach(b=>{
+   const m=b.title.match(/^(.*?)\s*\(([^()]+)\)\s*$/); const title=(m?m[1]:b.title).trim(); const author=m?m[2]:'';
+   const area=prepAreaOf(b.label);
+   out.push({kind:'book', groupLabel:'책·작품', area, category:prepCategoryOf(area),
+     text:`책 '${title}'${author?` (${author})`:''}을(를) 읽고 어떤 활동을 했나요?`, answer:prepKeywords(b.desc,[title],2),
+     followups:[{text:`이 책('${title}')을 읽게 된 이유(계기)는 무엇인가요?`, answer:''},
+                {text:`이 책('${title}')에서 가장 인상 깊었던 내용과 배운 점은 무엇인가요?`, answer:''},
+                {text:`이 책('${title}')의 내용을 이후 활동이나 진로와 어떻게 연결했나요?`, answer:''}]});
+ });
+ parsed.debates.forEach(d=>{
+   const area=prepAreaOf(d.label);
+   out.push({kind:'debate', groupLabel:'토론 논제', area, category:'community',
+     text:`'${d.title}'을(를) 주제로 한 토론에서 어떤 주장을 펼쳤나요?`, answer:prepKeywords(d.desc,[],3),
+     followups:[{text:`그 주장의 근거는 무엇이었나요?`, flat:`'${d.title}' 토론에서 내 주장의 근거는 무엇이었나요?`, answer:''},{text:`상대 의견에는 어떻게 반론했나요?`, flat:`'${d.title}' 토론에서 상대 의견에 어떻게 반론했나요?`, answer:''},{text:`토론을 하면서 생각이 바뀌었거나 새롭게 알게 된 점은 무엇인가요?`, flat:`'${d.title}' 토론을 하면서 생각이 바뀌었거나 새롭게 알게 된 점은 무엇인가요?`, answer:''}]});
+ });
+ parsed.research.forEach(r=>{
+   const area=prepAreaOf(r.label);
+   out.push({kind:'research', groupLabel:'탐구 주제', area, category:prepCategoryOf(area),
+     text:`'${r.title}' 탐구는 어떤 활동이었는지 소개해 주세요.`, answer:prepKeywords(r.desc,[r.title],2),
+     followups:[{text:`이 주제를 탐구하게 된 동기는 무엇인가요?`, flat:`'${r.title}'을(를) 탐구하게 된 동기는 무엇인가요?`, answer:''},{text:`탐구 과정(방법)을 구체적으로 설명해 주세요.`, flat:`'${r.title}' 탐구 과정(방법)을 구체적으로 설명해 주세요.`, answer:''},
+                {text:`탐구 결과(결론)는 무엇이었나요?`, flat:`'${r.title}' 탐구 결과(결론)는 무엇이었나요?`, answer:''},{text:`탐구하면서 어려웠던 점과 해결 방법은 무엇인가요?`, flat:`'${r.title}'을(를) 탐구하면서 어려웠던 점과 해결 방법은 무엇인가요?`, answer:''},
+                {text:`탐구 후 더 알고 싶어진 점이나 이어서 한 활동이 있나요?`, flat:`'${r.title}' 탐구 후 더 알고 싶어진 점이나 이어서 한 활동이 있나요?`, answer:''}]});
+ });
+ return out;
+}
+
+function loadPdfJsLib(){
+ if(window.pdfjsLib) return Promise.resolve(window.pdfjsLib);
+ return new Promise((res,rej)=>{
+   const sc=document.createElement('script');
+   sc.src='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+   sc.onload=()=>{ try{ window.pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js'; }catch(_){} res(window.pdfjsLib); };
+   sc.onerror=()=>rej(new Error('PDF를 읽는 도구를 불러오지 못했어요. 인터넷 연결을 확인해 주세요.'));
+   document.head.appendChild(sc);
+ });
+}
+async function extractPdfPages(file){
+ const lib=await loadPdfJsLib();
+ const doc=await lib.getDocument({data:new Uint8Array(await file.arrayBuffer())}).promise;
+ const pages=[];
+ for(let p=1;p<=doc.numPages;p++){
+   const pg=await doc.getPage(p); const tc=await pg.getTextContent();
+   pages.push(tc.items.map(i=>({s:i.str,x:i.transform[4],y:i.transform[5],w:i.width,h:i.height})));
+ }
+ return pages;
+}
+function openPrepPdfBuilder(existingTexts){
+ const exist=new Set((existingTexts||[]).map(t=>String(t||'').replace(/\s/g,'')));
+ return new Promise(resolve=>{
+   uiRoot.innerHTML=`<div class="uiOverlay"><div class="uiBox" style="max-width:680px;max-height:90vh;overflow:auto">
+     <p style="font-weight:700;margin-bottom:6px">📑 자료 PDF로 질문·답변 자동 만들기</p>
+     <p class="tiny muted" style="margin-bottom:8px">'면접 준비 자료' PDF(교과 개념 · 책·작품 · 토론 논제 · 탐구 주제)를 올리면 질문과 답변, 꼬리질문이 자동으로 만들어져요. 만들기 전에 원하는 것만 고를 수 있어요. 파일은 이 기기에서만 읽고 서버로 보내지 않아요.</p>
+     <ul class="tiny muted" style="margin:0 0 8px 16px;padding:0;line-height:1.7">
+       <li><b>교과 개념</b> → "○○에 대해 설명해 보세요" + 개념 설명을 답변으로</li>
+       <li><b>책·작품</b> → 책을 읽고 어떤 활동을 했는지 + 꼬리질문(왜 읽었는지, 인상 깊은 내용, 연결)</li>
+       <li><b>토론 논제</b> → 어떤 주장을 펼쳤는지 + 꼬리질문(근거, 반론, 생각의 변화)</li>
+       <li><b>탐구 주제</b> → 어떤 활동이었는지 + 꼬리질문(동기, 과정, 결과, 어려웠던 점, 이후 활동)</li>
+     </ul>
+     <div class="field"><input type="file" id="ppFile" accept=".pdf,application/pdf"></div>
+     <p class="small" id="ppStatus" style="font-weight:700;color:var(--primary)"></p>
+     <div id="ppOpts" hidden style="margin-bottom:8px">
+       <label class="tiny" style="display:block"><input type="radio" name="ppMode" value="bundle" checked> 꼬리질문으로 묶기 (권장) — 질문 1개에 꼬리질문이 붙어요</label>
+       <label class="tiny" style="display:block"><input type="radio" name="ppMode" value="flat"> 질문을 각각 따로 만들기 — 연습할 때 순서대로 섞여 나와요</label>
+     </div>
+     <div id="ppList"></div>
+     <p class="small" id="ppCount" style="font-weight:700;color:var(--primary)"></p>
+     <p class="tiny muted" id="ppNote" hidden>※ 키워드(노란 표시)는 자동으로 골랐어요. 등록 후 답변을 열어 드래그해서 고치거나 지울 수 있어요. 꼬리질문 답변은 비어 있으니 직접 채워 주세요.</p>
+     <div class="row"><button class="btn" id="uiCancelBtn" type="button">취소</button><button class="btn primary" id="uiOkBtn" type="button" disabled>만들기</button></div>
+   </div></div>`;
+   let built=[]; const $=id=>document.getElementById(id);
+   const modeVal=()=>document.querySelector('input[name="ppMode"]:checked').value;
+   const updCount=()=>{
+     const sel=[...document.querySelectorAll('#ppList input[data-i]:checked')].map(c=>built[+c.dataset.i]);
+     const f=sel.reduce((a,x)=>a+x.followups.length,0);
+     $('ppCount').textContent = built.length ? (modeVal()==='flat' ? `선택 ${sel.length}개 → 질문 ${sel.length+f}개를 만들어요` : `선택 ${sel.length}개 → 질문 ${sel.length}개 + 꼬리질문 ${f}개를 만들어요`) : '';
+     $('uiOkBtn').disabled=!sel.length;
+   };
+   document.querySelectorAll('input[name="ppMode"]').forEach(r=>r.addEventListener('change',updCount));
+   $('ppFile').addEventListener('change', async (e)=>{
+     const f=e.target.files[0]; if(!f) return;
+     $('ppStatus').textContent='PDF를 읽는 중…'; $('ppList').innerHTML=''; built=[]; updCount();
+     try{
+       const parsed=parsePrepPdf(await extractPdfPages(f));
+       if(!parsed.found){ $('ppStatus').textContent='이 PDF에서 교과 개념·책·토론·탐구 항목을 찾지 못했어요. "면접 준비 자료" 형식의 PDF인지 확인해 주세요.'; return; }
+       built=buildPrepQuestions(parsed);
+       const kinds=[['concept','교과 개념'],['book','책·작품'],['debate','토론 논제'],['research','탐구 주제']];
+       $('ppList').innerHTML=kinds.map(([k,label])=>{
+         const rows=built.map((b,i)=>({b,i})).filter(x=>x.b.kind===k); if(!rows.length) return '';
+         return `<details open style="margin-bottom:8px"><summary style="cursor:pointer;font-weight:700"><label><input type="checkbox" data-all="${k}" checked> ${label} (${rows.length}개)</label></summary>
+           <div style="max-height:220px;overflow:auto;border:1px solid var(--line2);border-radius:8px;padding:6px 8px;margin-top:4px">${rows.map(({b,i})=>{ const dup=exist.has(b.text.replace(/\s/g,'')); return `<label class="tiny" style="display:block;margin:3px 0"><input type="checkbox" data-i="${i}" data-k="${k}" ${dup?'':'checked'}> ${esc(b.text)}${dup?' <span class="badge gray">이미 있음</span>':''}</label>`; }).join('')}</div></details>`;
+       }).join('');
+       $('ppList').querySelectorAll('input[data-all]').forEach(a=>a.addEventListener('change',()=>{ $('ppList').querySelectorAll(`input[data-k="${a.dataset.all}"]`).forEach(c=>c.checked=a.checked); updCount(); }));
+       $('ppList').querySelectorAll('input[data-i]').forEach(c=>c.addEventListener('change',updCount));
+       $('ppStatus').textContent=`교과 개념 ${parsed.concepts.length}개 · 책·작품 ${parsed.books.length}개 · 토론 ${parsed.debates.length}개 · 탐구 ${parsed.research.length}개를 찾았어요`;
+       $('ppOpts').hidden=false; $('ppNote').hidden=false; updCount();
+     }catch(err){ console.error(err); $('ppStatus').textContent='PDF를 읽지 못했어요: '+(err&&err.message?err.message:err); }
+   });
+   $('uiOkBtn').addEventListener('click',()=>{
+     const sel=[...document.querySelectorAll('#ppList input[data-i]:checked')].map(c=>built[+c.dataset.i]);
+     if(!sel.length) return;
+     const flat=modeVal()==='flat'; const items=[];
+     sel.forEach(b=>{
+       const meta={'영역':b.area,'분류':CATEGORY_LABELS[b.category]};
+       if(flat){ items.push({text:b.text,answer:b.answer,followups:[],meta}); b.followups.forEach(fu=>items.push({text:fu.flat||fu.text,answer:fu.answer||'',followups:[],meta})); }
+       else items.push({text:b.text,answer:b.answer,followups:b.followups.map(fu=>({text:fu.text,answer:fu.answer||''})),meta});
+     });
+     uiRoot.innerHTML=''; resolve({items, defaults:{type:'record', area:'교과세특', category:''}});
+   });
+   $('uiCancelBtn').addEventListener('click',()=>{ uiRoot.innerHTML=''; resolve(null); });
+ });
+}
+
 function showSlMsg(text, type){
  const box=document.getElementById('slMsg');
  box.innerHTML = text ? `<div class="slMsgBox ${type||'info'}">${esc(text)}</div>` : '';
@@ -1804,7 +2020,8 @@ async function createHomonymTeacherAccount(school, name, password, key, displayN
  return {ok:true, key, displayName, school};
 }
 
-function show(id){ ['viewLanding','viewStudentLogin','viewStudentApp','viewTeacherLogin','viewTeacherSearch','viewTeacherWork','viewTeacherAllSchedule','viewTeacherGuide'].forEach(x=>{
+function show(id){ if(id==='viewTeacherSearch' && typeof refreshTeacherFavs==='function') refreshTeacherFavs();
+ ['viewLanding','viewStudentLogin','viewStudentApp','viewTeacherLogin','viewTeacherSearch','viewTeacherWork','viewTeacherAllSchedule','viewTeacherGuide'].forEach(x=>{
   document.getElementById(x).hidden = (x!==id);
 });}
 
@@ -1943,6 +2160,17 @@ wireMicButton('qText', true);
 wireMicButton('qAnswer', false);
 let editingId=null;
 let qPendingFollowups=[];
+document.getElementById('btnPdfQ').addEventListener('click', async ()=>{
+ if(!CURRENT){ await uiAlert('로그인이 필요합니다.'); return; }
+ const res=await openPrepPdfBuilder((CURRENT.questions||[]).map(q=>q.text));
+ if(!res) return;
+ const qs=buildBulkQuestionObjects(res,'student');
+ CURRENT.questions=[...qs, ...(CURRENT.questions||[])];
+ await saveCurrent();
+ const f=qs.reduce((a,x)=>a+x.followups.length,0);
+ await uiAlert(`질문 ${qs.length}개${f?`와 꼬리질문 ${f}개`:''}를 만들었어요. "내 질문 목록"에서 확인하고, 답변과 키워드를 채워 보세요.`);
+ goTab('list');
+});
 document.getElementById('btnBulkQ').addEventListener('click', async ()=>{
  if(!CURRENT){ await uiAlert('로그인이 필요합니다.'); return; }
  const res=await openBulkImport();
@@ -2245,6 +2473,7 @@ function renderList(){
             <div style="flex:1">
               <div class="ftext"><b>꼬리 ${fi+1}.</b> ${esc(fu.text)} ${followupAuthorBadge(fu, CURRENT.name)} ${editStampBadge(fu)} ${wasRevisedSinceFeedback(fuAnswerHtml, fbs, fu.id)?`<span class="badge" style="background:#dbeafe;color:#1e3a8a">✏ 답변 수정됨</span>`:''}</div>
               ${answerWithRevision(fuAnswerHtml, fbs, fu.id, fu.updatedAt)}
+              ${fuKwLine(fuAnswerHtml)}
               <div class="row" style="margin-top:6px">
                 <button class="btn sm" data-act="editfollow" data-qid="${q.id}" data-fid="${fu.id}">수정</button>
                 <button class="btn sm danger" data-act="delfollow" data-qid="${q.id}" data-fid="${fu.id}">삭제</button>
@@ -3910,6 +4139,45 @@ async function fetchStudentDocsBySchool(school){
  snap.forEach(doc=>{ if(schoolMatches(doc.data().school, school)) docs.push(doc); });
  return docs;
 }
+// ---------- 담당 학생 즐겨찾기 (선생님 계정에 저장되어 다른 기기에서도 유지) ----------
+let TFAV=[]; // [{key,name,school,number}]
+const isFav=(key)=>TFAV.some(f=>f.key===key);
+async function refreshTeacherFavs(){
+ if(!fbReady || !TEACHER_SESSION){ TFAV=[]; renderTeacherFavs(); return; }
+ try{
+   const snap=await db.collection('teacherAccounts').doc(TEACHER_SESSION.key).get();
+   TFAV = (snap.exists && Array.isArray(snap.data().favorites)) ? snap.data().favorites : [];
+ }catch(e){ console.warn('favorites load', e); }
+ renderTeacherFavs();
+}
+function renderTeacherFavs(){
+ const card=document.getElementById('teacherFavCard'), list=document.getElementById('teacherFavList');
+ card.hidden=!TFAV.length;
+ const sorted=TFAV.slice().sort((a,b)=>(a.school||'').localeCompare(b.school||'','ko')||(Number(a.number)||0)-(Number(b.number)||0));
+ list.innerHTML='';
+ sorted.forEach(f=>{
+   const row=document.createElement('div'); row.className='studentRow';
+   row.innerHTML=`<span><button class="favStar on" type="button" title="즐겨찾기 해제">★</button> <b>${esc(f.name)}</b> <span class="muted small">· ${esc(f.school)} · ${esc(f.number)}번</span></span><button class="btn sm primary" type="button">질문 보기</button>`;
+   row.querySelector('.favStar').addEventListener('click',(e)=>{ e.stopPropagation(); toggleFav(f); });
+   row.addEventListener('click',()=>openTeacherWork(f.key));
+   list.appendChild(row);
+ });
+}
+async function toggleFav(info){
+ const prev=TFAV.slice();
+ TFAV = isFav(info.key) ? TFAV.filter(f=>f.key!==info.key) : TFAV.concat([{key:info.key,name:info.name,school:info.school,number:info.number}]);
+ renderTeacherFavs(); updateFavButtons();
+ try{ await db.collection('teacherAccounts').doc(TEACHER_SESSION.key).set({favorites:TFAV},{merge:true}); }
+ catch(e){ console.error(e); TFAV=prev; renderTeacherFavs(); updateFavButtons(); await uiAlert('즐겨찾기 저장 중 오류: '+e.message); }
+}
+function updateFavButtons(){
+ const b=document.getElementById('btnTeacherFavToggle');
+ if(TCUR && TCUR.key){ const on=isFav(TCUR.key); b.textContent=on?'★ 즐겨찾기 해제':'☆ 즐겨찾기'; b.style.color=on?'#f59e0b':''; }
+ document.querySelectorAll('#teacherResults .favStar').forEach(el=>{ const on=isFav(el.dataset.key); el.classList.toggle('on',on); el.textContent=on?'★':'☆'; });
+}
+document.getElementById('btnTeacherFavToggle').addEventListener('click',()=>{
+ if(!TCUR) return; const d=TCUR.data; toggleFav({key:TCUR.key,name:d.name,school:d.school,number:d.number});
+});
 document.getElementById('btnTeacherSearch').addEventListener('click', async ()=>{
  if(!fbReady){await uiAlert('아직 Firebase 설정이 되어 있지 않아 조회가 동작하지 않습니다.');return;}
  const school=document.getElementById('tfSchool').value;
@@ -3922,7 +4190,7 @@ document.getElementById('btnTeacherSearch').addEventListener('click', async ()=>
    let docs=await fetchStudentDocsBySchool(school);
    if(norm(number)) docs=docs.filter(d=>safeSeg(d.data().number)===safeSeg(number));
    if(norm(name)) docs=docs.filter(d=>safeSeg(d.data().name)===safeSeg(name));
-   docs.sort((a,b)=>(a.data().school||'').localeCompare(b.data().school||'','ko') || (Number(a.data().number)||0)-(Number(b.data().number)||0));
+   docs.sort((a,b)=>(isFav(b.id)-isFav(a.id)) || (a.data().school||'').localeCompare(b.data().school||'','ko') || (Number(a.data().number)||0)-(Number(b.data().number)||0));
    if(!docs.length){
      if(norm(number) && norm(name)){
        resultsWrap.innerHTML=`<div class="empty small">일치하는 학생이 없습니다.<br>아직 로그인한 적 없는 학생이라면, 미리 등록해서 모의 면접 평가를 먼저 남길 수 있어요.</div>
@@ -3948,7 +4216,8 @@ document.getElementById('btnTeacherSearch').addEventListener('click', async ()=>
    docs.forEach(doc=>{
      const d=doc.data();
      const row=document.createElement('div'); row.className='studentRow';
-     row.innerHTML=`<span><b>${esc(d.name)}</b> <span class="muted small">· ${esc(d.school)} · ${esc(d.number)}번</span></span><button class="btn sm primary">질문 보기</button>`;
+     row.innerHTML=`<span><button class="favStar${isFav(doc.id)?' on':''}" data-key="${esc(doc.id)}" type="button" title="즐겨찾기">${isFav(doc.id)?'★':'☆'}</button> <b>${esc(d.name)}</b> <span class="muted small">· ${esc(d.school)} · ${esc(d.number)}번</span></span><button class="btn sm primary">질문 보기</button>`;
+     row.querySelector('.favStar').addEventListener('click',(e)=>{ e.stopPropagation(); toggleFav({key:doc.id,name:d.name,school:d.school,number:d.number}); });
      row.addEventListener('click',()=>openTeacherWork(doc.id));
      resultsWrap.appendChild(row);
    });
@@ -4048,6 +4317,7 @@ async function openTeacherWork(key){
  document.getElementById('teacherStudentTitle').textContent=`${TCUR.data.name} 학생 (${TCUR.data.school} · ${TCUR.data.number}번)`;
  document.getElementById('tClassroomInput').value=TCUR.data.classroom||'';
  show('viewTeacherWork');
+ updateFavButtons();
  teacherCalState=null;
  teacherAnswerEditingQid=null;
  resetTeacherQForm();
@@ -4130,6 +4400,18 @@ function maybeRestoreTqDraft(){
  document.getElementById('tqDraftNote').textContent='이전에 쓰던 임시저장 내용을 불러왔습니다.';
 }
 let tqPendingFollowups=[];
+document.getElementById('btnPdfTq').addEventListener('click', async ()=>{
+ if(!TCUR){ await uiAlert('학생 정보가 없습니다.'); return; }
+ const res=await openPrepPdfBuilder((TCUR.data.questions||[]).map(q=>q.text));
+ if(!res) return;
+ const qs=buildBulkQuestionObjects(res,'teacher');
+ TCUR.data.questions=[...qs, ...(TCUR.data.questions||[])];
+ try{ await saveTeacherQuestions(); }
+ catch(e){ console.error(e); TCUR.data.questions=TCUR.data.questions.filter(x=>!qs.includes(x)); renderTeacherQList(); await uiAlert('저장하지 못했습니다.\n('+(e&&e.message?e.message:e)+')'); return; }
+ renderTeacherQList();
+ const f=qs.reduce((a,x)=>a+x.followups.length,0);
+ await uiAlert(`질문 ${qs.length}개${f?`와 꼬리질문 ${f}개`:''}를 만들었어요. 학생이 "내 질문 목록"에서 확인할 수 있어요.`);
+});
 document.getElementById('btnBulkTq').addEventListener('click', async ()=>{
  if(!TCUR){ await uiAlert('학생 정보가 없습니다.'); return; }
  const res=await openBulkImport();
@@ -4652,6 +4934,7 @@ function renderTeacherQList(){
         <div class="fhead"><input type="checkbox" disabled ${fu.checked?'checked':''}>
         <div style="flex:1"><div class="ftext"><b>꼬리 ${fi+1}.</b> ${esc(fu.text)} ${followupAuthorBadge(fu, TCUR.data.name)} ${editStampBadge(fu)} ${wasRevisedSinceFeedback(fuAnswerHtml, fbs, fu.id)?`<span class="badge" style="background:#dbeafe;color:#1e3a8a">✏ 답변 수정됨</span>`:''}</div>
         ${answerWithRevision(fuAnswerHtml, fbs, fu.id, fu.updatedAt)}
+        ${fuKwLine(fuAnswerHtml)}
         <div class="row" style="margin-top:6px"><button class="btn sm" data-act="tEditFollow" data-qid="${q.id}" data-fid="${fu.id}" type="button">수정</button><button class="btn sm danger" data-act="tDelFollow" data-qid="${q.id}" data-fid="${fu.id}" type="button">삭제</button></div>
         ${fufbs.length?`<div class="fbBox">${fufbs.map(f=>fbHtml(f,q.id,'teacher')).join('')}</div>`:''}
         </div></div></div>`;
@@ -4718,7 +5001,7 @@ function renderTeacherQList(){
  wrap.querySelectorAll('button[data-act="tEditFollow"]').forEach(b=>b.addEventListener('click', async ()=>{
    const q=TCUR.data.questions.find(x=>x.id===b.dataset.qid); const fu=q&&(q.followups||[]).find(x=>x.id===b.dataset.fid); if(!fu) return;
    const initHtml = fu.answerHtml!=null ? fu.answerHtml : (fu.answerText?esc(fu.answerText):'');
-   const result=await openFollowupEditor(fu.text, initHtml);
+   const result=await openFollowupEditor(fu.text, initHtml, true);
    if(!result) return;
    fu.text=result.text; fu.answerHtml=result.answerHtml; delete fu.answerText; fu.updatedAt=Date.now(); stampEdit(fu,'teacher');
    await saveTeacherQuestions(); renderTeacherQList();

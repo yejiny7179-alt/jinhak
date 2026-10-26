@@ -418,6 +418,14 @@ table.tbl th{background:var(--surface2);color:var(--muted);font-weight:700;font-
             </select>
           </div>
         </div>
+        <div class="field"><label>질문 분류</label>
+          <select id="qCategory">
+            <option value="">분류 선택 안 함</option>
+            <option value="academic">학업</option>
+              <option value="major">전공적합성</option>
+              <option value="community">공동체 역량</option>
+          </select>
+        </div>
       </div>
       <div class="field"><label>예상 질문 (메인 질문)</label><textarea id="qText" placeholder="예: 화학 심화탐구에서 특정 촉매를 선택한 이유는 무엇인가요?"></textarea>
         <div class="row" style="margin-top:4px;align-items:center;flex-wrap:wrap"><button type="button" class="btn sm micBtn" data-target="qText" title="마이크 버튼을 누르고 말하면 자동으로 입력됩니다">🎤 음성으로 입력</button> <span class="tiny muted micStatus" data-target="qText"></span></div>
@@ -427,13 +435,24 @@ table.tbl th{background:var(--surface2);color:var(--muted);font-weight:700;font-
       <div class="answerBox" id="qAnswer" contenteditable="true" data-ph="여기에 답변을 직접 작성해 보세요."></div>
       <div class="row" style="margin-top:4px;align-items:center;flex-wrap:wrap"><button type="button" class="btn sm micBtn" data-target="qAnswer" title="마이크 버튼을 누르고 말하면 자동으로 입력됩니다">🎤 음성으로 입력</button> <span class="tiny muted micStatus" data-target="qAnswer"></span></div>
       <div id="qAnswerToolbarWrap"></div>
+      <div class="field" style="margin-top:12px"><label>↳ 꼬리질문 <span class="tiny muted">(질문과 함께 바로 추가할 수 있어요)</span></label>
+        <div id="qPendingFollowups"></div>
+        <button class="btn sm" id="btnQAddPendingFollow" type="button">+ 꼬리질문 추가</button>
+      </div>
       <div class="row" style="align-items:center;gap:10px;flex-wrap:wrap">
         <button class="btn primary" id="btnSaveQ" type="button">질문 저장하기</button>
         <button class="btn sm" id="btnCancelQEdit" type="button" hidden>수정 취소</button>
         <span class="tiny muted" id="editingNote"></span>
         <span class="tiny muted" id="qDraftNote"></span>
       </div>
-      <p class="small muted" style="margin-top:10px">저장한 뒤 "내 질문 목록"에서 이 질문에 대한 <b>꼬리질문</b>을 추가할 수 있어요.</p>
+      <p class="small muted" style="margin-top:10px">이미 저장한 질문의 꼬리질문은 아래에서 바로 추가하거나, "내 질문 목록"에서 추가·수정할 수 있어요.</p>
+    </div>
+    <div class="card">
+      <h2>이미 등록한 질문에 꼬리질문 추가 <span class="hint">목록에서 스크롤로 찾지 않고 여기서 바로 고를 수 있어요</span></h2>
+      <div class="row" style="gap:8px;align-items:center;flex-wrap:wrap">
+        <select id="qExistingSelect" style="flex:1;min-width:220px"></select>
+        <button class="btn primary sm" id="btnQExistingFollow" type="button">+ 꼬리질문 작성</button>
+      </div>
     </div>
   </section>
 
@@ -458,6 +477,14 @@ table.tbl th{background:var(--surface2);color:var(--muted);font-weight:700;font-
             <option value="행동특성및종합의견">행동특성 및 종합의견</option>
           </select>
           <select id="listUnivFilter"><option value="all">모든 대학</option></select>
+          <select id="listCategoryFilter">
+            <option value="all">모든 분류</option>
+            <option value="academic">학업</option>
+              <option value="major">전공적합성</option>
+              <option value="community">공동체 역량</option>
+            <option value="none">분류 없음</option>
+          </select>
+          <input type="search" id="listSearchInput" placeholder="🔍 키워드로 질문·답변 검색" style="min-width:200px">
           <button class="btn sm" id="btnRefreshList" type="button">↻ 새로고침(피드백 확인)</button>
           <button class="btn sm" id="btnPrintQList" type="button">🖨 질문·답변 인쇄</button>
         </div>
@@ -479,6 +506,14 @@ table.tbl th{background:var(--surface2);color:var(--muted);font-weight:700;font-
               <button class="chip" data-f="record" type="button">생기부 기반</button>
             </div>
             <select id="practiceUnivFilter"><option value="all">모든 대학</option></select>
+            <select id="practiceCategoryFilter">
+              <option value="all">모든 분류</option>
+              <option value="academic">학업</option>
+              <option value="major">전공적합성</option>
+              <option value="community">공동체 역량</option>
+              <option value="none">분류 없음</option>
+            </select>
+            <input type="search" id="practiceSearchInput" placeholder="🔍 키워드 검색" style="min-width:140px">
           </div>
         </div>
         <p class="small muted" style="margin-top:8px">아래 목록으로 한 번에 훑어보거나, 카드 연습으로 하나씩 실전처럼 연습해 보세요. 랜덤 연습은 질문 순서가 섞여서 나오고, 목표시간을 설정해두면 시간이 되면 자동으로 다음 질문으로 넘어가요. 첫 질문은 항상 자기소개·지원동기 질문으로, 마지막 질문은 마지막으로 하고 싶은 말·지원자를 뽑아야 하는 이유 질문으로 고정돼요 (해당 질문을 만들어 두었다면).</p>
@@ -925,6 +960,14 @@ table.tbl th{background:var(--surface2);color:var(--muted);font-weight:700;font-
         </select>
       </div>
     </div>
+    <div class="field" id="tqCategoryWrap" hidden><label>질문 분류</label>
+      <select id="tqCategory">
+        <option value="">분류 선택 안 함</option>
+        <option value="academic">학업</option>
+              <option value="major">전공적합성</option>
+              <option value="community">공동체 역량</option>
+      </select>
+    </div>
     <div class="field"><label>지원 대학</label><select id="tqUniv"><option value="공통">공통 (모든 대학에 해당)</option></select></div>
     <div class="field"><label>질문 내용</label><textarea id="tqText" placeholder="예: 이 활동에서 겪은 어려움은 무엇이었나요?"></textarea>
       <div class="row" style="margin-top:4px;align-items:center;flex-wrap:wrap"><button type="button" class="btn sm micBtn" data-target="tqText" title="마이크 버튼을 누르고 말하면 자동으로 입력됩니다">🎤 음성으로 입력</button> <span class="tiny muted micStatus" data-target="tqText"></span></div>
@@ -939,11 +982,22 @@ table.tbl th{background:var(--surface2);color:var(--muted);font-weight:700;font-
       <div id="tqAttachPreview"></div>
       <input type="file" id="tqAttachInput" multiple accept="image/*,.pdf">
     </div>
+    <div class="field" style="margin-top:12px"><label>↳ 꼬리질문 <span class="tiny muted">(질문과 함께 바로 추가할 수 있어요)</span></label>
+      <div id="tqPendingFollowups"></div>
+      <button class="btn sm" id="btnTqAddPendingFollow" type="button">+ 꼬리질문 추가</button>
+    </div>
     <div class="row" style="align-items:center;gap:10px">
       <button class="btn primary" id="btnAddTeacherQ" type="button">질문 추가하기</button>
       <button class="btn sm" id="btnCancelTeacherQEdit" type="button" hidden>수정 취소</button>
       <span class="tiny muted" id="tqEditingNote"></span>
       <span class="tiny muted" id="tqDraftNote"></span>
+    </div>
+  </div>
+  <div class="card">
+    <h2>이미 등록된 질문에 꼬리질문 추가 <span class="hint">학생 질문 목록에서 스크롤로 찾지 않고 바로 고를 수 있어요</span></h2>
+    <div class="row" style="gap:8px;align-items:center;flex-wrap:wrap">
+      <select id="tqExistingSelect" style="flex:1;min-width:220px"></select>
+      <button class="btn primary sm" id="btnTqExistingFollow" type="button">+ 꼬리질문 작성</button>
     </div>
   </div>
   <div class="card">
@@ -967,6 +1021,14 @@ table.tbl th{background:var(--surface2);color:var(--muted);font-weight:700;font-
           <option value="행동특성및종합의견">행동특성 및 종합의견</option>
         </select>
         <select id="tQUnivFilter"><option value="all">모든 대학</option></select>
+        <select id="tQCategoryFilter">
+          <option value="all">모든 분류</option>
+          <option value="academic">학업</option>
+              <option value="major">전공적합성</option>
+              <option value="community">공동체 역량</option>
+          <option value="none">분류 없음</option>
+        </select>
+        <input type="search" id="tQSearchInput" placeholder="🔍 키워드로 질문·답변 검색" style="min-width:200px">
         <button class="btn sm" id="btnPrintTeacherQList" type="button">🖨 질문·답변 인쇄</button>
       </div>
     </div>
@@ -1470,6 +1532,53 @@ function showMockDayModal(items){
    document.getElementById('uiOkBtn').addEventListener('click',()=>{ uiRoot.innerHTML=''; resolve(true); });
  });
 }
+// ---------- 질문 분류(생기부 기반: 학업 / 전공적합성 / 공동체 역량) & 키워드 검색 ----------
+const CATEGORY_LABELS={academic:'학업', major:'전공적합성', community:'공동체 역량'};
+const CATEGORY_COLORS={academic:['#dbeafe','#1e3a8a'], major:['#fce7f3','#9d174d'], community:['#dcfce7','#166534']};
+function categoryBadge(q){
+ if(!q || q.type!=='record') return '';
+ const c=q.category;
+ if(!c||!CATEGORY_LABELS[c]) return '<span class="badge gray">분류 없음</span>';
+ return `<span class="badge" style="background:${CATEGORY_COLORS[c][0]};color:${CATEGORY_COLORS[c][1]}">${CATEGORY_LABELS[c]}</span>`;
+}
+function categoryMatches(q, f){
+ if(f==='all') return true;
+ if(f==='none') return q.type==='record' && !(q.category && CATEGORY_LABELS[q.category]);
+ return q.category===f;
+}
+function htmlToPlain(html){ const d=document.createElement('div'); d.innerHTML=html||''; return d.textContent||''; }
+function questionMatchesSearch(q, term){
+ const t=(term||'').trim().toLowerCase();
+ if(!t) return true;
+ const hay=[q.text, htmlToPlain(q.answerHtml), q.area, q.univ, CATEGORY_LABELS[q.category]||'',
+   ...(q.followups||[]).flatMap(fu=>[fu.text, htmlToPlain(fu.answerHtml!=null?fu.answerHtml:fu.answerText)])
+ ].join(' ').toLowerCase();
+ const hayNoSpace=hay.replace(/\s+/g,'');
+ return t.split(/\s+/).every(w=>hay.includes(w) || hayNoSpace.includes(w));
+}
+// 질문 만들기 화면에서 저장 전에 임시로 쌓아두는 꼬리질문 목록 표시/편집
+function renderPendingFollowups(arr, wrapId){
+ const wrap=document.getElementById(wrapId); if(!wrap) return;
+ wrap.innerHTML = arr.length ? arr.map((f,i)=>`<div class="followItem" style="margin-bottom:6px"><div class="fhead"><div style="flex:1">
+   <div class="ftext">↳ ${esc(f.text)}</div>
+   ${f.answerHtml&&f.answerHtml.trim()?`<div class="answerBox" style="margin-top:4px">${f.answerHtml}</div>`:'<div class="tiny muted">(답변 없음)</div>'}
+   <div class="row" style="margin-top:4px"><button type="button" class="btn sm" data-pf="edit" data-i="${i}">수정</button><button type="button" class="btn sm danger" data-pf="del" data-i="${i}">삭제</button></div>
+ </div></div></div>`).join('') : '';
+ wrap.querySelectorAll('button[data-pf]').forEach(b=>b.addEventListener('click', async ()=>{
+   const i=Number(b.dataset.i);
+   if(b.dataset.pf==='del'){ arr.splice(i,1); }
+   else { const r=await openFollowupEditor(arr[i].text, arr[i].answerHtml||''); if(!r) return; arr[i].text=r.text; arr[i].answerHtml=r.answerHtml; }
+   renderPendingFollowups(arr, wrapId);
+ }));
+}
+function populateExistingQuestionSelect(selId, questions){
+ const sel=document.getElementById(selId); if(!sel) return;
+ const prev=sel.value;
+ sel.innerHTML = questions.length
+   ? questions.map(q=>`<option value="${q.id}">${esc((q.type==='basic'?'[기본] ':'[생기부'+(CATEGORY_LABELS[q.category]?'·'+CATEGORY_LABELS[q.category]:'')+'] ')+(q.text.length>40?q.text.slice(0,40)+'…':q.text))}${(q.followups||[]).length?` (꼬리 ${(q.followups||[]).length})`:''}</option>`).join('')
+   : '<option value="">등록된 질문이 없어요</option>';
+ if([...sel.options].some(o=>o.value===prev)) sel.value=prev;
+}
 // 질문/답변/꼬리질문을 누가 언제 수정했는지 기록·표시
 function stampEdit(obj, role){
  const name = role==='teacher' ? (TEACHER_SESSION?TEACHER_SESSION.displayName:'선생님') : (CURRENT?CURRENT.name:'학생');
@@ -1629,7 +1738,7 @@ document.querySelectorAll('#viewStudentApp nav.tabs button').forEach(b=>b.addEve
 window.goTab=function(name){
  document.querySelectorAll('#viewStudentApp nav.tabs button').forEach(b=>b.classList.toggle('on', b.dataset.tab===name));
  document.querySelectorAll('#viewStudentApp section.view').forEach(s=>s.classList.toggle('on', s.id==='view-'+name));
- if(name==='build'){ toggleRecordFields(); populateQUnivSelect(); maybeRestoreQDraft(); }
+ if(name==='build'){ toggleRecordFields(); populateQUnivSelect(); maybeRestoreQDraft(); populateExistingQuestionSelect('qExistingSelect', (CURRENT&&CURRENT.questions)||[]); renderPendingFollowups(qPendingFollowups,'qPendingFollowups'); }
  if(name==='list') refreshCurrent(); // 탭을 열 때마다 최신 데이터를 다시 불러와, 선생님이 추가한 질문도 바로 보이게 함
  if(name==='schedule') renderSchedule();
  if(name==='reviews') renderReviews();
@@ -1691,6 +1800,27 @@ wireAnswerBox('qAnswer');
 wireMicButton('qText', true);
 wireMicButton('qAnswer', false);
 let editingId=null;
+let qPendingFollowups=[];
+document.getElementById('btnQAddPendingFollow').addEventListener('click', async ()=>{
+ const r=await openFollowupEditor('','');
+ if(!r) return;
+ qPendingFollowups.push({text:r.text, answerHtml:r.answerHtml});
+ renderPendingFollowups(qPendingFollowups,'qPendingFollowups');
+});
+document.getElementById('btnQExistingFollow').addEventListener('click', async ()=>{
+ if(!CURRENT) return;
+ const qid=document.getElementById('qExistingSelect').value;
+ const q=(CURRENT.questions||[]).find(x=>x.id===qid);
+ if(!q){ await uiAlert('먼저 꼬리질문을 붙일 질문을 골라 주세요.'); return; }
+ const r=await openFollowupEditor('','');
+ if(!r) return;
+ q.followups=q.followups||[];
+ q.followups.push({id:uid(), text:r.text, answerHtml:r.answerHtml, checked:false, createdBy:'student', createdAt:Date.now(), updatedAt:Date.now()});
+ await saveCurrent();
+ populateExistingQuestionSelect('qExistingSelect', CURRENT.questions||[]);
+ document.getElementById('qExistingSelect').value=qid;
+ await uiAlert('꼬리질문을 추가했습니다. "내 질문 목록"과 연습하기에서 바로 볼 수 있어요.');
+});
 // 새 질문을 작성하는 중일 때만(수정 중이 아닐 때만) 임시저장. 학생별로 구분해서 저장.
 const qDraft = setupDraftAutosave(
  ()=> CURRENT ? ('iw_qdraft_'+CURRENT.key) : null,
@@ -1725,6 +1855,7 @@ document.getElementById('btnCancelQEdit').addEventListener('click',()=>{
  document.getElementById('editingNote').textContent='';
  document.getElementById('btnCancelQEdit').hidden=true;
  document.getElementById('qText').value=''; document.getElementById('qAnswer').innerHTML='';
+ qPendingFollowups=[]; renderPendingFollowups(qPendingFollowups,'qPendingFollowups');
  maybeRestoreQDraft();
 });
 document.getElementById('btnSaveQ').addEventListener('click', async ()=>{
@@ -1737,15 +1868,19 @@ document.getElementById('btnSaveQ').addEventListener('click', async ()=>{
  if(editingId){
    const idx=CURRENT.questions.findIndex(x=>x.id===editingId);
    if(idx>-1){ CURRENT.questions[idx].type=type; CURRENT.questions[idx].area = type==='record'?document.getElementById('qArea').value:null;
+     CURRENT.questions[idx].category = type==='record' ? (document.getElementById('qCategory').value||null) : null;
+     if(qPendingFollowups.length){ CURRENT.questions[idx].followups=(CURRENT.questions[idx].followups||[]).concat(qPendingFollowups.map(f=>({id:uid(), text:f.text, answerHtml:f.answerHtml, checked:false, createdBy:'student', createdAt:Date.now(), updatedAt:Date.now()}))); }
      CURRENT.questions[idx].univ=univ;
      CURRENT.questions[idx].text=text; CURRENT.questions[idx].answerHtml=answerHtml; CURRENT.questions[idx].updatedAt=Date.now(); stampEdit(CURRENT.questions[idx],'student'); }
  } else {
    CURRENT.questions.unshift({
      id:uid(), type, area: type==='record'?document.getElementById('qArea').value:null, univ,
-     text, answerHtml, followups:[], feedback:[], memos:[], createdAt:Date.now(), updatedAt:Date.now()
+     category: type==='record' ? (document.getElementById('qCategory').value||null) : null,
+     text, answerHtml, followups:qPendingFollowups.map(f=>({id:uid(), text:f.text, answerHtml:f.answerHtml, checked:false, createdBy:'student', createdAt:Date.now(), updatedAt:Date.now()})), feedback:[], memos:[], createdAt:Date.now(), updatedAt:Date.now()
    });
  }
  await saveCurrent();
+ qPendingFollowups=[]; renderPendingFollowups(qPendingFollowups,'qPendingFollowups');
  editingId=null; document.getElementById('editingNote').textContent='';
  document.getElementById('btnCancelQEdit').hidden=true;
  document.getElementById('qText').value=''; document.getElementById('qAnswer').innerHTML='';
@@ -1758,11 +1893,15 @@ document.getElementById('btnSaveQ').addEventListener('click', async ()=>{
 let listFilter='all';
 let listUnivFilter='all';
 let listAreaFilter='all';
+let listCategoryFilter='all';
+let listSearch='';
 document.querySelectorAll('#view-list .chip').forEach(c=>{
  c.addEventListener('click',()=>{document.querySelectorAll('#view-list .chip').forEach(x=>x.classList.remove('on'));c.classList.add('on');listFilter=c.dataset.f;renderList();});
 });
 document.getElementById('listUnivFilter').addEventListener('change',(e)=>{ listUnivFilter=e.target.value; renderList(); });
 document.getElementById('listAreaFilter').addEventListener('change',(e)=>{ listAreaFilter=e.target.value; renderList(); });
+document.getElementById('listCategoryFilter').addEventListener('change',(e)=>{ listCategoryFilter=e.target.value; renderList(); });
+document.getElementById('listSearchInput').addEventListener('input',(e)=>{ listSearch=e.target.value; renderList(); });
 document.getElementById('btnRefreshList').addEventListener('click', refreshCurrent);
 
 function renderFeedbackBlock(fbs, followups, qid, role){
@@ -1902,10 +2041,12 @@ function renderList(){
  univSel.innerHTML='<option value="all">모든 대학</option><option value="공통">공통만</option>'+univsInQ.filter(u=>u!=='공통').map(u=>`<option value="${esc(u)}">${esc(u)}</option>`).join('');
  univSel.value = [...univSel.options].some(o=>o.value===prevVal) ? prevVal : 'all';
  listUnivFilter = univSel.value;
- const list=(CURRENT.questions||[]).filter(q=>(listFilter==='all'||q.type===listFilter) && (listUnivFilter==='all'|| (q.univ||'공통')===listUnivFilter) && (listAreaFilter==='all'|| q.area===listAreaFilter));
+ const list=(CURRENT.questions||[]).filter(q=>(listFilter==='all'||q.type===listFilter) && (listUnivFilter==='all'|| (q.univ||'공통')===listUnivFilter) && (listAreaFilter==='all'|| q.area===listAreaFilter) && categoryMatches(q, listCategoryFilter) && questionMatchesSearch(q, listSearch));
  lastQListForPrint=list;
  const wrap=document.getElementById('qList');
  document.getElementById('cntQ').textContent=(CURRENT.questions||[]).length;
+ { const total=(CURRENT.questions||[]).length; const fcnt=(CURRENT.questions||[]).reduce((a,q)=>a+(q.followups||[]).length,0);
+   document.getElementById('listStudentTitle').textContent=`${CURRENT.name}님의 질문 목록 · 총 ${total}문항${fcnt?` (꼬리질문 ${fcnt}개)`:''}${list.length!==total?` · 현재 ${list.length}문항 표시`:''}`; }
  if(!list.length){wrap.innerHTML='<div class="empty">아직 만든 질문이 없습니다. "질문 만들기" 탭에서 시작해 보세요.</div>';return;}
  wrap.innerHTML='';
  list.forEach((q,qi)=>{
@@ -1917,7 +2058,9 @@ function renderList(){
         <button class="btn sm" data-act="qUp" data-id="${q.id}" ${qi===0?'disabled':''} title="위로">▲</button>
         <button class="btn sm" data-act="qDown" data-id="${q.id}" ${qi===list.length-1?'disabled':''} title="아래로">▼</button>
       </span>
+      <span class="badge" style="background:#1e293b;color:#fff;font-weight:700">Q${qi+1}</span>
       ${q.type==='basic'?'<span class="badge">기본질문</span>':`<span class="badge acc">생기부 기반</span><span class="badge gray">${esc(q.area)}</span>${q.univ && q.univ!=="공통"?`<span class="badge warn">${esc(q.univ)}</span>`:`<span class="badge gray">공통</span>`}`}
+      ${categoryBadge(q)}
       ${q.createdBy==='teacher'?`<span class="badge" style="background:#ede9fe;color:#6d28d9">😊 ${esc(q.teacherName||'선생님')}이(가) 낸 질문</span>`:''}
       ${fbs.length?`<span class="badge warn">선생님 피드백 ${fbs.length}건</span>`:''}
       ${wasRevisedSinceFeedback(q.answerHtml, fbs, null)?`<span class="badge" style="background:#dbeafe;color:#1e3a8a">✏ 답변 수정됨</span>`:''}
@@ -1940,14 +2083,14 @@ function renderList(){
     ${renderFeedbackBlock(fbs, followups, q.id, 'student')}
     <div class="followWrap">
       <div class="row between"><b class="small">↳ 꼬리질문</b><button class="btn sm" data-act="addfollow" data-id="${q.id}">+ 꼬리질문 추가</button></div>
-      ${followups.map(fu=>{
+      ${followups.map((fu,fi)=>{
         const fufbs=fbs.filter(f=>f.followupId===fu.id);
         const fuAnswerHtml = fu.answerHtml!=null ? fu.answerHtml : (fu.answerText?esc(fu.answerText):'');
         return `<div class="followItem">
           <div class="fhead">
             <input type="checkbox" data-act="chkfollow" data-qid="${q.id}" data-fid="${fu.id}" ${fu.checked?'checked':''}>
             <div style="flex:1">
-              <div class="ftext">${esc(fu.text)} ${followupAuthorBadge(fu, CURRENT.name)} ${editStampBadge(fu)} ${wasRevisedSinceFeedback(fuAnswerHtml, fbs, fu.id)?`<span class="badge" style="background:#dbeafe;color:#1e3a8a">✏ 답변 수정됨</span>`:''}</div>
+              <div class="ftext"><b>꼬리 ${fi+1}.</b> ${esc(fu.text)} ${followupAuthorBadge(fu, CURRENT.name)} ${editStampBadge(fu)} ${wasRevisedSinceFeedback(fuAnswerHtml, fbs, fu.id)?`<span class="badge" style="background:#dbeafe;color:#1e3a8a">✏ 답변 수정됨</span>`:''}</div>
               ${answerWithRevision(fuAnswerHtml, fbs, fu.id, fu.updatedAt)}
               <div class="row" style="margin-top:6px">
                 <button class="btn sm" data-act="editfollow" data-qid="${q.id}" data-fid="${fu.id}">수정</button>
@@ -1996,7 +2139,9 @@ function renderList(){
      }
      areaSel.value=q.area;
      populateQUnivSelect(q.univ);
+     document.getElementById('qCategory').value=q.category||'';
    }
+   qPendingFollowups=[]; renderPendingFollowups(qPendingFollowups,'qPendingFollowups');
    document.getElementById('qText').value=q.text;
    document.getElementById('qAnswer').innerHTML=q.answerHtml||'';
    document.getElementById('editingNote').textContent='✏ 이 질문을 수정하고 있습니다.';
@@ -2263,12 +2408,12 @@ function printAllMocks(list, studentName){
 // ---------- 질문·답변 모아 인쇄 (표시된 키워드 포함) ----------
 let lastQListForPrint=[];
 let lastTeacherQListForPrint=[];
-function questionPrintCardHTML(q){
+function questionPrintCardHTML(q, n){
  const followups=q.followups||[];
  const ansHtml = (q.answerHtml && q.answerHtml.trim()) ? q.answerHtml : '<span class="muted">(작성한 답변 없음)</span>';
  return `<div class="item">
-   <div class="head">${q.type==='basic'?'<span class="badge">기본질문</span>':`<span class="badge acc">생기부 기반</span><span class="badge gray">${esc(q.area||'')}</span>${q.univ&&q.univ!=='공통'?`<span class="badge warn">${esc(q.univ)}</span>`:'<span class="badge gray">공통</span>'}`}${q.createdBy==='teacher'?'<span class="badge gray">선생님이 낸 질문</span>':''}</div>
-   <h2>Q. ${esc(q.text)}</h2>
+   <div class="head">${q.type==='basic'?'<span class="badge">기본질문</span>':`<span class="badge acc">생기부 기반</span>${categoryBadge(q)}<span class="badge gray">${esc(q.area||'')}</span>${q.univ&&q.univ!=='공통'?`<span class="badge warn">${esc(q.univ)}</span>`:'<span class="badge gray">공통</span>'}`}${q.createdBy==='teacher'?'<span class="badge gray">선생님이 낸 질문</span>':''}</div>
+   <h2>${n?`Q${n}. `:'Q. '}${esc(q.text)}</h2>
    <div class="answerBox">${ansHtml}</div>
    ${followups.map(fu=>{
      const fuAnsHtml = fu.answerHtml!=null ? fu.answerHtml : (fu.answerText?esc(fu.answerText):'');
@@ -2278,7 +2423,7 @@ function questionPrintCardHTML(q){
 }
 function printQuestions(list, title){
  if(!list || !list.length){ uiAlert('인쇄할 질문이 없습니다. (현재 선택된 필터 조건을 확인해 주세요)'); return; }
- const body = `<h1>${esc(title)}</h1><p class="tiny" style="color:#666;margin:-6px 0 14px">표시한 키워드는 답변 안에 강조되어 함께 인쇄됩니다.</p>` + list.map(questionPrintCardHTML).join('');
+ const body = `<h1>${esc(title)} (총 ${list.length}문항)</h1><p class="tiny" style="color:#666;margin:-6px 0 14px">표시한 키워드는 답변 안에 강조되어 함께 인쇄됩니다.</p>` + list.map((q,i)=>questionPrintCardHTML(q,i+1)).join('');
  printHTML(title, body);
 }
 let mockPrepAttach=[];
@@ -2325,9 +2470,11 @@ let practiceUnivFilter='all';
 function getPracticeQuestions(){
  return (CURRENT.questions||[]).filter(q=>
    (practiceTypeFilter==='all'||q.type===practiceTypeFilter) &&
-   (practiceUnivFilter==='all'||(q.univ||'공통')===practiceUnivFilter)
+   (practiceUnivFilter==='all'||(q.univ||'공통')===practiceUnivFilter) &&
+   categoryMatches(q, practiceCategoryFilter) && questionMatchesSearch(q, practiceSearch)
  );
 }
+let practiceCategoryFilter='all'; let practiceSearch='';
 let practiceSelectedIds=new Set(); // 목록에서 직접 고른 연습 질문 id
 let practiceSessionSelection=null; // 이번 연습 세션에 적용된 선택 (null이면 선택 없이 전체)
 function updatePracticeSelectedCount(){
@@ -2353,7 +2500,7 @@ function renderPracticeList(){
  else {
  wrap.innerHTML=list.map((q,i)=>`<div class="practiceSimpleItem">
    <div class="row between" style="gap:8px">
-     <div><input type="checkbox" class="practiceSelChk" data-qid="${q.id}" ${practiceSelectedIds.has(q.id)?'checked':''} style="margin-right:6px;vertical-align:middle"><b>${i+1}.</b> ${esc(q.text)}${q.type==='basic'?'<span class="badge">기본질문</span>':`<span class="badge acc">생기부</span>${q.univ&&q.univ!=='공통'?`<span class="badge warn">${esc(q.univ)}</span>`:''}`}</div>
+     <div><input type="checkbox" class="practiceSelChk" data-qid="${q.id}" ${practiceSelectedIds.has(q.id)?'checked':''} style="margin-right:6px;vertical-align:middle"><b>${i+1}.</b> ${esc(q.text)}${q.type==='basic'?'<span class="badge">기본질문</span>':`<span class="badge acc">생기부</span>${categoryBadge(q)}${q.univ&&q.univ!=='공통'?`<span class="badge warn">${esc(q.univ)}</span>`:''}`}</div>
      <button class="btn sm" data-act="togglePracticeAnswer" data-qid="${q.id}" type="button">답변 보기</button>
    </div>
    <div class="practiceAnswerPreview" data-qid="${q.id}" hidden style="margin-top:8px"></div>
@@ -2383,6 +2530,8 @@ document.querySelectorAll('#practiceFilterChips .chip').forEach(c=>{
  c.addEventListener('click',()=>{document.querySelectorAll('#practiceFilterChips .chip').forEach(x=>x.classList.remove('on'));c.classList.add('on');practiceTypeFilter=c.dataset.f;renderPracticeList();});
 });
 document.getElementById('practiceUnivFilter').addEventListener('change',(e)=>{ practiceUnivFilter=e.target.value; renderPracticeList(); });
+document.getElementById('practiceCategoryFilter').addEventListener('change',(e)=>{ practiceCategoryFilter=e.target.value; renderPracticeList(); });
+document.getElementById('practiceSearchInput').addEventListener('input',(e)=>{ practiceSearch=e.target.value; renderPracticeList(); });
 
 // ---------- 지난 연습 피드백 기록 (학생) ----------
 const EVAL_REASON_LABELS={stutter:'더듬음', missingKeyword:'키워드 누락', overtime:'시간 초과', thin:'내용 부족', unstructured:'두서없음', voice:'목소리/자신감 부족'};
@@ -2695,7 +2844,7 @@ document.getElementById('btnPracticeFollowup').addEventListener('click',()=>{
  if(!fus.length) return;
  const items=fus.filter(fu=>!practiceDeck.some(d=>d.id===q.id+'__'+fu.id)).map(fu=>({
    id:q.id+'__'+fu.id, text:fu.text, answerHtml: fu.answerHtml!=null?fu.answerHtml:(fu.answerText?esc(fu.answerText):''),
-   type:q.type, area:q.area, univ:q.univ, isFollowup:true, parentText:q.text, followups:[], authorBadge:followupAuthorBadge(fu, CURRENT.name)
+   type:q.type, area:q.area, category:q.category, univ:q.univ, isFollowup:true, parentText:q.text, followups:[], authorBadge:followupAuthorBadge(fu, CURRENT.name)
  }));
  practiceDeck.splice(practiceIdx+1, 0, ...items);
  populateJumpSelect();
@@ -2713,7 +2862,7 @@ function showPracticeCard(){
  document.getElementById('practiceQText').textContent = q.text;
  const badges=document.getElementById('practiceCardBadges');
  badges.innerHTML = (q.isFollowup?'<span class="badge" style="background:#ede9fe;color:#6d28d9">↳ 꼬리질문</span>'+(q.authorBadge||''):'') + (q.type==='basic' ? '<span class="badge">기본질문</span>' :
-   `<span class="badge acc">생기부 기반</span><span class="badge gray">${esc(q.area||'')}</span>${q.univ&&q.univ!=='공통'?`<span class="badge warn">${esc(q.univ)}</span>`:'<span class="badge gray">공통</span>'}`);
+   `<span class="badge acc">생기부 기반</span>${categoryBadge(q)}<span class="badge gray">${esc(q.area||'')}</span>${q.univ&&q.univ!=='공통'?`<span class="badge warn">${esc(q.univ)}</span>`:'<span class="badge gray">공통</span>'}`);
  document.getElementById('btnPracticePrev').disabled = practiceIdx===0;
  document.getElementById('btnPracticeNext').textContent = practiceIdx===practiceDeck.length-1 ? '✅ 연습 마치기' : '다음 →';
  document.getElementById('practiceHintBox').hidden=true;
@@ -3451,6 +3600,8 @@ document.querySelectorAll('#tQFilterChips .chip').forEach(c=>{
  c.addEventListener('click',()=>{document.querySelectorAll('#tQFilterChips .chip').forEach(x=>x.classList.remove('on'));c.classList.add('on');tQTypeFilter=c.dataset.f;renderTeacherQList();});
 });
 document.getElementById('tQUnivFilter').addEventListener('change',(e)=>{ tQUnivFilter=e.target.value; renderTeacherQList(); });
+document.getElementById('tQCategoryFilter').addEventListener('change',(e)=>{ tQCategoryFilter=e.target.value; renderTeacherQList(); });
+document.getElementById('tQSearchInput').addEventListener('input',(e)=>{ tQSearch=e.target.value; renderTeacherQList(); });
 document.getElementById('tQAreaFilter').addEventListener('change',(e)=>{ tQAreaFilter=e.target.value; renderTeacherQList(); });
 
 document.getElementById('btnTeacherLogin').addEventListener('click', async ()=>{
@@ -3673,6 +3824,7 @@ function populateTqUnivSelect(){
 }
 document.getElementById('tqType').addEventListener('change',()=>{
  document.getElementById('tqAreaWrap').hidden = document.getElementById('tqType').value!=='record';
+ document.getElementById('tqCategoryWrap').hidden = document.getElementById('tqType').value!=='record';
 });
 let tqPendingAttach=[];
 function renderTqAttachPreview(){
@@ -3720,10 +3872,35 @@ function maybeRestoreTqDraft(){
  const f=d.fields;
  document.getElementById('tqType').value=f.type||'basic';
  document.getElementById('tqAreaWrap').hidden = document.getElementById('tqType').value!=='record';
+ document.getElementById('tqCategoryWrap').hidden = document.getElementById('tqType').value!=='record';
  if(f.type==='record'){ document.getElementById('tqArea').value=f.area||'교과세특'; }
  populateTqUnivSelect(); document.getElementById('tqUniv').value=f.univ||'공통';
  textEl.value=f.text||''; ansEl.innerHTML=f.answerHtml||'';
  document.getElementById('tqDraftNote').textContent='이전에 쓰던 임시저장 내용을 불러왔습니다.';
+}
+let tqPendingFollowups=[];
+document.getElementById('btnTqAddPendingFollow').addEventListener('click', async ()=>{
+ const r=await openFollowupEditor('','');
+ if(!r) return;
+ tqPendingFollowups.push({text:r.text, answerHtml:r.answerHtml});
+ renderPendingFollowups(tqPendingFollowups,'tqPendingFollowups');
+});
+document.getElementById('btnTqExistingFollow').addEventListener('click', async ()=>{
+ if(!TCUR) return;
+ const qid=document.getElementById('tqExistingSelect').value;
+ const q=(TCUR.data.questions||[]).find(x=>x.id===qid);
+ if(!q){ await uiAlert('먼저 꼬리질문을 붙일 질문을 골라 주세요.'); return; }
+ const r=await openFollowupEditor('','');
+ if(!r) return;
+ q.followups=q.followups||[];
+ q.followups.push({id:uid(), text:r.text, answerHtml:r.answerHtml, checked:false, createdBy:'teacher', teacherName:TEACHER_SESSION?TEACHER_SESSION.displayName:'선생님', createdAt:Date.now(), updatedAt:Date.now()});
+ await saveTeacherQuestions();
+ renderTeacherQList();
+ document.getElementById('tqExistingSelect').value=qid;
+ await uiAlert('꼬리질문을 추가했습니다.');
+});
+function tqNewFollowups(){
+ return tqPendingFollowups.map(f=>({id:uid(), text:f.text, answerHtml:f.answerHtml, checked:false, createdBy:'teacher', teacherName:TEACHER_SESSION?TEACHER_SESSION.displayName:'선생님', createdAt:Date.now(), updatedAt:Date.now()}));
 }
 function resetTeacherQForm(){
  editingTeacherQid=null;
@@ -3734,6 +3911,7 @@ function resetTeacherQForm(){
  document.getElementById('tqAnswer').innerHTML='';
  tqPendingAttach=[];
  renderTqAttachPreview();
+ tqPendingFollowups=[]; renderPendingFollowups(tqPendingFollowups,'tqPendingFollowups');
 }
 document.getElementById('btnCancelTeacherQEdit').addEventListener('click',()=>{
  resetTeacherQForm();
@@ -3752,6 +3930,8 @@ document.getElementById('btnAddTeacherQ').addEventListener('click', async ()=>{
    const q=TCUR.data.questions.find(x=>x.id===editingTeacherQid);
    if(q){
      q.type=type; q.area=area; q.univ=univ; q.text=text; q.answerHtml=answerHtml;
+     q.category = type==='record' ? (document.getElementById('tqCategory').value||null) : null;
+     if(tqPendingFollowups.length) q.followups=(q.followups||[]).concat(tqNewFollowups());
      q.teacherAttachments=(q.teacherAttachments||[]).concat(tqPendingAttach);
      q.updatedAt=Date.now(); stampEdit(q,'teacher');
    }
@@ -3761,7 +3941,8 @@ document.getElementById('btnAddTeacherQ').addEventListener('click', async ()=>{
  } else {
    const newQ={
      id:uid(), type, area, univ,
-     text, answerHtml, followups:[], feedback:[], memos:[], teacherAttachments:tqPendingAttach.slice(),
+     category: type==='record' ? (document.getElementById('tqCategory').value||null) : null,
+     text, answerHtml, followups:tqNewFollowups(), feedback:[], memos:[], teacherAttachments:tqPendingAttach.slice(),
      createdBy:'teacher', teacherName:TEACHER_SESSION?TEACHER_SESSION.displayName:'선생님',
      createdAt:Date.now(), updatedAt:Date.now()
    };
@@ -4108,6 +4289,8 @@ async function saveMockEntry(){
 let tQTypeFilter='all';
 let tQUnivFilter='all';
 let tQAreaFilter='all';
+let tQCategoryFilter='all';
+let tQSearch='';
 let teacherAnswerEditingQid=null;
 function teacherAnswerEditorHTML(q){
  const boxId='tqEdit_'+q.id;
@@ -4123,6 +4306,7 @@ function teacherAnswerEditorHTML(q){
 let fbPendingAttach={}; // qid -> 아직 저장 전인 피드백 첨부파일 목록
 function renderTeacherQList(){
  const wrap=document.getElementById('teacherQList');
+ populateExistingQuestionSelect('tqExistingSelect', (TCUR&&TCUR.data.questions)||[]);
  const allQ=TCUR.data.questions||[];
  const allD=TCUR.data.debates||[];
  const allR=TCUR.data.research||[];
@@ -4140,7 +4324,7 @@ function renderTeacherQList(){
  const univMatch = (u)=> tQUnivFilter==='all' || (u||'공통')===tQUnivFilter;
  const areaMatch = (q)=> tQAreaFilter==='all' || q.area===tQAreaFilter;
 
- const list = showQuestions ? allQ.filter(q=>qTypeMatch(q) && univMatch(q.univ) && areaMatch(q)) : [];
+ const list = showQuestions ? allQ.filter(q=>qTypeMatch(q) && univMatch(q.univ) && areaMatch(q) && categoryMatches(q, tQCategoryFilter) && questionMatchesSearch(q, tQSearch)) : [];
  const dlist = showDebates ? allD.filter(d=>univMatch(d.univ)) : [];
  const rlist = showResearch ? allR.filter(r=>univMatch(r.univ)) : [];
  lastTeacherQListForPrint=list;
@@ -4148,6 +4332,9 @@ function renderTeacherQList(){
  if(!allQ.length && !allD.length && !allR.length){wrap.innerHTML='<div class="card"><div class="empty">이 학생이 아직 만든 질문이 없습니다.</div></div>';return;}
  if(!list.length && !dlist.length && !rlist.length){wrap.innerHTML='<div class="card"><div class="empty">조건에 맞는 항목이 없습니다.</div></div>';return;}
  wrap.innerHTML='';
+ { const total=allQ.length; const fcnt=allQ.reduce((a,q)=>a+(q.followups||[]).length,0);
+   const cnt=document.createElement('div'); cnt.className='small'; cnt.style.cssText='margin:6px 2px;font-weight:700';
+   cnt.textContent=`질문 총 ${total}문항${fcnt?` (꼬리질문 ${fcnt}개)`:''}${list.length!==total?` · 현재 ${list.length}문항 표시`:''}`; wrap.appendChild(cnt); }
  list.forEach((q,qi)=>{
    const fbs=q.feedback||[]; const followups=q.followups||[];
    const targetOptions=`<option value="">메인 질문</option>`+followups.map(fu=>`<option value="${fu.id}">↳ ${esc(fu.text.slice(0,24))}${fu.text.length>24?'…':''}</option>`).join('');
@@ -4158,7 +4345,9 @@ function renderTeacherQList(){
         <button class="btn sm" data-act="tqUp" data-id="${q.id}" ${qi===0?'disabled':''} title="위로">▲</button>
         <button class="btn sm" data-act="tqDown" data-id="${q.id}" ${qi===list.length-1?'disabled':''} title="아래로">▼</button>
       </span>
+      <span class="badge" style="background:#1e293b;color:#fff;font-weight:700">Q${qi+1}</span>
       ${q.type==='basic'?'<span class="badge">기본질문</span>':`<span class="badge acc">생기부 기반</span><span class="badge gray">${esc(q.area)}</span>${q.univ && q.univ!=="공통"?`<span class="badge warn">${esc(q.univ)}</span>`:`<span class="badge gray">공통</span>`}`}
+      ${categoryBadge(q)}
       ${q.createdBy==='teacher'?`<span class="badge" style="background:#ede9fe;color:#6d28d9">😊 ${esc(q.teacherName||'선생님')}이(가) 낸 질문</span>`:''}
       ${wasRevisedSinceFeedback(q.answerHtml, fbs, null)?`<span class="badge" style="background:#dbeafe;color:#1e3a8a">✏ 답변 수정됨</span>`:''}
       ${hasTeacherFix(q.answerHtml)?`<span class="badge" style="background:#fee2e2;color:#dc2626">✎ 내가 고친 부분 있음</span>`:''}
@@ -4176,12 +4365,12 @@ function renderTeacherQList(){
     ${q.attachments&&q.attachments.length?`<div class="tiny muted" style="margin-top:6px"><b>학생이 첨부한 참고 자료</b></div>${attachmentsHTML(q.attachments)}`:''}
     ${memoBlockHTML(q, q.id, 'teacher')}
     ${renderFeedbackBlock(fbs, followups, q.id, 'teacher')}
-    <div class="followWrap"><div class="row between"><b class="small">↳ 꼬리질문</b><button class="btn sm" data-act="tAddFollow" data-qid="${q.id}" type="button">+ 꼬리질문 추가</button></div>${followups.map(fu=>{
+    <div class="followWrap"><div class="row between"><b class="small">↳ 꼬리질문</b><button class="btn sm" data-act="tAddFollow" data-qid="${q.id}" type="button">+ 꼬리질문 추가</button></div>${followups.map((fu,fi)=>{
       const fufbs=fbs.filter(f=>f.followupId===fu.id);
       const fuAnswerHtml = fu.answerHtml!=null ? fu.answerHtml : (fu.answerText?esc(fu.answerText):'');
       return `<div class="followItem">
         <div class="fhead"><input type="checkbox" disabled ${fu.checked?'checked':''}>
-        <div style="flex:1"><div class="ftext">${esc(fu.text)} ${followupAuthorBadge(fu, TCUR.data.name)} ${editStampBadge(fu)} ${wasRevisedSinceFeedback(fuAnswerHtml, fbs, fu.id)?`<span class="badge" style="background:#dbeafe;color:#1e3a8a">✏ 답변 수정됨</span>`:''}</div>
+        <div style="flex:1"><div class="ftext"><b>꼬리 ${fi+1}.</b> ${esc(fu.text)} ${followupAuthorBadge(fu, TCUR.data.name)} ${editStampBadge(fu)} ${wasRevisedSinceFeedback(fuAnswerHtml, fbs, fu.id)?`<span class="badge" style="background:#dbeafe;color:#1e3a8a">✏ 답변 수정됨</span>`:''}</div>
         ${answerWithRevision(fuAnswerHtml, fbs, fu.id, fu.updatedAt)}
         <div class="row" style="margin-top:6px"><button class="btn sm" data-act="tEditFollow" data-qid="${q.id}" data-fid="${fu.id}" type="button">수정</button><button class="btn sm danger" data-act="tDelFollow" data-qid="${q.id}" data-fid="${fu.id}" type="button">삭제</button></div>
         ${fufbs.length?`<div class="fbBox">${fufbs.map(f=>fbHtml(f,q.id,'teacher')).join('')}</div>`:''}
@@ -4308,6 +4497,9 @@ function renderTeacherQList(){
    editingTeacherQid=q.id;
    document.getElementById('tqType').value=q.type;
    document.getElementById('tqAreaWrap').hidden = q.type!=='record';
+   document.getElementById('tqCategoryWrap').hidden = q.type!=='record';
+   document.getElementById('tqCategory').value=q.category||'';
+   tqPendingFollowups=[]; renderPendingFollowups(tqPendingFollowups,'tqPendingFollowups');
    if(q.type==='record'){
      const areaSel=document.getElementById('tqArea');
      if(q.area && ![...areaSel.options].some(o=>o.value===q.area)){

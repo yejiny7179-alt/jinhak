@@ -1228,6 +1228,14 @@ const AREA_TEMPLATES={
 function norm(s){return (s||'').toString().trim().replace(/\s+/g,'');}
 function safeSeg(s){return norm(s).replace(/[^\w가-힣ㄱ-ㅎㅏ-ㅣ0-9\-]/g,'');}
 function makeKey(school,number,name){return [safeSeg(school),safeSeg(number),safeSeg(name)].join('_')||('anon_'+Date.now());}
+// 수정을 마친 뒤(저장·취소) 작업하던 질문 카드 위치로 되돌아가기
+function scrollBackToCard(listSelector, editAct, idAttr, id){
+ if(!id) return;
+ setTimeout(()=>{
+   const b=document.querySelector(`${listSelector} button[data-act="${editAct}"][${idAttr}="${id}"]`);
+   if(b){ const card=b.closest('.item')||b.closest('.card')||b; card.scrollIntoView({block:'start'}); window.scrollBy(0,-70); }
+ },80);
+}
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7);}
 // id로 찾은 두 항목의 배열 내 위치를 서로 바꾼다 (순서 변경용 공통 유틸)
 function swapArrayItemsById(arr, idA, idB){
@@ -2234,15 +2242,18 @@ function maybeRestoreQDraft(){
  document.getElementById('qDraftNote').textContent='이전에 쓰던 임시저장 내용을 불러왔습니다.';
 }
 document.getElementById('btnCancelQEdit').addEventListener('click',()=>{
+ const backId=editingId;
  editingId=null;
  document.getElementById('editingNote').textContent='';
  document.getElementById('btnCancelQEdit').hidden=true;
  document.getElementById('qText').value=''; document.getElementById('qAnswer').innerHTML='';
  qPendingFollowups=[]; renderPendingFollowups(qPendingFollowups,'qPendingFollowups');
  maybeRestoreQDraft();
+ if(backId){ goTab('list'); scrollBackToCard('#qList','edit','data-id',backId); }
 });
 document.getElementById('btnSaveQ').addEventListener('click', async ()=>{
  if(!CURRENT){await uiAlert('로그인이 필요합니다.');return;}
+ const returnQid=editingId;
  const type=document.getElementById('qType').value;
  const text=document.getElementById('qText').value.trim();
  if(!text){await uiAlert('질문을 입력해 주세요.');return;}
@@ -2270,6 +2281,7 @@ document.getElementById('btnSaveQ').addEventListener('click', async ()=>{
  await saveCurrent();
  await uiAlert('저장되었습니다.');
  goTab('list');
+ scrollBackToCard('#qList','edit','data-id',returnQid);
 });
 
 // ---------- 목록 (학생) ----------
@@ -4462,8 +4474,10 @@ function resetTeacherQForm(){
  tqPendingFollowups=[]; renderPendingFollowups(tqPendingFollowups,'tqPendingFollowups');
 }
 document.getElementById('btnCancelTeacherQEdit').addEventListener('click',()=>{
+ const backId=editingTeacherQid;
  resetTeacherQForm();
  maybeRestoreTqDraft();
+ scrollBackToCard('#teacherQList','editTeacherQ','data-qid',backId);
 });
 document.getElementById('btnAddTeacherQ').addEventListener('click', async ()=>{
  if(!TCUR){await uiAlert('학생 정보가 없습니다.');return;}
@@ -4485,8 +4499,10 @@ document.getElementById('btnAddTeacherQ').addEventListener('click', async ()=>{
    }
    try{ await saveTeacherQuestions(); }
    catch(e){ console.error(e); await uiAlert('질문을 저장하지 못했습니다.\n('+(e&&e.message?e.message:e)+')'); return; }
+   const backId=editingTeacherQid;
    resetTeacherQForm();
    await uiAlert('질문을 수정했습니다.');
+   scrollBackToCard('#teacherQList','editTeacherQ','data-qid',backId);
  } else {
    const newQ={
      id:uid(), type, area, univ,

@@ -559,7 +559,9 @@ table.tbl th{background:var(--surface2);color:var(--muted);font-weight:700;font-
         <div class="row" style="justify-content:center;margin-top:10px;gap:8px">
           <button class="btn sm accent" id="btnPracticeHint" type="button">💡 힌트 보기 (키워드)</button>
           <button class="btn sm" id="btnPracticeShowAnswer" type="button">✍ 내 답변 보기</button>
+          <button class="btn sm" id="btnPracticeFollowup" type="button" hidden>↳ 꼬리질문</button>
         </div>
+        <div id="practiceFollowupNote" class="tiny" style="text-align:center;margin-top:6px;color:var(--primary)" hidden></div>
         <div id="practiceHintBox" class="tiny" style="text-align:center;margin-top:8px" hidden></div>
         <div id="practiceAnswerBox" class="tiny" style="text-align:left;margin-top:8px" hidden></div>
         <div class="row" style="justify-content:center;margin-top:18px">
@@ -1475,21 +1477,14 @@ function openFollowupEditor(initialText, initialAnswerHtml){
      <div class="field"><label>꼬리질문 내용</label><input id="ufText" value="${esc(initialText||'')}"></div>
      <div class="field"><label>답변 <span class="tiny muted">(드래그 후 아래 버튼으로 키워드 표시)</span></label></div>
      <div class="answerBox" id="ufAnswer" contenteditable="true" style="margin-bottom:10px" data-ph="답변을 입력해 보세요 (비워둬도 됩니다)">${initialAnswerHtml||''}</div>
-     <div class="toolbar" style="margin-bottom:14px"><button class="btn accent sm" id="ufMark" type="button">🖍 선택 영역을 키워드로 표시</button></div>
+     <div id="ufToolbarWrap" style="margin-bottom:6px"></div>
+     <div class="row" style="align-items:center;flex-wrap:wrap;margin-bottom:14px"><button type="button" class="btn sm micBtn" data-target="ufAnswer">🎤 음성으로 입력</button> <span class="tiny muted micStatus" data-target="ufAnswer"></span></div>
      <div class="row"><button class="btn" id="uiCancelBtn" type="button">취소</button><button class="btn primary" id="uiOkBtn" type="button">저장</button></div>
    </div></div>`;
    document.getElementById('ufText').focus();
-   document.getElementById('ufAnswer').addEventListener('click',(e)=>{
-     if(e.target.tagName==='MARK'){ const p=e.target.parentNode; while(e.target.firstChild) p.insertBefore(e.target.firstChild,e.target); p.removeChild(e.target); }
-   });
-   document.getElementById('ufMark').addEventListener('click',()=>{
-     const sel=window.getSelection(); if(!sel||sel.rangeCount===0||sel.isCollapsed) return;
-     const range=sel.getRangeAt(0); const box=document.getElementById('ufAnswer');
-     if(!box.contains(range.commonAncestorContainer)) return;
-     const mark=document.createElement('mark'); mark.className='kw';
-     try{ range.surroundContents(mark); }catch(e){ mark.appendChild(range.extractContents()); range.insertNode(mark); }
-     sel.removeAllRanges();
-   });
+   document.getElementById('ufToolbarWrap').innerHTML=highlightToolbarHTML('ufAnswer');
+   wireAnswerBox('ufAnswer');
+   wireMicButton('ufAnswer', false);
    document.getElementById('uiOkBtn').addEventListener('click',()=>{
      const text=document.getElementById('ufText').value.trim();
      const answerHtml=document.getElementById('ufAnswer').innerHTML;
@@ -2655,6 +2650,37 @@ document.querySelectorAll('#practiceEvalReasons .chip').forEach(c=>{
 document.getElementById('practiceEvalNote').addEventListener('input',(e)=>{
  getCurrentEval().note=e.target.value;
 });
+function followupsOfCurrent(){
+ const q=practiceDeck[practiceIdx];
+ if(!q || q.isFollowup) return [];
+ const orig=(CURRENT.questions||[]).find(x=>x.id===q.id);
+ return orig ? (orig.followups||[]) : [];
+}
+function updateFollowupButton(){
+ const fus=followupsOfCurrent();
+ const btn=document.getElementById('btnPracticeFollowup');
+ const q=practiceDeck[practiceIdx];
+ const already = q && fus.length && fus.every(fu=>practiceDeck.some(d=>d.id===q.id+'__'+fu.id));
+ btn.hidden = !fus.length;
+ btn.disabled = !!already;
+ btn.textContent = already ? '↳ 꼬리질문이 다음 문항에 있어요' : `↳ 꼬리질문 (${fus.length})`;
+ document.getElementById('practiceFollowupNote').hidden=true;
+}
+document.getElementById('btnPracticeFollowup').addEventListener('click',()=>{
+ const q=practiceDeck[practiceIdx]; const fus=followupsOfCurrent();
+ if(!fus.length) return;
+ const items=fus.filter(fu=>!practiceDeck.some(d=>d.id===q.id+'__'+fu.id)).map(fu=>({
+   id:q.id+'__'+fu.id, text:fu.text, answerHtml: fu.answerHtml!=null?fu.answerHtml:(fu.answerText?esc(fu.answerText):''),
+   type:q.type, area:q.area, univ:q.univ, isFollowup:true, parentText:q.text, followups:[]
+ }));
+ practiceDeck.splice(practiceIdx+1, 0, ...items);
+ populateJumpSelect();
+ document.getElementById('practiceJumpSelect').value=String(practiceIdx);
+ document.getElementById('btnPracticeNext').textContent='다음 →';
+ updateFollowupButton();
+ const note=document.getElementById('practiceFollowupNote');
+ note.textContent=`↳ 꼬리질문 ${items.length}개가 다음 문항에 추가됐어요. "다음"을 누르면 나와요.`; note.hidden=false;
+});
 function showPracticeCard(){
  const q=practiceDeck[practiceIdx];
  autoAdvanceTriggered=false;
@@ -2662,8 +2688,8 @@ function showPracticeCard(){
  document.getElementById('practiceRandomBadge').hidden = practiceMode!=='random';
  document.getElementById('practiceQText').textContent = q.text;
  const badges=document.getElementById('practiceCardBadges');
- badges.innerHTML = q.type==='basic' ? '<span class="badge">기본질문</span>' :
-   `<span class="badge acc">생기부 기반</span><span class="badge gray">${esc(q.area||'')}</span>${q.univ&&q.univ!=='공통'?`<span class="badge warn">${esc(q.univ)}</span>`:'<span class="badge gray">공통</span>'}`;
+ badges.innerHTML = (q.isFollowup?'<span class="badge" style="background:#ede9fe;color:#6d28d9">↳ 꼬리질문</span>':'') + (q.type==='basic' ? '<span class="badge">기본질문</span>' :
+   `<span class="badge acc">생기부 기반</span><span class="badge gray">${esc(q.area||'')}</span>${q.univ&&q.univ!=='공통'?`<span class="badge warn">${esc(q.univ)}</span>`:'<span class="badge gray">공통</span>'}`);
  document.getElementById('btnPracticePrev').disabled = practiceIdx===0;
  document.getElementById('btnPracticeNext').textContent = practiceIdx===practiceDeck.length-1 ? '✅ 연습 마치기' : '다음 →';
  document.getElementById('practiceHintBox').hidden=true;
@@ -2674,6 +2700,7 @@ function showPracticeCard(){
  document.getElementById('practiceRecordControls').hidden=true;
  resetRecordingUI();
  resetPracticeTimer();
+ updateFollowupButton();
  applyTargetForCurrentQuestion();
  loadEvalUIForCurrentQuestion();
 }
@@ -4107,16 +4134,17 @@ function renderTeacherQList(){
     ${q.attachments&&q.attachments.length?`<div class="tiny muted" style="margin-top:6px"><b>학생이 첨부한 참고 자료</b></div>${attachmentsHTML(q.attachments)}`:''}
     ${memoBlockHTML(q, q.id, 'teacher')}
     ${renderFeedbackBlock(fbs, followups, q.id, 'teacher')}
-    ${followups.length?`<div class="followWrap"><b class="small">↳ 꼬리질문</b>${followups.map(fu=>{
+    <div class="followWrap"><div class="row between"><b class="small">↳ 꼬리질문</b><button class="btn sm" data-act="tAddFollow" data-qid="${q.id}" type="button">+ 꼬리질문 추가</button></div>${followups.map(fu=>{
       const fufbs=fbs.filter(f=>f.followupId===fu.id);
       const fuAnswerHtml = fu.answerHtml!=null ? fu.answerHtml : (fu.answerText?esc(fu.answerText):'');
       return `<div class="followItem">
         <div class="fhead"><input type="checkbox" disabled ${fu.checked?'checked':''}>
-        <div style="flex:1"><div class="ftext">${esc(fu.text)} ${wasRevisedSinceFeedback(fuAnswerHtml, fbs, fu.id)?`<span class="badge" style="background:#dbeafe;color:#1e3a8a">✏ 답변 수정됨</span>`:''}</div>
+        <div style="flex:1"><div class="ftext">${esc(fu.text)} ${fu.createdBy==='teacher'?'<span class="badge" style="background:#ede9fe;color:#6d28d9">👩‍🏫 선생님 꼬리질문</span>':''} ${wasRevisedSinceFeedback(fuAnswerHtml, fbs, fu.id)?`<span class="badge" style="background:#dbeafe;color:#1e3a8a">✏ 답변 수정됨</span>`:''}</div>
         ${answerWithRevision(fuAnswerHtml, fbs, fu.id, fu.updatedAt)}
+        <div class="row" style="margin-top:6px"><button class="btn sm" data-act="tEditFollow" data-qid="${q.id}" data-fid="${fu.id}" type="button">수정</button><button class="btn sm danger" data-act="tDelFollow" data-qid="${q.id}" data-fid="${fu.id}" type="button">삭제</button></div>
         ${fufbs.length?`<div class="fbBox">${fufbs.map(f=>fbHtml(f,q.id,'teacher')).join('')}</div>`:''}
         </div></div></div>`;
-    }).join('')}</div>`:''}
+    }).join('')}</div>
     <div class="fbBox">
       <div class="field"><label>피드백 대상</label><select class="fbTarget" data-qid="${q.id}">${targetOptions}</select></div>
       <div class="field"><label>평가 포인트 (여러 개 선택 가능)</label>
@@ -4168,6 +4196,29 @@ function renderTeacherQList(){
    if(tb){ tb.innerHTML=highlightToolbarHTML(boxId, true); wireAnswerBox(boxId); }
    wireMicButton(boxId, false);
  }
+ wrap.querySelectorAll('button[data-act="tAddFollow"]').forEach(b=>b.addEventListener('click', async ()=>{
+   const q=TCUR.data.questions.find(x=>x.id===b.dataset.qid); if(!q) return;
+   const result=await openFollowupEditor('', '');
+   if(!result) return;
+   q.followups=q.followups||[];
+   q.followups.push({id:uid(), text:result.text, answerHtml:result.answerHtml, checked:false, createdBy:'teacher', updatedAt:Date.now()});
+   await saveTeacherQuestions(); renderTeacherQList();
+ }));
+ wrap.querySelectorAll('button[data-act="tEditFollow"]').forEach(b=>b.addEventListener('click', async ()=>{
+   const q=TCUR.data.questions.find(x=>x.id===b.dataset.qid); const fu=q&&(q.followups||[]).find(x=>x.id===b.dataset.fid); if(!fu) return;
+   const initHtml = fu.answerHtml!=null ? fu.answerHtml : (fu.answerText?esc(fu.answerText):'');
+   const result=await openFollowupEditor(fu.text, initHtml);
+   if(!result) return;
+   fu.text=result.text; fu.answerHtml=result.answerHtml; delete fu.answerText; fu.updatedAt=Date.now();
+   await saveTeacherQuestions(); renderTeacherQList();
+ }));
+ wrap.querySelectorAll('button[data-act="tDelFollow"]').forEach(b=>b.addEventListener('click', async ()=>{
+   if(!(await uiConfirm('이 꼬리질문을 삭제할까요?'))) return;
+   const q=TCUR.data.questions.find(x=>x.id===b.dataset.qid); if(!q) return;
+   q.followups=(q.followups||[]).filter(x=>x.id!==b.dataset.fid);
+   q.feedback=(q.feedback||[]).filter(f=>f.followupId!==b.dataset.fid);
+   await saveTeacherQuestions(); renderTeacherQList();
+ }));
  wrap.querySelectorAll('button[data-act="editTeacherAnswer"]').forEach(b=>b.addEventListener('click',()=>{
    teacherAnswerEditingQid=b.dataset.qid; renderTeacherQList();
  }));

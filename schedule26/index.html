@@ -199,6 +199,10 @@
     font-size:13.5px; margin-bottom:10px; box-sizing:border-box; min-height:140px; line-height:1.6;
     font-family:inherit; resize:vertical;
   }
+  .as-grid{display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px;}
+  .as-grid label, .as-apps-head{font-size:11.5px; color:var(--muted); display:block; margin-bottom:3px;}
+  .as-grid input, .as-grid select, .as-row input{width:100%; padding:8px 9px; border-radius:8px; border:1px solid var(--border); font-size:13px; box-sizing:border-box; background:#fff;}
+  .as-row{display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; margin-bottom:6px;}
   .modal-hint{font-size:11.5px; color:var(--muted); margin-bottom:10px; line-height:1.5;}
 
   .guide-box{
@@ -226,6 +230,7 @@
       <button id="loginBtn" class="btn-ghost btn-sm">🔑 관리자 로그인</button>
       <button id="logoutBtn" class="btn-ghost btn-sm" style="display:none;">로그아웃</button>
       <button id="addTeacherBtn" class="btn-ghost btn-sm" style="display:none;">➕ 선생님 추가</button>
+      <button id="addStudentBtn" class="btn-ghost btn-sm" style="display:none;">➕ 학생 추가</button>
       <button id="editNoticeNotesBtn" class="btn-ghost btn-sm" style="display:none;">📝 공지문 문구 수정</button>
       <button id="excelBtn" class="btn-excel btn-sm" style="display:none;">📊 엑셀 다운로드</button>
       <button id="printClassNoticeBtn" class="btn-ghost btn-sm">🖨 학급별 공지문(A1)</button>
@@ -307,6 +312,33 @@
       <div class="txt"><b>인쇄용 문서</b><span>"학급별 공지문", "전체일정" 버튼을 누르면 인쇄하기 좋은 표가 새 창으로 열립니다. 필요하면 그 창에서 인쇄하거나 저장하시면 됩니다.</span></div>
     </div>
     <button id="guideCloseBtn" class="btn-primary btn-sm guide-close">닫기</button>
+  </div>
+</div>
+
+<div id="addStudentOverlay" class="modal-overlay" style="display:none;">
+  <div class="modal-box modal-box-wide" style="max-height:90vh; overflow-y:auto;">
+    <div class="modal-title">➕ 새 학생 추가</div>
+    <div class="as-grid">
+      <div><label>학번 (5자리)</label><input id="asBan" type="text" inputmode="numeric" maxlength="5" placeholder="예: 30104"></div>
+      <div><label>이름</label><input id="asName" type="text" placeholder="이름"></div>
+      <div><label>진행 구분</label>
+        <select id="asTeam">
+          <option value="화">화요일 세트 (10/13·11/3)</option>
+          <option value="수">수요일 세트 (10/14·11/4)</option>
+          <option value="제시문">제시문 (송두리, 4일 모두)</option>
+        </select>
+      </div>
+      <div><label>소속 조 (담당 선생님)</label><select id="asCluster"></select></div>
+    </div>
+    <div class="as-apps-head">지원 내역 (대학 / 전형 / 학과) - 필요한 만큼만 입력하세요</div>
+    <div class="as-row"><input class="as-univ" type="text" placeholder="대학"><input class="as-type" type="text" placeholder="전형"><input class="as-dept" type="text" placeholder="학과"></div>
+    <div class="as-row"><input class="as-univ" type="text" placeholder="대학"><input class="as-type" type="text" placeholder="전형"><input class="as-dept" type="text" placeholder="학과"></div>
+    <div class="as-row"><input class="as-univ" type="text" placeholder="대학"><input class="as-type" type="text" placeholder="전형"><input class="as-dept" type="text" placeholder="학과"></div>
+    <div id="asErr" class="modal-hint" style="color:#dc2626; min-height:16px;"></div>
+    <div class="modal-actions">
+      <button id="asCancel" class="btn-ghost btn-sm">취소</button>
+      <button id="asSave" class="btn-primary btn-sm">추가</button>
+    </div>
   </div>
 </div>
 
@@ -501,7 +533,9 @@
     return DATA.clusters.find(c => c.students.some(s => s.ban === ban));
   }
   function studentRoleForDate(s, date){
-    if(s.isJesimun) return 'first'; // teacher1===teacher2 항상 동일하므로 role은 편의상 first
+    if(s.isJesimun){ // teacher1===teacher2 항상 동일하므로 role은 편의상 first
+      return (s.skipDates && s.skipDates.indexOf(date) > -1) ? null : 'first'; // 특정 날짜만 진행 안 하는 학생 지원
+    }
     if(s.d1 === date) return s.skip1 ? null : 'first';
     if(s.d2 === date) return s.skip2 ? null : 'second';
     return null;
@@ -607,6 +641,15 @@
           <input type="text" data-stu-customdate="${s.ban}" value="${escapeHtml(s.customDate||'')}" placeholder="예: 11월 10일" style="max-width:100px; padding:5px 7px; border-radius:6px; border:1px solid var(--border); font-size:12px;">
           <input type="text" data-stu-customtime="${s.ban}" value="${escapeHtml(s.customTime||'')}" placeholder="예: 15:00~15:40" style="max-width:110px; padding:5px 7px; border-radius:6px; border:1px solid var(--border); font-size:12px;">
         </div>
+        ${s.isJesimun ? `
+        <div style="margin-top:8px; padding-top:8px; border-top:1px dashed var(--border);">
+          <div style="font-size:11px;color:var(--muted); margin-bottom:4px;">🩹 특정 날짜만 진행하지 않는 경우, 해당 날짜만 체크하세요 (나머지 날짜는 유지됨)</div>
+          ${DATA.dateOrder.map(d => `<label style="margin-top:3px; display:flex; align-items:center; gap:5px; cursor:pointer; font-size:12px; color:var(--text);">
+            <input type="checkbox" data-stu-skipdate="${s.ban}" data-date="${escapeHtml(d)}" ${(s.skipDates||[]).indexOf(d)>-1?'checked':''}>
+            ${escapeHtml(shortDate(d))} 진행 안 함
+          </label>`).join('')}
+        </div>
+        ` : ''}
         ${s.isJesimun ? '' : `
         <div style="margin-top:8px; padding-top:8px; border-top:1px dashed var(--border);">
           <div style="font-size:11px;color:var(--muted); margin-bottom:4px;">🩹 면접이 일찍 끝나 한 회차만 필요 없는 경우, 해당 회차만 삭제할 수 있습니다 (다른 회차는 유지됨)</div>
@@ -632,7 +675,7 @@
           <span style="display:flex; align-items:center; gap:6px;">${timeHtml}${s.isJesimun ? '<span class="tag-jesimun">제시문</span>' : ''}</span>
         </div>
         <div class="apps-panel" id="apps-${s.ban}-${gid}">
-          <b>${escapeHtml(s.field_raw)}</b> · ${s.isJesimun ? `제시문 특별진행 (${DATA.dateOrder.map(shortDate).join(', ')}) · 담당:${teacherOrUnassigned(s.teacher1)}` : `${s.team==='화'?'화요일':'수요일'}팀 (${escapeHtml(s.d1)} / ${escapeHtml(s.d2)}) · 1회차:${s.skip1 ? '<span style="color:var(--muted);font-weight:700;">진행안함(조기종료)</span>' : teacherOrUnassigned(s.teacher1)} / 2회차:${s.skip2 ? '<span style="color:var(--muted);font-weight:700;">진행안함(조기종료)</span>' : teacherOrUnassigned(s.teacher2)}`}
+          <b>${escapeHtml(s.field_raw)}</b> · ${s.isJesimun ? `제시문 특별진행 (${DATA.dateOrder.filter(d => (s.skipDates||[]).indexOf(d) === -1).map(shortDate).join(', ') || '없음'}) · 담당:${teacherOrUnassigned(s.teacher1)}${(s.skipDates&&s.skipDates.length) ? ` · <span style="color:var(--muted);font-weight:700;">진행안함: ${s.skipDates.map(shortDate).join(', ')}</span>` : ''}` : `${s.team==='화'?'화요일':'수요일'}팀 (${escapeHtml(s.d1)} / ${escapeHtml(s.d2)}) · 1회차:${s.skip1 ? '<span style="color:var(--muted);font-weight:700;">진행안함(조기종료)</span>' : teacherOrUnassigned(s.teacher1)} / 2회차:${s.skip2 ? '<span style="color:var(--muted);font-weight:700;">진행안함(조기종료)</span>' : teacherOrUnassigned(s.teacher2)}`}
           ${(s.customDate || s.customTime) ? `<div style="margin-top:4px;"><span class="custom-date-badge">📌 별도 일정: ${escapeHtml(s.customDate||'날짜미정')} ${escapeHtml(s.customTime||'')}</span></div>` : ''}
           ${s.apps && s.apps.length ? `<ul>${s.apps.map(a=>`<li>${escapeHtml(a)}</li>`).join('')}</ul>` : '<div style="margin-top:4px;color:var(--muted);">등록된 지원 정보가 없습니다.</div>'}
           ${assignHtml}
@@ -814,6 +857,7 @@
           showToast(`${s.name} 학생을 제시문(발표면접)으로 지정했습니다 (송두리 선생님, 4일 모두 진행)`);
         } else {
           s.isJesimun = false;
+          s.skipDates = [];
           // 제시문 해제 시, 소속 조 담당쌤 기준으로 담당쌤을 다시 계산 (가능일 확인)
           recomputeOneSession(s, cl, 'd1');
           recomputeOneSession(s, cl, 'd2');
@@ -868,6 +912,21 @@
     });
   }
   function wireSkipInputs(root){
+    root.querySelectorAll('[data-stu-skipdate]').forEach(chk => {
+      chk.addEventListener('click', e => e.stopPropagation());
+      chk.addEventListener('change', (e) => {
+        const ban = e.target.getAttribute('data-stu-skipdate');
+        const date = e.target.getAttribute('data-date');
+        const cl = findClusterOfBan(ban);
+        const s = cl ? cl.students.find(x=>x.ban===ban) : null;
+        if(!s) return;
+        const set = new Set(s.skipDates || []);
+        if(e.target.checked) set.add(date); else set.delete(date);
+        s.skipDates = DATA.dateOrder.filter(d => set.has(d));
+        markDirty(); rerenderCurrentTab();
+        showToast(e.target.checked ? `"${s.name}" 학생의 ${shortDate(date)} 일정을 뺐습니다` : `"${s.name}" 학생의 ${shortDate(date)} 일정을 다시 진행하도록 복구했습니다`);
+      });
+    });
     root.querySelectorAll('[data-stu-skip1]').forEach(chk => {
       chk.addEventListener('click', e => e.stopPropagation());
       chk.addEventListener('change', (e) => {
@@ -1134,6 +1193,7 @@
       return true; // 제시문으로 전환됨
     } else if(s.isJesimun && chosenTeacher !== '송두리'){
       s.isJesimun = false;
+      s.skipDates = [];
       s.time1 = '';
       s.time2 = '';
       return false;
@@ -1396,6 +1456,75 @@
       }
     });
   });
+  // ---------- 새 학생 추가 ----------
+  function openAddStudentModal(){
+    const clSel = document.getElementById('asCluster');
+    clSel.innerHTML = DATA.clusters.map(c => `<option value="${escapeHtml(c.id)}">${escapeHtml(c.teacher)} (${escapeHtml(c.name)})</option>`).join('');
+    ['asBan','asName'].forEach(id => { document.getElementById(id).value = ''; });
+    document.getElementById('asTeam').value = '화';
+    document.querySelectorAll('#addStudentOverlay .as-row input').forEach(i => { i.value = ''; });
+    document.getElementById('asErr').textContent = '';
+    document.getElementById('addStudentOverlay').style.display = 'flex';
+    setTimeout(() => document.getElementById('asBan').focus(), 50);
+  }
+  function saveNewStudent(){
+    const err = document.getElementById('asErr');
+    const ban = document.getElementById('asBan').value.trim();
+    const name = document.getElementById('asName').value.trim();
+    if(!/^\d{5}$/.test(ban)){ err.textContent = '학번은 숫자 5자리로 입력해주세요 (예: 30104)'; return; }
+    if(!name){ err.textContent = '이름을 입력해주세요'; return; }
+    if(findClusterOfBan(ban)){ err.textContent = `이미 등록된 학번입니다 (${ban})`; return; }
+    const cl = DATA.clusters.find(c => c.id === document.getElementById('asCluster').value);
+    if(!cl){ err.textContent = '소속 조를 선택해주세요'; return; }
+    const teamSel = document.getElementById('asTeam').value;
+    const isJesimun = teamSel === '제시문';
+    const team = isJesimun ? '화' : teamSel;
+    const nd = teamDates(team);
+    const apps = [];
+    document.querySelectorAll('#addStudentOverlay .as-row').forEach(row => {
+      const u = row.querySelector('.as-univ').value.trim();
+      const t = row.querySelector('.as-type').value.trim();
+      const d = row.querySelector('.as-dept').value.trim();
+      if(!u && !t && !d) return;
+      apps.push(`${u}${u && t ? ' ' : ''}${t}${d ? `${(u || t) ? ', ' : ''}${d}` : ''}`);
+    });
+    const grade = ban[0], classNo = ban.slice(1,3), seatNo = ban.slice(3,5);
+    let maxOrder = -1;
+    DATA.clusters.forEach(c => c.students.forEach(x => { if(typeof x.order === 'number' && x.order > maxOrder) maxOrder = x.order; }));
+    const stu = {
+      ban, name, team, d1: nd.d1, d2: nd.d2,
+      field_raw: cl.name, base_field: cl.name, apps,
+      grade, classNo, seatNo, isJesimun,
+      customDate: '', customTime: '', time1: '', time2: '',
+      teacher1: '', teacher2: '', origTeam: team, dateChanged: false, order: maxOrder + 1
+    };
+    if(isJesimun){
+      stu.teacher1 = '송두리'; stu.teacher2 = '송두리';
+      stu.time1 = '19:00~21:00'; stu.time2 = '19:00~21:00';
+    } else {
+      recomputeOneSession(stu, cl, 'd1');
+      recomputeOneSession(stu, cl, 'd2');
+    }
+    cl.students.push(stu);
+    // 학급 목록에 없는 반이면 추가 (학급 선택/공지문에 나오도록)
+    const classLabel = `${grade}학년 ${parseInt(classNo,10)}반`;
+    if(!(DATA.classes || []).includes(classLabel)){
+      DATA.classes = (DATA.classes || []).concat(classLabel).sort((a,b) => {
+        const pa = a.match(/(\d+)학년\s*(\d+)반/), pb = b.match(/(\d+)학년\s*(\d+)반/);
+        return (parseInt(pa[1],10)*100+parseInt(pa[2],10)) - (parseInt(pb[1],10)*100+parseInt(pb[2],10));
+      });
+      const sel = document.getElementById('classSelect');
+      if(sel){ sel.dataset.filled = ''; sel.innerHTML = '<option value="">-- 학급 선택 --</option>'; }
+    }
+    autoFillMissingTimes();
+    document.getElementById('addStudentOverlay').style.display = 'none';
+    markDirty(); rerenderCurrentTab();
+    showToast(`"${name}" 학생을 추가했습니다. "전체 저장"을 눌러야 모두에게 반영됩니다.`);
+  }
+  document.getElementById('addStudentBtn').addEventListener('click', openAddStudentModal);
+  document.getElementById('asCancel').addEventListener('click', () => { document.getElementById('addStudentOverlay').style.display = 'none'; });
+  document.getElementById('asSave').addEventListener('click', saveNewStudent);
+
   // ---------- 학급별 공지문 안내문구 수정 ----------
   function populateNoticeNotesTargetSelect(){
     const sel = document.getElementById('noticeNotesTargetSelect');
@@ -1551,7 +1680,7 @@
     DATA.clusters.forEach(c => c.students.forEach(s => {
       if(s.isJesimun){
         if(s.teacher1===name || s.teacher2===name){
-          DATA.dateOrder.forEach(d => rows.push({c, s, date:d, when:'제시문'}));
+          DATA.dateOrder.forEach(d => { if((s.skipDates||[]).indexOf(d) === -1) rows.push({c, s, date:d, when:'제시문'}); });
         }
         return;
       }
@@ -1866,18 +1995,21 @@
     const loginBtn = document.getElementById('loginBtn');
     const logoutBtn = document.getElementById('logoutBtn');
     const addTeacherBtn = document.getElementById('addTeacherBtn');
+    const addStudentBtn = document.getElementById('addStudentBtn');
     const editNoticeNotesBtn = document.getElementById('editNoticeNotesBtn');
     const excelBtn = document.getElementById('excelBtn');
     if(isAdmin){
       pill.textContent = '🔓 관리자 모드'; pill.className = 'pill pill-admin-on';
       loginBtn.style.display = 'none'; logoutBtn.style.display = '';
       addTeacherBtn.style.display = '';
+      addStudentBtn.style.display = '';
       editNoticeNotesBtn.style.display = '';
       excelBtn.style.display = '';
     } else {
       pill.textContent = '🔒 열람 모드'; pill.className = 'pill pill-admin-off';
       loginBtn.style.display = ''; logoutBtn.style.display = 'none';
       addTeacherBtn.style.display = 'none';
+      addStudentBtn.style.display = 'none';
       editNoticeNotesBtn.style.display = 'none';
       excelBtn.style.display = 'none';
     }
@@ -1920,7 +2052,7 @@
           const t1Disp = s.skip1 ? '진행안함(조기종료)' : (s.teacher1 || '미배정');
           const t2Disp = s.skip2 ? '진행안함(조기종료)' : (s.teacher2 || '미배정');
           const teacherDisplay = s.isJesimun
-            ? (s.teacher1 || '미배정')
+            ? ((s.teacher1 || '미배정') + ((s.skipDates && s.skipDates.length) ? ` (진행안함: ${s.skipDates.map(shortDate).join(', ')})` : ''))
             : (!s.skip1 && !s.skip2 && s.teacher1 === s.teacher2 ? (s.teacher1 || '미배정') : `1회차:${t1Disp} / 2회차:${t2Disp}`);
           const apps = s.apps || [];
           rows.push({

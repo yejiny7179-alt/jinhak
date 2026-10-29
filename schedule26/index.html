@@ -2086,27 +2086,37 @@
       </label>
       <label style="font-size:13px; color:#333; display:flex; align-items:center; gap:6px;">
         날짜 선택:
-        <select id="classNoticeDateSelect" style="font-size:14px; padding:6px 10px; border-radius:6px; border:1px solid #d97706;">
-          <option value="__all__">전체 날짜 (4일 한 장)</option>
-          ${DATA.dateOrder.map(d => `<option value="${escapeHtml(d)}">${escapeHtml(shortDate(d))}만</option>`).join('')}
-        </select>
+        ${DATA.dateOrder.map((d, ci) => `<label style="display:flex; align-items:center; gap:3px; cursor:pointer;"><input type="checkbox" class="dateChk" value="${ci}" checked>${escapeHtml(shortDate(d))}</label>`).join('')}
       </label>`;
     const extraScript = `
       (function(){
         var sel = document.getElementById('classNoticeSelect');
         var pages = Array.prototype.slice.call(document.querySelectorAll('.page[data-class]'));
-        var dsel = document.getElementById('classNoticeDateSelect');
+        var chks = Array.prototype.slice.call(document.querySelectorAll('.dateChk'));
+        var dnames = ${JSON.stringify(DATA.dateOrder.map(shortDate))};
         function apply(){
-          var v = sel.value, dv = dsel.value;
+          var v = sel.value;
+          var on = chks.filter(function(c){return c.checked;}).map(function(c){return parseInt(c.value,10);});
+          if(!on.length){ on = chks.map(function(c){return parseInt(c.value,10);}); }
           pages.forEach(function(p){
-            var okC = (v === '__all__' || p.getAttribute('data-class') === v);
-            var okD = (p.getAttribute('data-date') === dv);
-            p.style.display = (okC && okD) ? '' : 'none';
+            p.style.display = (v === '__all__' || p.getAttribute('data-class') === v) ? '' : 'none';
+            Array.prototype.forEach.call(p.querySelectorAll('[data-dc]'), function(el){
+              el.style.display = on.indexOf(parseInt(el.getAttribute('data-dc'),10)) > -1 ? '' : 'none';
+            });
+            Array.prototype.forEach.call(p.querySelectorAll('tbody tr'), function(tr){
+              var allNa = on.every(function(ci){
+                var td = tr.querySelector('td[data-dc="'+ci+'"]');
+                return td && td.hasAttribute('data-na');
+              });
+              tr.style.display = allNa ? 'none' : '';
+            });
+            var bn = p.querySelector('.banner');
+            if(bn){ bn.textContent = bn.getAttribute('data-base') + (on.length < chks.length ? ' - ' + on.map(function(i){return dnames[i];}).join(', ') : ''); }
           });
         }
         sel.value = ${JSON.stringify(initial)};
         sel.addEventListener('change', apply);
-        dsel.addEventListener('change', apply);
+        chks.forEach(function(c){ c.addEventListener('change', apply); });
         apply();
       })();
     `;
@@ -2130,7 +2140,6 @@
   }
   function buildClassNoticeBody(onlyClassLabel){
     const pages = [];
-    const datePages = [];
     DATA.classes.forEach(classLabel => {
       if(onlyClassLabel && classLabel !== onlyClassLabel) return;
       const m = classLabel.match(/(\d+)학년\s*(\d+)반/);
@@ -2166,38 +2175,20 @@
       const trs = rows.map((r,i) => {
         let tds = `<td>${escapeHtml(r.ban)}</td><td class="name-cell">${escapeHtml(r.name)}</td>`;
         DATA.dateOrder.forEach((_, ci) => {
-          if(!spans[ci][i].skip) tds += `<td rowspan="${spans[ci][i].span}">${escapeHtml(r.cells[ci].display)}</td>`;
+          if(!spans[ci][i].skip) tds += `<td data-dc="${ci}"${r.cells[ci].display === '－' ? ' data-na="1"' : ''} rowspan="${spans[ci][i].span}">${escapeHtml(r.cells[ci].display)}</td>`;
         });
         return `<tr>${tds}</tr>`;
       }).join('');
-      const headerCols = DATA.dateOrder.map(d => `<th>${escapeHtml(shortDate(d))} 장소 및 시간</th>`).join('');
-      // 날짜별 페이지: 해당 날짜에 일정이 있는(진행 안 함 제외) 학생만
-      DATA.dateOrder.forEach((date, ci) => {
-        const dr = rows.map((r, i) => ({ r, s: students[i] })).filter(x => {
-          const role = studentRoleForDate(x.s, date);
-          if(!role) return false;
-          return !(role === 'second' ? x.s.skip2 : x.s.skip1);
-        });
-        if(!dr.length) return;
-        const dspan = computeColSpans(dr.map(x => ({ v: x.r.cells[ci].compare })), 'v');
-        const dtrs = dr.map((x, i) => `<tr><td>${escapeHtml(x.r.ban)}</td><td class="name-cell">${escapeHtml(x.r.name)}</td>${dspan[i].skip ? '' : `<td rowspan="${dspan[i].span}">${escapeHtml(x.r.cells[ci].display)}</td>`}</tr>`).join('');
-        datePages.push(`<div class="page" data-class="${escapeHtml(classLabel)}" data-date="${escapeHtml(date)}" style="display:none;">
-        <div class="banner">${escapeHtml(grade)}학년 면접 컨설팅 안내(${escapeHtml(classCode)}) - ${escapeHtml(shortDate(date))}</div>
-        ${notesHtml}
-        <table><thead><tr><th style="width:12%;">학번</th><th style="width:16%;">이름</th><th>${escapeHtml(shortDate(date))} 장소 및 시간</th></tr></thead>
-        <tbody>${dtrs}</tbody></table>
-        <div class="footer">•문의: 대입전략부 박예진 선생님</div>
-      </div>`);
-      });
-      pages.push(`<div class="page" data-class="${escapeHtml(classLabel)}" data-date="__all__">
-        <div class="banner">${escapeHtml(grade)}학년 면접 컨설팅 안내(${escapeHtml(classCode)})</div>
+      const headerCols = DATA.dateOrder.map((d, ci) => `<th data-dc="${ci}">${escapeHtml(shortDate(d))} 장소 및 시간</th>`).join('');
+      pages.push(`<div class="page" data-class="${escapeHtml(classLabel)}">
+        <div class="banner" data-base="${escapeHtml(grade)}학년 면접 컨설팅 안내(${escapeHtml(classCode)})">${escapeHtml(grade)}학년 면접 컨설팅 안내(${escapeHtml(classCode)})</div>
         ${notesHtml}
         <table><thead><tr><th style="width:10%;">학번</th><th style="width:12%;">이름</th>${headerCols}</tr></thead>
         <tbody>${trs}</tbody></table>
         <div class="footer">•문의: 대입전략부 박예진 선생님</div>
       </div>`);
     });
-    return pages.concat(datePages).join('');
+    return pages.join('');
   }
   function buildOverallScheduleBody(withTeacher){
     const pages = DATA.dateOrder.map(date => {

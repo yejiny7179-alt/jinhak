@@ -203,6 +203,9 @@
   .as-grid label, .as-apps-head{font-size:11.5px; color:var(--muted); display:block; margin-bottom:3px;}
   .as-grid input, .as-grid select, .as-row input{width:100%; padding:8px 9px; border-radius:8px; border:1px solid var(--border); font-size:13px; box-sizing:border-box; background:#fff;}
   .as-row{display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; margin-bottom:6px;}
+  .stu-x{background:#fee2e2; color:#dc2626; border:none; border-radius:6px; padding:2px 8px; font-size:12px; font-weight:800; cursor:pointer;}
+  .group-add{margin-top:10px; padding-top:10px; border-top:1px dashed var(--border); display:flex; gap:6px; flex-wrap:wrap; align-items:center;}
+  .group-add select{flex:1; min-width:150px; max-width:100%; padding:6px 8px; border-radius:8px; border:1px solid var(--border); font-size:12px; background:#fff;}
   .modal-hint{font-size:11.5px; color:var(--muted); margin-bottom:10px; line-height:1.5;}
 
   .guide-box{
@@ -323,12 +326,36 @@
       <div><label>이름</label><input id="asName" type="text" placeholder="이름"></div>
       <div><label>진행 구분</label>
         <select id="asTeam">
-          <option value="화">화요일 세트 (10/13·11/3)</option>
-          <option value="수">수요일 세트 (10/14·11/4)</option>
-          <option value="제시문">제시문 (송두리, 4일 모두)</option>
+          <option value="일반">일반 면접 (1·2회차)</option>
+          <option value="제시문">제시문 (송두리)</option>
         </select>
       </div>
       <div><label>소속 조 (담당 선생님)</label><select id="asCluster"></select></div>
+    </div>
+    <div id="asRegular" class="as-grid">
+      <div><label>1회차 날짜</label>
+        <select id="asD1">
+          <option value="10월 13일">10/13 (화)</option>
+          <option value="10월 14일">10/14 (수)</option>
+          <option value="">진행 안 함</option>
+        </select>
+      </div>
+      <div><label>2회차 날짜</label>
+        <select id="asD2">
+          <option value="11월 3일">11/3 (화)</option>
+          <option value="11월 4일">11/4 (수)</option>
+          <option value="">진행 안 함</option>
+        </select>
+      </div>
+    </div>
+    <div id="asJes" style="display:none; margin-bottom:8px;">
+      <div class="as-apps-head">참여할 날짜 (해당하는 날짜만 체크)</div>
+      <div style="display:flex; gap:12px; flex-wrap:wrap; font-size:13px;">
+        <label style="display:flex; align-items:center; gap:4px;"><input type="checkbox" class="as-jdate" value="10월 13일" checked>10/13 (화)</label>
+        <label style="display:flex; align-items:center; gap:4px;"><input type="checkbox" class="as-jdate" value="10월 14일" checked>10/14 (수)</label>
+        <label style="display:flex; align-items:center; gap:4px;"><input type="checkbox" class="as-jdate" value="11월 3일" checked>11/3 (화)</label>
+        <label style="display:flex; align-items:center; gap:4px;"><input type="checkbox" class="as-jdate" value="11월 4일" checked>11/4 (수)</label>
+      </div>
     </div>
     <div class="as-apps-head">지원 내역 (대학 / 전형 / 학과) - 필요한 만큼만 입력하세요</div>
     <div class="as-row"><input class="as-univ" type="text" placeholder="대학"><input class="as-type" type="text" placeholder="전형"><input class="as-dept" type="text" placeholder="학과"></div>
@@ -672,7 +699,7 @@
       <li class="stu" ${isAdmin ? `draggable="true" data-drag-item="${s.ban}"` : ''}>
         <div class="stu-row">
           <span data-stu-toggle="${s.ban}-${gid}" style="cursor:pointer;">${dragHandle}<span class="nm">${escapeHtml(s.name)}</span> <span class="fld">(${escapeHtml(s.ban)})</span>${dateChangedDot(s)}${customScheduleHtml(s)}</span>
-          <span style="display:flex; align-items:center; gap:6px;">${timeHtml}${s.isJesimun ? '<span class="tag-jesimun">제시문</span>' : ''}</span>
+          <span style="display:flex; align-items:center; gap:6px;">${timeHtml}${s.isJesimun ? '<span class="tag-jesimun">제시문</span>' : ''}${(isAdmin && date) ? `<button type="button" class="stu-x" data-exclude-date="${s.ban}" title="이 날짜에서만 제외">✕ 제외</button>` : ''}</span>
         </div>
         <div class="apps-panel" id="apps-${s.ban}-${gid}">
           <b>${escapeHtml(s.field_raw)}</b> · ${s.isJesimun ? `제시문 특별진행 (${DATA.dateOrder.filter(d => (s.skipDates||[]).indexOf(d) === -1).map(shortDate).join(', ') || '없음'}) · 담당:${teacherOrUnassigned(s.teacher1)}${(s.skipDates&&s.skipDates.length) ? ` · <span style="color:var(--muted);font-weight:700;">진행안함: ${s.skipDates.map(shortDate).join(', ')}</span>` : ''}` : `${s.team==='화'?'화요일':'수요일'}팀 (${escapeHtml(s.d1)} / ${escapeHtml(s.d2)}) · 1회차:${s.skip1 ? '<span style="color:var(--muted);font-weight:700;">진행안함(조기종료)</span>' : teacherOrUnassigned(s.teacher1)} / 2회차:${s.skip2 ? '<span style="color:var(--muted);font-weight:700;">진행안함(조기종료)</span>' : teacherOrUnassigned(s.teacher2)}`}
@@ -700,6 +727,96 @@
     items.forEach(({teacherName}) => wireGroupCard(teacherName, date));
   }
 
+  function groupPickerOptions(teacherName, date){
+    const opts = [];
+    DATA.clusters.forEach(c => c.students.forEach(s => {
+      const role = studentRoleForDate(s, date);
+      const curTeacher = role ? (role === 'first' ? s.teacher1 : s.teacher2) : null;
+      if(role && curTeacher === teacherName) return;
+      if(s.isJesimun && teacherName !== '송두리') return;
+      let note;
+      if(role) note = curTeacher ? `${curTeacher} 선생님 칸` : '미배정';
+      else if(s.isJesimun || (s.d1 === date && s.skip1) || (s.d2 === date && s.skip2)) note = '이 날짜 제외됨';
+      else note = '이 날짜 일정 없음';
+      opts.push({ban:s.ban, label:`${s.name} (${s.ban}) · ${note}`});
+    }));
+    opts.sort((a,b) => a.ban < b.ban ? -1 : 1);
+    return `<option value="">-- 추가할 학생 선택 --</option>` + opts.map(o => `<option value="${escapeHtml(o.ban)}">${escapeHtml(o.label)}</option>`).join('');
+  }
+  function excludeStudentFromDate(s, date){
+    const role = studentRoleForDate(s, date);
+    if(!role) return;
+    const oldTeacher = role === 'first' ? s.teacher1 : s.teacher2;
+    if(s.isJesimun){
+      const set = new Set(s.skipDates || []); set.add(date);
+      s.skipDates = DATA.dateOrder.filter(d => set.has(d));
+    } else if(role === 'first'){ s.skip1 = true; } else { s.skip2 = true; }
+    if(oldTeacher) resequenceGroupTimes(date, oldTeacher);
+  }
+  function addStudentToGroup(s, date, teacherName){
+    let maxOrder = -1;
+    DATA.clusters.forEach(c => c.students.forEach(x => { if(typeof x.order === 'number' && x.order > maxOrder) maxOrder = x.order; }));
+    if(teacherName === '송두리'){
+      if(!s.isJesimun){
+        applyJesimunAutoDetect(s, '송두리');
+        s.isJesimun = true;
+        s.skip1 = false; s.skip2 = false;
+        s.skipDates = DATA.dateOrder.filter(d => d !== date);
+      } else {
+        s.skipDates = (s.skipDates || []).filter(d => d !== date);
+      }
+      s.order = maxOrder + 1;
+      resequenceGroupTimes(date, '송두리');
+      return;
+    }
+    const first = isFirstDate(date);
+    const dk = first ? 'd1' : 'd2', tk = first ? 'teacher1' : 'teacher2', sk = first ? 'skip1' : 'skip2', tmk = first ? 'time1' : 'time2';
+    const oldDate = s[dk], oldTeacher = s[sk] ? '' : s[tk];
+    s[dk] = date; s[sk] = false; s[tk] = teacherName; s[tmk] = '';
+    s.order = maxOrder + 1;
+    if(first) updateTeamLabel(s);
+    if(oldTeacher && oldDate) resequenceGroupTimes(oldDate, oldTeacher);
+    resequenceGroupTimes(date, teacherName);
+  }
+  function wireGroupAddRemove(rootEl, teacherName, date){
+    rootEl.querySelectorAll('[data-exclude-date]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const ban = btn.getAttribute('data-exclude-date');
+        const cl = findClusterOfBan(ban);
+        const s = cl ? cl.students.find(x => x.ban === ban) : null;
+        if(!s) return;
+        excludeStudentFromDate(s, date);
+        markDirty(); rerenderCurrentTab();
+        showToast(`"${s.name}" 학생을 ${shortDate(date)}에서 제외했습니다 (다른 날짜는 유지). 되돌리려면 "이 칸에 추가"에서 다시 넣어주세요.`);
+      });
+    });
+    if(!teacherName) return;
+    const gid = teacherName + '-' + date;
+    const addBtn = rootEl.querySelector(`[data-add-existing="${gid}"]`);
+    if(addBtn){
+      addBtn.addEventListener('click', () => {
+        const sel = rootEl.querySelector(`[data-add-pick="${gid}"]`);
+        const ban = sel.value;
+        if(!ban){ showToast('추가할 학생을 먼저 선택해주세요'); return; }
+        const cl = findClusterOfBan(ban);
+        const s = cl ? cl.students.find(x => x.ban === ban) : null;
+        if(!s) return;
+        addStudentToGroup(s, date, teacherName);
+        markDirty(); rerenderCurrentTab();
+        const avail = DATA.teacherAvail && DATA.teacherAvail[teacherName];
+        const warn = (avail && !avail[date]) ? ` ⚠️ ${teacherName} 선생님은 ${shortDate(date)}에 불가로 표시돼 있습니다.` : '';
+        showToast(`"${s.name}" 학생을 ${teacherName} 선생님 ${shortDate(date)} 칸에 추가했습니다.${teacherName==='송두리' && !s.wasJ ? ' (제시문 학생, 이 날짜만 진행)' : ''}${warn}`);
+      });
+    }
+    const newBtn = rootEl.querySelector(`[data-add-new="${gid}"]`);
+    if(newBtn){
+      newBtn.addEventListener('click', () => {
+        const cl = DATA.clusters.find(x => x.teacher === teacherName);
+        openAddStudentModal({ clusterId: cl ? cl.id : null, date, teacherName });
+      });
+    }
+  }
   function renderGroupCard(teacherName, members, date){
     const isUnassigned = !teacherName;
     const gid = (isUnassigned ? 'unassigned' : teacherName) + '-' + date;
@@ -745,6 +862,11 @@
             : `<b class="${!room?'meta-missing':''}">${room ? escapeHtml(room) : '미정'}</b>`}</span>
         </div>
         <ul class="stulist" data-cascade="1">${studentsHtml}</ul>
+        ${(isAdmin && !isUnassigned) ? `<div class="group-add">
+          <select data-add-pick="${gid}">${groupPickerOptions(teacherName, date)}</select>
+          <button type="button" class="btn-ghost btn-sm" data-add-existing="${gid}">➕ 이 칸에 추가</button>
+          <button type="button" class="btn-ghost btn-sm" data-add-new="${gid}">🆕 새 학생</button>
+        </div>` : ''}
         ${editBtn}
         ${deleteBtn}
         ${editPanel}
@@ -1314,6 +1436,7 @@
     wireDeleteStudentButtons(rootEl);
     wireJesimunToggle(rootEl);
     wireDragReorder(rootEl, date);
+    wireGroupAddRemove(rootEl, teacherName, date);
     const toggleBtn = rootEl.querySelector(`[data-edit-toggle="${gid}"]`);
     if(toggleBtn){ toggleBtn.addEventListener('click', () => document.getElementById(`edit-${gid}`).classList.toggle('open')); }
     const deleteBtn = rootEl.querySelector(`[data-delete-cluster]`);
@@ -1457,11 +1580,30 @@
     });
   });
   // ---------- 새 학생 추가 ----------
-  function openAddStudentModal(){
+  function syncAddStudentMode(){
+    const jes = document.getElementById('asTeam').value === '제시문';
+    document.getElementById('asRegular').style.display = jes ? 'none' : '';
+    document.getElementById('asJes').style.display = jes ? '' : 'none';
+  }
+  function openAddStudentModal(preset){
     const clSel = document.getElementById('asCluster');
     clSel.innerHTML = DATA.clusters.map(c => `<option value="${escapeHtml(c.id)}">${escapeHtml(c.teacher)} (${escapeHtml(c.name)})</option>`).join('');
     ['asBan','asName'].forEach(id => { document.getElementById(id).value = ''; });
-    document.getElementById('asTeam').value = '화';
+    document.getElementById('asTeam').value = '일반';
+    document.getElementById('asD1').value = '10월 13일';
+    document.getElementById('asD2').value = '11월 3일';
+    document.querySelectorAll('#addStudentOverlay .as-jdate').forEach(c => { c.checked = true; });
+    if(preset){
+      if(preset.clusterId) clSel.value = preset.clusterId;
+      if(preset.teacherName === '송두리'){
+        document.getElementById('asTeam').value = '제시문';
+        document.querySelectorAll('#addStudentOverlay .as-jdate').forEach(c => { c.checked = (c.value === preset.date); });
+      } else if(preset.date){
+        if(isFirstDate(preset.date)){ document.getElementById('asD1').value = preset.date; document.getElementById('asD2').value = ''; }
+        else { document.getElementById('asD1').value = ''; document.getElementById('asD2').value = preset.date; }
+      }
+    }
+    syncAddStudentMode();
     document.querySelectorAll('#addStudentOverlay .as-row input').forEach(i => { i.value = ''; });
     document.getElementById('asErr').textContent = '';
     document.getElementById('addStudentOverlay').style.display = 'flex';
@@ -1476,10 +1618,22 @@
     if(findClusterOfBan(ban)){ err.textContent = `이미 등록된 학번입니다 (${ban})`; return; }
     const cl = DATA.clusters.find(c => c.id === document.getElementById('asCluster').value);
     if(!cl){ err.textContent = '소속 조를 선택해주세요'; return; }
-    const teamSel = document.getElementById('asTeam').value;
-    const isJesimun = teamSel === '제시문';
-    const team = isJesimun ? '화' : teamSel;
-    const nd = teamDates(team);
+    const isJesimun = document.getElementById('asTeam').value === '제시문';
+    let d1, d2, skip1 = false, skip2 = false, skipDates = [];
+    if(isJesimun){
+      const picked = [...document.querySelectorAll('#addStudentOverlay .as-jdate')].filter(c => c.checked).map(c => c.value);
+      if(picked.length === 0){ err.textContent = '참여할 날짜를 한 개 이상 선택해주세요'; return; }
+      skipDates = DATA.dateOrder.filter(d => picked.indexOf(d) === -1);
+      d1 = '10월 13일'; d2 = '11월 3일';
+    } else {
+      d1 = document.getElementById('asD1').value;
+      d2 = document.getElementById('asD2').value;
+      if(!d1 && !d2){ err.textContent = '1회차·2회차 중 최소 한 날짜는 선택해주세요'; return; }
+      // 진행 안 함으로 둔 회차는 짝이 되는 날짜를 넣고 '진행 안 함' 처리
+      if(!d1){ d1 = pairedDate(d2); skip1 = true; }
+      if(!d2){ d2 = pairedDate(d1); skip2 = true; }
+    }
+    const team = teamOfDate(skip1 ? d2 : d1);
     const apps = [];
     document.querySelectorAll('#addStudentOverlay .as-row').forEach(row => {
       const u = row.querySelector('.as-univ').value.trim();
@@ -1492,18 +1646,21 @@
     let maxOrder = -1;
     DATA.clusters.forEach(c => c.students.forEach(x => { if(typeof x.order === 'number' && x.order > maxOrder) maxOrder = x.order; }));
     const stu = {
-      ban, name, team, d1: nd.d1, d2: nd.d2,
+      ban, name, team, d1, d2,
       field_raw: cl.name, base_field: cl.name, apps,
       grade, classNo, seatNo, isJesimun,
       customDate: '', customTime: '', time1: '', time2: '',
       teacher1: '', teacher2: '', origTeam: team, dateChanged: false, order: maxOrder + 1
     };
+    if(isJesimun){ stu.skipDates = skipDates; } else { stu.skip1 = skip1; stu.skip2 = skip2; }
     if(isJesimun){
       stu.teacher1 = '송두리'; stu.teacher2 = '송두리';
       stu.time1 = '19:00~21:00'; stu.time2 = '19:00~21:00';
     } else {
       recomputeOneSession(stu, cl, 'd1');
       recomputeOneSession(stu, cl, 'd2');
+      if(skip1) stu.teacher1 = '';
+      if(skip2) stu.teacher2 = '';
     }
     cl.students.push(stu);
     // 학급 목록에 없는 반이면 추가 (학급 선택/공지문에 나오도록)
@@ -1521,9 +1678,10 @@
     markDirty(); rerenderCurrentTab();
     showToast(`"${name}" 학생을 추가했습니다. "전체 저장"을 눌러야 모두에게 반영됩니다.`);
   }
-  document.getElementById('addStudentBtn').addEventListener('click', openAddStudentModal);
+  document.getElementById('addStudentBtn').addEventListener('click', () => openAddStudentModal());
   document.getElementById('asCancel').addEventListener('click', () => { document.getElementById('addStudentOverlay').style.display = 'none'; });
   document.getElementById('asSave').addEventListener('click', saveNewStudent);
+  document.getElementById('asTeam').addEventListener('change', syncAddStudentMode);
 
   // ---------- 학급별 공지문 안내문구 수정 ----------
   function populateNoticeNotesTargetSelect(){

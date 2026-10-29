@@ -423,9 +423,15 @@
   function escapeHtml(s){
     return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   }
-  function teamOfDate(date){ return (date === '10월 13일' || date === '11월 3일') ? '화' : '수'; }
+  function extraDateInfo(date){ return (DATA.extraDates && DATA.extraDates[date]) || null; }
+  function dayName(date){
+    const m = String(date).match(/(\d+)월\s*(\d+)일/);
+    if(!m) return '';
+    return '일월화수목금토'[new Date(2026, parseInt(m[1],10)-1, parseInt(m[2],10)).getDay()];
+  }
+  function teamOfDate(date){ return (date === '10월 13일' || date === '11월 3일') ? '화' : (extraDateInfo(date) ? (dayName(date)==='화' ? '화' : '수') : '수'); }
   function shortDate(date){ return date.replace('월 ', '/').replace('일',''); }
-  function isFirstDate(date){ return date === '10월 13일' || date === '10월 14일'; }
+  function isFirstDate(date){ const x = extraDateInfo(date); return x ? !!x.first : (date === '10월 13일' || date === '10월 14일'); }
   function timeKeyForDate(date){ return isFirstDate(date) ? 'time1' : 'time2'; }
   function migrateTimeFields(){
     // 예전 방식(공용 time 필드 1개)에서 날짜별(1회차/2회차 독립) time1/time2로 이전
@@ -527,11 +533,11 @@
   }
   function pairedDate(date){
     const map = {'10월 13일':'11월 3일', '11월 3일':'10월 13일', '10월 14일':'11월 4일', '11월 4일':'10월 14일'};
-    return map[date];
+    return map[date] || date;
   }
   function buildTabsNav(){
     const nav = document.getElementById('tabsNav');
-    const dateBtns = DATA.dateOrder.map(d => `<button data-tab="${d}">${escapeHtml(shortDate(d))}(${teamOfDate(d)==='화'?'화':'수'})</button>`).join('');
+    const dateBtns = DATA.dateOrder.map(d => `<button data-tab="${d}">${escapeHtml(shortDate(d))}(${dayName(d)})</button>`).join('');
     nav.innerHTML = dateBtns + `<button data-tab="__student">🔍 학생 찾기</button><button data-tab="__teacher">👩‍🏫 강사별 보기</button>`;
     nav.querySelectorAll('button').forEach(btn => btn.addEventListener('click', () => selectTab(btn.getAttribute('data-tab'))));
     updateTabActive();
@@ -619,7 +625,7 @@
       const isSetMode = (s.d1 === teamDates('화').d1 && s.d2 === teamDates('화').d2 && s.teacher1 === s.teacher2)
                       || (s.d1 === teamDates('수').d1 && s.d2 === teamDates('수').d2 && s.teacher1 === s.teacher2);
       const currentSetTeam = teamOfDate(s.d1);
-      const dateOpts = (cur) => DATA.dateOrder.map(d => `<option value="${d}" ${d===cur?'selected':''}>${escapeHtml(shortDate(d))}(${teamOfDate(d)==='화'?'화':'수'})</option>`).join('');
+      const dateOpts = (cur) => DATA.dateOrder.map(d => `<option value="${d}" ${d===cur?'selected':''}>${escapeHtml(shortDate(d))}(${dayName(d)})</option>`).join('');
 
       const setModeHtml = `
         <div style="margin-top:8px; display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
@@ -720,7 +726,7 @@
     const unassignedCnt = (items.find(i=>!i.teacherName) || {students:[]}).students.length;
     const headHtml = `
       <div class="datehead">
-        <span class="datelabel">📅 ${escapeHtml(date)} (${team==='화'?'화요일':'수요일'})</span>
+        <span class="datelabel">📅 ${escapeHtml(date)} (${dayName(date)}요일)</span>
         <span style="color:var(--muted); font-size:12px;">전체 ${totalCnt}명${unassignedCnt ? ` · <span style="color:var(--danger);font-weight:700;">미배정 ${unassignedCnt}명</span>` : ''}</span>
       </div>
     `;
@@ -780,6 +786,49 @@
     if(oldTeacher && oldDate) resequenceGroupTimes(oldDate, oldTeacher);
     resequenceGroupTimes(date, teacherName);
   }
+  function openMoveTeacherDay(teacherName, fromDate){
+    const first = isFirstDate(fromDate);
+    const cands = DATA.dateOrder.filter(d => d !== fromDate && isFirstDate(d) === first);
+    const hint = cands.map(shortDate).join(', ');
+    const input = window.prompt(`${teacherName} 선생님의 ${shortDate(fromDate)} 학생 전원을 어느 날짜로 옮길까요?\n\n옮길 날짜를 "11월 6일" 처럼 입력하세요.\n(기존 날짜: ${hint || '없음'} / 새 날짜를 입력하면 날짜 탭이 새로 생깁니다)`, '');
+    if(!input) return;
+    const m = input.match(/(\d+)\s*월?\s*[\/\s]?\s*(\d+)\s*일?/);
+    if(!m){ showToast('날짜 형식을 확인해주세요 (예: 11월 6일)'); return; }
+    const toDate = `${parseInt(m[1],10)}월 ${parseInt(m[2],10)}일`;
+    if(toDate === fromDate){ showToast('같은 날짜입니다'); return; }
+    if(DATA.dateOrder.indexOf(toDate) > -1 && isFirstDate(toDate) !== first){
+      showToast(`${shortDate(toDate)}는 ${first ? '2회차' : '1회차'} 날짜라서 옮길 수 없습니다`); return;
+    }
+    if(DATA.dateOrder.indexOf(toDate) === -1){
+      DATA.extraDates = DATA.extraDates || {};
+      DATA.extraDates[toDate] = { first: first };
+      DATA.dateOrder.push(toDate);
+      // 날짜 순서 정렬 (월/일 기준)
+      const key = d => { const mm = d.match(/(\d+)월\s*(\d+)일/); return parseInt(mm[1],10)*100 + parseInt(mm[2],10); };
+      DATA.dateOrder.sort((a,b) => key(a) - key(b));
+      // 제시문 학생은 새 날짜 기본 제외
+      DATA.clusters.forEach(c => c.students.forEach(x => { if(x.isJesimun){ const set = new Set(x.skipDates || []); set.add(toDate); x.skipDates = DATA.dateOrder.filter(d => set.has(d)); } }));
+    }
+    const dk = first ? 'd1' : 'd2', tk = first ? 'teacher1' : 'teacher2', sk = first ? 'skip1' : 'skip2', tmk = first ? 'time1' : 'time2';
+    let moved = 0;
+    DATA.clusters.forEach(c => c.students.forEach(x => {
+      if(x.isJesimun) return;
+      if(x[dk] === fromDate && !x[sk] && x[tk] === teacherName){
+        x[dk] = toDate; x[tmk] = ''; moved++;
+        if(first) updateTeamLabel(x);
+      }
+    }));
+    DATA.teacherAvail = DATA.teacherAvail || {};
+    DATA.teacherAvail[teacherName] = DATA.teacherAvail[teacherName] || {};
+    DATA.teacherAvail[teacherName][toDate] = true;
+    DATA.teacherAvail[teacherName][fromDate] = false;
+    resequenceGroupTimes(toDate, teacherName);
+    markDirty();
+    buildTabsNav();
+    currentTab = toDate; updateTabActive();
+    rerenderCurrentTab();
+    showToast(`${teacherName} 선생님 학생 ${moved}명을 ${shortDate(fromDate)} → ${shortDate(toDate)}(${dayName(toDate)})로 옮겼습니다. "전체 저장"을 눌러주세요.`);
+  }
   function wireGroupAddRemove(rootEl, teacherName, date){
     rootEl.querySelectorAll('[data-exclude-date]').forEach(btn => {
       btn.addEventListener('click', (e) => {
@@ -811,6 +860,8 @@
         showToast(`"${s.name}" 학생을 ${teacherName} 선생님 ${shortDate(date)} 칸에 추가했습니다.${teacherName==='송두리' && !s.wasJ ? ' (제시문 학생, 이 날짜만 진행)' : ''}${warn}`);
       });
     }
+    const mvBtn = rootEl.querySelector(`[data-move-day="${gid}"]`);
+    if(mvBtn) mvBtn.addEventListener('click', () => openMoveTeacherDay(teacherName, date));
     const newBtn = rootEl.querySelector(`[data-add-new="${gid}"]`);
     if(newBtn){
       newBtn.addEventListener('click', () => {
@@ -868,6 +919,7 @@
           <select data-add-pick="${gid}">${groupPickerOptions(teacherName, date)}</select>
           <button type="button" class="btn-ghost btn-sm" data-add-existing="${gid}">➕ 이 칸에 추가</button>
           <button type="button" class="btn-ghost btn-sm" data-add-new="${gid}">🆕 새 학생</button>
+          ${teacherName !== '송두리' ? `<button type="button" class="btn-ghost btn-sm" data-move-day="${gid}">📅 이 선생님 날짜 옮기기</button>` : ''}
         </div>` : ''}
         ${editBtn}
         ${deleteBtn}
@@ -1890,7 +1942,7 @@
             <div class="jo-title">${escapeHtml(shortDate(date))}</div>
             <div class="jo-field">${escapeHtml(fieldLabel)} · ${items.length}명</div>
           </div>
-          <span class="badge-team badge-${teamOfDate(date)==='화'?'tue':'wed'}">${teamOfDate(date)==='화'?'화요일':'수요일'}</span>
+          <span class="badge-team badge-${teamOfDate(date)==='화'?'tue':'wed'}">${dayName(date)}요일</span>
         </div>
         <div class="meta-row">
           <span>🏫 <b class="${!room?'meta-missing':''}">${room ? escapeHtml(room) : '미정'}</b></span>
@@ -2031,19 +2083,30 @@
         <select id="classNoticeSelect" style="font-size:14px; padding:6px 10px; border-radius:6px; border:1px solid #d97706;">
           ${options}
         </select>
+      </label>
+      <label style="font-size:13px; color:#333; display:flex; align-items:center; gap:6px;">
+        날짜 선택:
+        <select id="classNoticeDateSelect" style="font-size:14px; padding:6px 10px; border-radius:6px; border:1px solid #d97706;">
+          <option value="__all__">전체 날짜 (4일 한 장)</option>
+          ${DATA.dateOrder.map(d => `<option value="${escapeHtml(d)}">${escapeHtml(shortDate(d))}만</option>`).join('')}
+        </select>
       </label>`;
     const extraScript = `
       (function(){
         var sel = document.getElementById('classNoticeSelect');
         var pages = Array.prototype.slice.call(document.querySelectorAll('.page[data-class]'));
+        var dsel = document.getElementById('classNoticeDateSelect');
         function apply(){
-          var v = sel.value;
+          var v = sel.value, dv = dsel.value;
           pages.forEach(function(p){
-            p.style.display = (v === '__all__' || p.getAttribute('data-class') === v) ? '' : 'none';
+            var okC = (v === '__all__' || p.getAttribute('data-class') === v);
+            var okD = (p.getAttribute('data-date') === dv);
+            p.style.display = (okC && okD) ? '' : 'none';
           });
         }
         sel.value = ${JSON.stringify(initial)};
         sel.addEventListener('change', apply);
+        dsel.addEventListener('change', apply);
         apply();
       })();
     `;
@@ -2067,6 +2130,7 @@
   }
   function buildClassNoticeBody(onlyClassLabel){
     const pages = [];
+    const datePages = [];
     DATA.classes.forEach(classLabel => {
       if(onlyClassLabel && classLabel !== onlyClassLabel) return;
       const m = classLabel.match(/(\d+)학년\s*(\d+)반/);
@@ -2107,7 +2171,25 @@
         return `<tr>${tds}</tr>`;
       }).join('');
       const headerCols = DATA.dateOrder.map(d => `<th>${escapeHtml(shortDate(d))} 장소 및 시간</th>`).join('');
-      pages.push(`<div class="page" data-class="${escapeHtml(classLabel)}">
+      // 날짜별 페이지: 해당 날짜에 일정이 있는(진행 안 함 제외) 학생만
+      DATA.dateOrder.forEach((date, ci) => {
+        const dr = rows.map((r, i) => ({ r, s: students[i] })).filter(x => {
+          const role = studentRoleForDate(x.s, date);
+          if(!role) return false;
+          return !(role === 'second' ? x.s.skip2 : x.s.skip1);
+        });
+        if(!dr.length) return;
+        const dspan = computeColSpans(dr.map(x => ({ v: x.r.cells[ci].compare })), 'v');
+        const dtrs = dr.map((x, i) => `<tr><td>${escapeHtml(x.r.ban)}</td><td class="name-cell">${escapeHtml(x.r.name)}</td>${dspan[i].skip ? '' : `<td rowspan="${dspan[i].span}">${escapeHtml(x.r.cells[ci].display)}</td>`}</tr>`).join('');
+        datePages.push(`<div class="page" data-class="${escapeHtml(classLabel)}" data-date="${escapeHtml(date)}" style="display:none;">
+        <div class="banner">${escapeHtml(grade)}학년 면접 컨설팅 안내(${escapeHtml(classCode)}) - ${escapeHtml(shortDate(date))}</div>
+        ${notesHtml}
+        <table><thead><tr><th style="width:12%;">학번</th><th style="width:16%;">이름</th><th>${escapeHtml(shortDate(date))} 장소 및 시간</th></tr></thead>
+        <tbody>${dtrs}</tbody></table>
+        <div class="footer">•문의: 대입전략부 박예진 선생님</div>
+      </div>`);
+      });
+      pages.push(`<div class="page" data-class="${escapeHtml(classLabel)}" data-date="__all__">
         <div class="banner">${escapeHtml(grade)}학년 면접 컨설팅 안내(${escapeHtml(classCode)})</div>
         ${notesHtml}
         <table><thead><tr><th style="width:10%;">학번</th><th style="width:12%;">이름</th>${headerCols}</tr></thead>
@@ -2115,7 +2197,7 @@
         <div class="footer">•문의: 대입전략부 박예진 선생님</div>
       </div>`);
     });
-    return pages.join('');
+    return pages.concat(datePages).join('');
   }
   function buildOverallScheduleBody(withTeacher){
     const pages = DATA.dateOrder.map(date => {

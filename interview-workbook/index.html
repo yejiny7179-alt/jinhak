@@ -1493,7 +1493,8 @@ function printHTML(title, bodyHtml){
     .mockQNum{font-weight:700;font-size:12.5px;color:#444}
     .fbEntry{background:#fffbea;border:1px solid #fde68a;border-radius:8px;padding:8px 10px;margin-top:6px;font-size:13px}
     .attachList{display:none} /* 인쇄물에는 첨부파일 링크 대신 목록만 필요 없으므로 숨김 */
-    mark{padding:0 2px;border-radius:3px}
+    mark{padding:0 2px;border-radius:3px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .item{break-inside:avoid-page}
     @media print{ body{padding:0} }
   </style></head><body>${bodyHtml}<script>window.onload=function(){setTimeout(function(){window.print();},250);}<\/script></body></html>`);
   win.document.close();
@@ -2833,22 +2834,76 @@ function printAllMocks(list, studentName){
 // ---------- 질문·답변 모아 인쇄 (표시된 키워드 포함) ----------
 let lastQListForPrint=[];
 let lastTeacherQListForPrint=[];
-function questionPrintCardHTML(q, n){
- const followups=q.followups||[];
- const ansHtml = (q.answerHtml && q.answerHtml.trim()) ? q.answerHtml : '<span class="muted">(작성한 답변 없음)</span>';
+function printKwTransform(html, mode){
+ if(mode==='color') return html;
+ return String(html||'').replace(/<mark\b[^>]*>([\s\S]*?)<\/mark>/gi,(m,t)=> mode==='bold' ? `<b style="text-decoration:underline">${t}</b>` : t);
+}
+function memosPrintHTML(memos){
+ if(!memos||!memos.length) return '';
+ const rep=(rs,d)=>(rs||[]).map(r=>`<div style="margin:4px 0 0 ${12}px;padding-left:8px;border-left:2px solid #e5e7eb"><b>${esc(r.author||'')}</b>${r.role==='teacher'?' (선생님)':(r.role==='student'?' (학생)':'')} · ${formatDateTime(r.at)}<div>${esc(r.text||'').replace(/\n/g,'<br>')}</div>${rep(r.replies,d+1)}</div>`).join('');
+ return `<div class="fbEntry" style="background:#f8fafc;border-color:#e2e8f0"><b>💬 메모</b>${memos.map(m=>`<div style="margin-top:5px"><b>${esc(m.author||'')}</b>${m.role==='teacher'?' (선생님)':' (학생)'} · ${formatDateTime(m.at)}<div>${esc(m.text||'').replace(/\n/g,'<br>')}</div>${rep(m.replies,1)}</div>`).join('')}</div>`;
+}
+function questionPrintCardHTML(q, n, opt){
+ opt=Object.assign({kw:'color',answers:true,followups:true,memos:false},opt||{});
+ const followups=opt.followups?(q.followups||[]):[];
+ const ansOf=(h)=>{ const t=printKwTransform(h,opt.kw); return (t&&t.trim())?t:'<span class="muted">(작성한 답변 없음)</span>'; };
  return `<div class="item">
    <div class="head">${q.type==='basic'?'<span class="badge">기본질문</span>':`<span class="badge acc">생기부 기반</span>${categoryBadge(q)}<span class="badge gray">${esc(q.area||'')}</span>${q.univ&&q.univ!=='공통'?`<span class="badge warn">${esc(q.univ)}</span>`:'<span class="badge gray">공통</span>'}`}${q.createdBy==='teacher'?'<span class="badge gray">선생님이 낸 질문</span>':''}</div>
    <h2>${n?`Q${n}. `:'Q. '}${esc(q.text)}</h2>
-   <div class="answerBox">${ansHtml}</div>
+   ${opt.answers?`<div class="answerBox">${ansOf(q.answerHtml)}</div>`:'<div class="answerBox" style="min-height:70px"></div>'}
+   ${opt.memos?memosPrintHTML(q.memos):''}
    ${followups.map(fu=>{
      const fuAnsHtml = fu.answerHtml!=null ? fu.answerHtml : (fu.answerText?esc(fu.answerText):'');
-     return `<div class="mockQRow"><div class="mockQNum">↳ ${esc(fu.text)}</div><div class="answerBox">${(fuAnsHtml&&fuAnsHtml.trim())?fuAnsHtml:'<span class="muted">(작성한 답변 없음)</span>'}</div></div>`;
+     return `<div class="mockQRow"><div class="mockQNum">↳ ${esc(fu.text)}</div>${opt.answers?`<div class="answerBox">${ansOf(fuAnsHtml)}</div>`:'<div class="answerBox" style="min-height:50px"></div>'}${opt.memos?memosPrintHTML(fu.memos):''}</div>`;
    }).join('')}
  </div>`;
 }
-function printQuestions(list, title){
+function openPrintOptions(list){
+ let saved={}; try{ saved=JSON.parse(localStorage.getItem('printOpts')||'{}'); }catch(_){}
+ const o=Object.assign({kw:'color',answers:true,followups:true,memos:false},saved);
+ return new Promise(resolve=>{
+   uiRoot.innerHTML=`<div class="uiOverlay"><div class="uiBox" style="max-width:560px">
+     <p style="font-weight:700;margin-bottom:10px">🖨 인쇄 설정</p>
+     <div class="field"><label>인쇄할 질문 <span class="tiny muted" id="poCnt"></span></label>
+       <div class="row" style="justify-content:flex-start;gap:6px;flex-wrap:wrap;margin-bottom:6px">
+         <label class="tiny" style="margin:0"><input type="checkbox" id="poAll" checked> <b>전체 선택</b></label>
+         <button type="button" class="btn sm" id="poBasic">기본질문만</button>
+         <button type="button" class="btn sm" id="poRecord">생기부 질문만</button>
+       </div>
+       <div style="max-height:200px;overflow:auto;border:1px solid var(--line2);border-radius:8px;padding:6px 8px">${list.map((q,i)=>`<label class="tiny" style="display:block;margin:3px 0"><input type="checkbox" class="poQ" data-i="${i}" data-type="${q.type==='basic'?'basic':'record'}" checked> <span class="badge ${q.type==='basic'?'':'acc'}">${q.type==='basic'?'기본':'생기부'}</span> ${i+1}. ${esc(q.text)}</label>`).join('')}</div></div>
+     <div class="field"><label>키워드 표시</label>
+       <label class="tiny" style="display:block;margin:3px 0"><input type="radio" name="poKw" value="color"> 색깔 하이라이트 그대로 인쇄 <span class="muted">(컬러 인쇄)</span></label>
+       <label class="tiny" style="display:block;margin:3px 0"><input type="radio" name="poKw" value="bold"> 굵은 글씨 + 밑줄로 표시 <span class="muted">(흑백 인쇄에 좋아요)</span></label>
+       <label class="tiny" style="display:block;margin:3px 0"><input type="radio" name="poKw" value="none"> 표시하지 않고 일반 글씨로 인쇄</label></div>
+     <div class="field"><label>인쇄 내용</label>
+       <label class="tiny" style="display:block;margin:3px 0"><input type="checkbox" id="poAns"> 작성한 답변 포함 <span class="muted">(끄면 답변 칸만 비워서 인쇄 → 손으로 써 보는 연습용)</span></label>
+       <label class="tiny" style="display:block;margin:3px 0"><input type="checkbox" id="poFu"> 꼬리질문 포함</label>
+       <label class="tiny" style="display:block;margin:3px 0"><input type="checkbox" id="poMemo"> 메모 포함 <span class="muted">(질문·꼬리질문의 메모와 답글)</span></label></div>
+     <div class="row stickyBtns"><button class="btn" id="uiCancelBtn" type="button">취소</button><button class="btn primary" id="uiOkBtn" type="button">인쇄</button></div>
+   </div></div>`;
+   const $=id=>document.getElementById(id), boxes=()=>[...document.querySelectorAll('.poQ')];
+   document.querySelector(`input[name="poKw"][value="${o.kw}"]`).checked=true;
+   $('poAns').checked=!!o.answers; $('poFu').checked=!!o.followups; $('poMemo').checked=!!o.memos;
+   const upd=()=>{ const n=boxes().filter(c=>c.checked).length; $('poCnt').textContent=`(${n}/${list.length}개 선택)`; $('poAll').checked=n===list.length; $('uiOkBtn').disabled=!n; };
+   $('poAll').addEventListener('change',()=>{ boxes().forEach(c=>c.checked=$('poAll').checked); upd(); });
+   $('poBasic').addEventListener('click',()=>{ boxes().forEach(c=>c.checked=c.dataset.type==='basic'); upd(); });
+   $('poRecord').addEventListener('click',()=>{ boxes().forEach(c=>c.checked=c.dataset.type==='record'); upd(); });
+   boxes().forEach(c=>c.addEventListener('change',upd)); upd();
+   $('uiOkBtn').addEventListener('click',()=>{
+     const r={kw:document.querySelector('input[name="poKw"]:checked').value, answers:$('poAns').checked, followups:$('poFu').checked, memos:$('poMemo').checked};
+     try{ localStorage.setItem('printOpts',JSON.stringify(r)); }catch(_){}
+     const idx=boxes().filter(c=>c.checked).map(c=>+c.dataset.i);
+     uiRoot.innerHTML=''; resolve(Object.assign({},r,{idx}));
+   });
+   $('uiCancelBtn').addEventListener('click',()=>{ uiRoot.innerHTML=''; resolve(null); });
+ });
+}
+async function printQuestions(list, title){
  if(!list || !list.length){ uiAlert('인쇄할 질문이 없습니다. (현재 선택된 필터 조건을 확인해 주세요)'); return; }
- const body = `<h1>${esc(title)} (총 ${list.length}문항)</h1><p class="tiny" style="color:#666;margin:-6px 0 14px">표시한 키워드는 답변 안에 강조되어 함께 인쇄됩니다.</p>` + list.map((q,i)=>questionPrintCardHTML(q,i+1)).join('');
+ const opt=await openPrintOptions(list); if(!opt) return;
+ const chosen=opt.idx.map(i=>list[i]); list=chosen;
+ const note = !opt.answers ? '답변 칸이 비어 있어요. 직접 써 보세요.' : (opt.kw==='color'?'표시한 키워드는 색깔 하이라이트로 인쇄됩니다.':(opt.kw==='bold'?'표시한 키워드는 굵은 글씨와 밑줄로 인쇄됩니다.':''));
+ const body = `<h1>${esc(title)} (총 ${list.length}문항)</h1>${note?`<p class="tiny" style="color:#666;margin:-6px 0 14px">${note}</p>`:''}` + list.map((q,i)=>questionPrintCardHTML(q,i+1,opt)).join('');
  printHTML(title, body);
 }
 let mockPrepAttach=[];

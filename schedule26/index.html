@@ -225,7 +225,7 @@
 <header class="top">
   <div class="inner">
     <h1>🎓 2027 대입면접대비특강 - 날짜별 배정 &amp; 일정 확인</h1>
-    <p class="sub">외부강사 · 본교교사 공용 확인 페이지 (열람 전용)</p>
+    <p class="sub">외부강사 · 본교교사 공용 확인 페이지 (열람 전용) <span style="font-size:10px;color:#9ca3af;">· 버전 10/30 12:30</span></p>
     <div class="adminbar">
       <button id="guideBtn" class="btn-guide" style="display:inline-flex; align-items:center; gap:5px;">📖 사용법</button>
       <a href="https://yejiny7179-alt.github.io/jinhak/interview-workbook/" target="_blank" rel="noopener" class="btn-feedback" style="text-decoration:none; display:inline-flex; align-items:center; gap:5px;">🎤 온라인 면접 워크북</a>
@@ -755,11 +755,12 @@
     const role = studentRoleForDate(s, date);
     if(!role) return;
     const oldTeacher = role === 'first' ? s.teacher1 : s.teacher2;
+    const anc = oldTeacher ? groupFirstStart(date, oldTeacher) : null;
     if(s.isJesimun){
       const set = new Set(s.skipDates || []); set.add(date);
       s.skipDates = DATA.dateOrder.filter(d => set.has(d));
     } else if(role === 'first'){ s.skip1 = true; } else { s.skip2 = true; }
-    if(oldTeacher) resequenceGroupTimes(date, oldTeacher);
+    if(oldTeacher) resequenceGroupTimes(date, oldTeacher, anc);
   }
   function addStudentToGroup(s, date, teacherName){
     let maxOrder = -1;
@@ -1097,8 +1098,11 @@
         const s = cl ? cl.students.find(x=>x.ban===ban) : null;
         if(!s) return;
         const set = new Set(s.skipDates || []);
+        const anc = groupFirstStart(date, s.teacher1 || '송두리');
         if(e.target.checked) set.add(date); else set.delete(date);
         s.skipDates = DATA.dateOrder.filter(d => set.has(d));
+        if(!e.target.checked) s.time1 = '';
+        resequenceGroupTimes(date, s.teacher1 || '송두리', anc);
         markDirty(); rerenderCurrentTab();
         showToast(e.target.checked ? `"${s.name}" 학생의 ${shortDate(date)} 일정을 뺐습니다` : `"${s.name}" 학생의 ${shortDate(date)} 일정을 다시 진행하도록 복구했습니다`);
       });
@@ -1110,7 +1114,10 @@
         const cl = findClusterOfBan(ban);
         const s = cl ? cl.students.find(x=>x.ban===ban) : null;
         if(s){
+          const anc = groupFirstStart(s.d1, s.teacher1);
           s.skip1 = e.target.checked;
+          if(!s.skip1) s.time1 = '';
+          if(s.teacher1) resequenceGroupTimes(s.d1, s.teacher1, anc);
           markDirty(); rerenderCurrentTab();
           showToast(s.skip1 ? `"${s.name}" 학생의 1회차(${shortDate(s.d1)})를 삭제했습니다` : `"${s.name}" 학생의 1회차를 다시 진행하도록 복구했습니다`);
         }
@@ -1123,7 +1130,10 @@
         const cl = findClusterOfBan(ban);
         const s = cl ? cl.students.find(x=>x.ban===ban) : null;
         if(s){
+          const anc = groupFirstStart(s.d2, s.teacher2);
           s.skip2 = e.target.checked;
+          if(!s.skip2) s.time2 = '';
+          if(s.teacher2) resequenceGroupTimes(s.d2, s.teacher2, anc);
           markDirty(); rerenderCurrentTab();
           showToast(s.skip2 ? `"${s.name}" 학생의 2회차(${shortDate(s.d2)})를 삭제했습니다` : `"${s.name}" 학생의 2회차를 다시 진행하도록 복구했습니다`);
         }
@@ -1305,7 +1315,14 @@
       });
     });
   }
-  function resequenceGroupTimes(date, teacherName){
+  function groupFirstStart(date, teacherName){
+    const grp = studentsForDate(date).find(g => (g.teacherName||'') === (teacherName||''));
+    if(!grp || !grp.students.length) return null;
+    const tk = teacherName === '송두리' ? 'time1' : timeKeyForDate(date);
+    const first = grp.students.slice().sort((a,b)=>(a.order??0)-(b.order??0)).find(x => x[tk] !== '협의');
+    return first ? first[tk] : null;
+  }
+  function resequenceGroupTimes(date, teacherName, anchorTime){
     if(date == null) return;
     const key = teacherName || '';
     const groups = studentsForDate(date);
@@ -1322,7 +1339,7 @@
     // '협의'로 지정한 학생은 자동 시간 계산에서 제외(시간 유지), 나머지 학생끼리만 순서대로 이어붙임
     const cascadable = members.filter(s => s[timeKey] !== '협의');
     if(cascadable.length === 0) return;
-    let startMin = parseStartMinutes(cascadable[0][timeKey]);
+    let startMin = parseStartMinutes(anchorTime || cascadable[0][timeKey]);
     if(startMin == null) startMin = parseStartMinutes('18:30'); // 기본 시작시간: 18시 30분
     let cur = startMin;
     cascadable.forEach((s,i) => {
@@ -1847,6 +1864,20 @@
     if(!s.grade || !s.classNo) return null;
     return `${s.grade}학년 ${parseInt(s.classNo,10)}반`;
   }
+  function searchSummaryHtml(s){
+    const roomOf = (t, d) => { const cl = clusterOfTeacherName(t); return (cl ? getRoomForDate(cl, d) : '') || '미정'; };
+    if(s.isJesimun){
+      const ds = DATA.dateOrder.filter(d => (s.skipDates||[]).indexOf(d) === -1);
+      return `<span>👩‍🏫 <b>${teacherOrUnassigned(s.teacher1)}</b></span>
+          <span>📅 <b>${ds.map(d => escapeHtml(shortDate(d))).join(', ') || '없음'}</b></span>
+          <span>⏰ <b>${s.time1?escapeHtml(s.time1):'미정'}</b></span>
+          <span>🏫 <b>${escapeHtml(roomOf(s.teacher1, ds[0] || ''))}</b></span>`;
+    }
+    const part = (label, d, tKey, timeKey, skip) => skip
+      ? `<span>${label}: <b style="color:var(--muted);">${escapeHtml(shortDate(d))} 진행 안 함</b></span>`
+      : `<span>${label}: <b>${escapeHtml(shortDate(d))}</b> · 👩‍🏫 <b>${teacherOrUnassigned(s[tKey])}</b> · ⏰ <b>${s[timeKey]?escapeHtml(s[timeKey]):'미정'}</b> · 🏫 <b>${escapeHtml(roomOf(s[tKey], d))}</b></span>`;
+    return part('1회차', s.d1, 'teacher1', 'time1', !!s.skip1) + part('2회차', s.d2, 'teacher2', 'time2', !!s.skip2);
+  }
   function renderStudentSearch(){
     const q = document.getElementById('studentSearch').value.trim();
     const cls = document.getElementById('classSelect').value;
@@ -1870,10 +1901,7 @@
         </div>
         <div class="meta-row">
           <span>📚 <b>${escapeHtml(c.name)}</b></span>
-          <span>👩‍🏫 <b>${studentTeacherLabel(s)}</b></span>
-          <span>📅 <b>${escapeHtml(s.d1)}</b> / <b>${escapeHtml(s.d2)}</b></span>
-          <span>⏰ <b>${s.isJesimun ? (s.time1?escapeHtml(s.time1):'미정') : `1회차:${s.time1?escapeHtml(s.time1):'미정'} / 2회차:${s.time2?escapeHtml(s.time2):'미정'}`}</b></span>
-          <span>🏫 <b>1회차:${escapeHtml(getRoomForDate(c,s.d1)||'미정')} / 2회차:${escapeHtml(getRoomForDate(c,s.d2)||'미정')}</b></span>
+          ${searchSummaryHtml(s)}
         </div>
         <ul class="stulist">${studentRow(s, 'search')}</ul>
       </div>
@@ -1911,17 +1939,16 @@
     const name = selectedTeacher;
     const box = document.getElementById('teacherResult');
     if(!name){ box.innerHTML = '<div class="empty">위에서 선생님을 선택하세요.</div>'; return; }
+    // 날짜 탭과 완전히 같은 기준(studentsForDate)으로 모아서, 탭에서 빠진 학생은 여기서도 항상 빠지도록 함
     const rows = [];
-    DATA.clusters.forEach(c => c.students.forEach(s => {
-      if(s.isJesimun){
-        if(s.teacher1===name || s.teacher2===name){
-          DATA.dateOrder.forEach(d => { if((s.skipDates||[]).indexOf(d) === -1) rows.push({c, s, date:d, when:'제시문'}); });
-        }
-        return;
-      }
-      if(s.teacher1===name) rows.push({c, s, date:s.d1, when:'1회차'});
-      if(s.teacher2===name) rows.push({c, s, date:s.d2, when:'2회차'});
-    }));
+    DATA.dateOrder.forEach(date => {
+      const g = studentsForDate(date).find(x => x.teacherName === name);
+      if(!g) return;
+      g.students.forEach(s => {
+        const c = findClusterOfBan(s.ban);
+        rows.push({c, s, date, when: s.isJesimun ? '제시문' : (isFirstDate(date) ? '1회차' : '2회차')});
+      });
+    });
     if(rows.length === 0){ box.innerHTML = '<div class="empty">배정된 학생이 없습니다.</div>'; return; }
 
     const ownCluster = DATA.clusters.find(x=>x.teacher===name);
@@ -1966,6 +1993,7 @@
       wireDeleteStudentButtons(rootEl);
       wireJesimunToggle(rootEl);
       wireDragReorder(rootEl, date);
+      wireGroupAddRemove(rootEl, '', date);
     });
   }
 

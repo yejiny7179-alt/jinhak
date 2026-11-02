@@ -206,13 +206,21 @@
   .stu-x{background:#fee2e2; color:#dc2626; border:none; border-radius:6px; padding:2px 8px; font-size:12px; font-weight:800; cursor:pointer;}
   .group-add{margin-top:10px; padding-top:10px; border-top:1px dashed var(--border); display:flex; gap:6px; flex-wrap:wrap; align-items:center;}
   .group-add select{flex:1; min-width:150px; max-width:100%; padding:6px 8px; border-radius:8px; border:1px solid var(--border); font-size:12px; background:#fff;}
-  .te-table{border-collapse:collapse; font-size:12px; min-width:1500px;}
+  body.table-mode .wrap{max-width:none; padding-left:4px; padding-right:4px;}
+  body.table-mode .te-wrap{max-height:80vh !important;}
+  .te-table{border-collapse:collapse; font-size:11.5px; width:100%;}
   .te-table th{position:sticky; top:0; background:#eef2ff; border:1px solid var(--border); padding:4px 6px; z-index:2; white-space:nowrap;}
   .te-table thead tr:nth-child(2) th{top:26px;}
   .te-table td{border:1px solid var(--border); padding:2px 3px; text-align:center;}
   .te-in{font-size:12px; padding:4px 5px; border:1px solid var(--border); border-radius:5px; background:#fff; max-width:100%;}
-  .te-ban{width:56px;} .te-name{width:70px;} .te-time{width:104px;} .te-app{width:250px;}
+  .te-in{padding:3px 3px; font-size:11.5px;}
+  .te-ban{width:46px;} .te-name{width:54px;} .te-time{width:84px;} .te-app{width:100%; min-width:105px;}
+  .te-table td select.te-in{max-width:72px; padding:3px 1px;}
+  .te-table td select[data-key="d1"], .te-table td select[data-key="d2"]{max-width:56px;}
+  .te-table td select[data-te="appst"]{max-width:66px; font-size:10.5px;}
+  .te-table td{padding:2px 2px;} .te-table th{padding:3px 3px;}
   .te-extra{background:#f5f9ff;}
+  .te-table .stu-x{white-space:nowrap; padding:2px 5px;}
   .modal-hint{font-size:11.5px; color:var(--muted); margin-bottom:10px; line-height:1.5;}
 
   .guide-box{
@@ -232,7 +240,7 @@
 <header class="top">
   <div class="inner">
     <h1>🎓 2027 대입면접대비특강 - 날짜별 배정 &amp; 일정 확인</h1>
-    <p class="sub">외부강사 · 본교교사 공용 확인 페이지 (열람 전용) <span style="font-size:10px;color:#9ca3af;">· 버전 11/2 12:30</span></p>
+    <p class="sub">외부강사 · 본교교사 공용 확인 페이지 (열람 전용) <span style="font-size:10px;color:#9ca3af;">· 버전 11/2 13:00</span></p>
     <div class="adminbar">
       <button id="guideBtn" class="btn-guide" style="display:inline-flex; align-items:center; gap:5px;">📖 사용법</button>
       <a href="https://yejiny7179-alt.github.io/jinhak/interview-workbook/" target="_blank" rel="noopener" class="btn-feedback" style="text-decoration:none; display:inline-flex; align-items:center; gap:5px;">🎤 온라인 면접 워크북</a>
@@ -563,6 +571,7 @@
   function selectTab(tab){
     currentTab = tab;
     updateTabActive();
+    document.body.classList.toggle('table-mode', tab === '__table' && isAdmin);
     if(tab === '__table' && !isAdmin){ tab = currentTab = DATA.dateOrder[0]; updateTabActive(); }
     document.getElementById('tab-dates').style.display = (tab !== '__student' && tab !== '__teacher' && tab !== '__table') ? '' : 'none';
     document.getElementById('tab-table').style.display = (tab === '__table') ? '' : 'none';

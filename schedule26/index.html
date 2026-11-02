@@ -232,7 +232,7 @@
 <header class="top">
   <div class="inner">
     <h1>🎓 2027 대입면접대비특강 - 날짜별 배정 &amp; 일정 확인</h1>
-    <p class="sub">외부강사 · 본교교사 공용 확인 페이지 (열람 전용) <span style="font-size:10px;color:#9ca3af;">· 버전 11/2 12:10</span></p>
+    <p class="sub">외부강사 · 본교교사 공용 확인 페이지 (열람 전용) <span style="font-size:10px;color:#9ca3af;">· 버전 11/2 12:30</span></p>
     <div class="adminbar">
       <button id="guideBtn" class="btn-guide" style="display:inline-flex; align-items:center; gap:5px;">📖 사용법</button>
       <a href="https://yejiny7179-alt.github.io/jinhak/interview-workbook/" target="_blank" rel="noopener" class="btn-feedback" style="text-decoration:none; display:inline-flex; align-items:center; gap:5px;">🎤 온라인 면접 워크북</a>
@@ -1937,6 +1937,7 @@
 
   // ---------- 표로 수정 (관리자 전용, 엑셀처럼 한 번에 수정) ----------
   let tableFilter = '';
+  let tableSort = { key: '', dir: 1 };
   function renderTableEditor(){
     const box = document.getElementById('tab-table');
     if(!isAdmin){ box.innerHTML = ''; return; }
@@ -1947,11 +1948,28 @@
     const dOpts = (list, cur) => list.map(d => `<option value="${escapeHtml(d)}" ${d===cur?'selected':''}>${escapeHtml(shortDate(d))}</option>`).join('');
     const tOpts = (cur) => `<option value="" ${!cur?'selected':''}>미배정</option>` + DATA.clusters.map(c => c.teacher).map(t => `<option value="${escapeHtml(t)}" ${t===cur?'selected':''}>${escapeHtml(t)}</option>`).join('');
     const stOpts = (cur) => `<option value="" ${!cur?'selected':''}>예정</option><option value="done" ${cur==='done'?'selected':''}>면접완료</option><option value="fail" ${cur==='fail'?'selected':''}>1단계불합격</option>`;
+    const sh = (key, label) => `<span class="te-sort" data-sort="${key}" style="cursor:pointer;">${label}${tableSort.key===key ? (tableSort.dir>0 ? ' ▲' : ' ▼') : ' <span style="color:#9ca3af;">⇅</span>'}</span>`;
     const rows = [];
     DATA.clusters.forEach(c => c.students.forEach(s => {
       if(q && !(s.name.includes(q) || s.ban.includes(q) || (s.teacher1||'').includes(q) || (s.teacher2||'').includes(q))) return;
       rows.push(s);
     }));
+    if(tableSort.key){
+      const k = tableSort.key, dir = tableSort.dir;
+      const di = d => { const i = DATA.dateOrder.indexOf(d); return i < 0 ? 99 : i; };
+      const tm = t => { const v = parseStartMinutes(t); return v == null ? 9999 : v; };
+      const val = s => ({
+        ban: dispBan(s), name: s.name,
+        d1: di(s.d1), t1: s.teacher1 || '힣', tm1: tm(s.time1), sk1: s.skip1 ? 1 : 0,
+        d2: di(s.d2), t2: s.teacher2 || '힣', tm2: tm(s.time2), sk2: s.skip2 ? 1 : 0,
+        app: (s.apps||[])[0] || '힣'
+      })[k];
+      rows.sort((a,b) => {
+        const x = val(a), y = val(b);
+        const c = (typeof x === 'number' && typeof y === 'number') ? x - y : String(x).localeCompare(String(y), 'ko');
+        return c * dir || (dispBan(a) < dispBan(b) ? -1 : 1);
+      });
+    }
     const appCell = (s, i) => {
       const a = (s.apps||[])[i];
       if(s.baseBan) return `<td colspan="2" style="color:var(--muted); font-size:11px;">${a ? escapeHtml(a) : ''}</td>`;
@@ -1988,17 +2006,23 @@
       <div class="te-wrap" style="overflow:auto; max-height:72vh; border:1px solid var(--border); border-radius:10px; background:#fff;">
         <table class="te-table">
           <thead><tr>
-            <th rowspan="2">학번</th><th rowspan="2">이름</th>
+            <th rowspan="2">${sh('ban','학번')}</th><th rowspan="2">${sh('name','이름')}</th>
             <th colspan="4">1회차</th><th colspan="4">2회차</th>
             ${Array.from({length:appN}, (_,i) => `<th colspan="2">지원${i+1}</th>`).join('')}<th rowspan="2"></th></tr>
-          <tr><th>날짜</th><th>선생님</th><th>시간</th><th>제외</th><th>날짜</th><th>선생님</th><th>시간</th><th>제외</th>
-            ${Array.from({length:appN}, () => '<th>대학·전형·학과</th><th>상태</th>').join('')}</tr></thead>
+          <tr><th>${sh('d1','날짜')}</th><th>${sh('t1','선생님')}</th><th>${sh('tm1','시간')}</th><th>${sh('sk1','제외')}</th><th>${sh('d2','날짜')}</th><th>${sh('t2','선생님')}</th><th>${sh('tm2','시간')}</th><th>${sh('sk2','제외')}</th>
+            ${Array.from({length:appN}, (_,i) => `<th>${i===0 ? sh('app','대학·전형·학과') : '대학·전형·학과'}</th><th>상태</th>`).join('')}</tr></thead>
         <tbody>${body || '<tr><td colspan="30">해당하는 학생이 없습니다.</td></tr>'}</tbody></table>
       </div>`;
     const wrap = box.querySelector('.te-wrap'); wrap.scrollTop = sTop; wrap.scrollLeft = sLeft;
     const f = document.getElementById('teFilter');
     f.addEventListener('input', () => { tableFilter = f.value; const pos = f.selectionStart; renderTableEditor(); const nf = document.getElementById('teFilter'); nf.focus(); nf.setSelectionRange(pos,pos); });
     box.querySelectorAll('[data-te]').forEach(el => el.addEventListener('change', onTableEdit));
+    box.querySelectorAll('[data-sort]').forEach(h => h.addEventListener('click', () => {
+      const k = h.getAttribute('data-sort');
+      if(tableSort.key === k){ if(tableSort.dir === 1) tableSort.dir = -1; else tableSort = { key: '', dir: 1 }; }
+      else tableSort = { key: k, dir: 1 };
+      renderTableEditor();
+    }));
   }
   function onTableEdit(e){
     const el = e.target, kind = el.getAttribute('data-te'), ban = el.getAttribute('data-ban');

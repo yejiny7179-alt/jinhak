@@ -206,6 +206,13 @@
   .stu-x{background:#fee2e2; color:#dc2626; border:none; border-radius:6px; padding:2px 8px; font-size:12px; font-weight:800; cursor:pointer;}
   .group-add{margin-top:10px; padding-top:10px; border-top:1px dashed var(--border); display:flex; gap:6px; flex-wrap:wrap; align-items:center;}
   .group-add select{flex:1; min-width:150px; max-width:100%; padding:6px 8px; border-radius:8px; border:1px solid var(--border); font-size:12px; background:#fff;}
+  .te-table{border-collapse:collapse; font-size:12px; min-width:1500px;}
+  .te-table th{position:sticky; top:0; background:#eef2ff; border:1px solid var(--border); padding:4px 6px; z-index:2; white-space:nowrap;}
+  .te-table thead tr:nth-child(2) th{top:26px;}
+  .te-table td{border:1px solid var(--border); padding:2px 3px; text-align:center;}
+  .te-in{font-size:12px; padding:4px 5px; border:1px solid var(--border); border-radius:5px; background:#fff; max-width:100%;}
+  .te-ban{width:56px;} .te-name{width:70px;} .te-time{width:104px;} .te-app{width:250px;}
+  .te-extra{background:#f5f9ff;}
   .modal-hint{font-size:11.5px; color:var(--muted); margin-bottom:10px; line-height:1.5;}
 
   .guide-box{
@@ -225,7 +232,7 @@
 <header class="top">
   <div class="inner">
     <h1>🎓 2027 대입면접대비특강 - 날짜별 배정 &amp; 일정 확인</h1>
-    <p class="sub">외부강사 · 본교교사 공용 확인 페이지 (열람 전용) <span style="font-size:10px;color:#9ca3af;">· 버전 11/2 10:50</span></p>
+    <p class="sub">외부강사 · 본교교사 공용 확인 페이지 (열람 전용) <span style="font-size:10px;color:#9ca3af;">· 버전 11/2 12:10</span></p>
     <div class="adminbar">
       <button id="guideBtn" class="btn-guide" style="display:inline-flex; align-items:center; gap:5px;">📖 사용법</button>
       <a href="https://yejiny7179-alt.github.io/jinhak/interview-workbook/" target="_blank" rel="noopener" class="btn-feedback" style="text-decoration:none; display:inline-flex; align-items:center; gap:5px;">🎤 온라인 면접 워크북</a>
@@ -247,6 +254,8 @@
 <div class="wrap">
   <main>
     <section id="tab-dates"></section>
+
+    <section id="tab-table" style="display:none;"></section>
 
     <section id="tab-student" style="display:none;">
       <div class="searchbox">
@@ -544,7 +553,7 @@
   function buildTabsNav(){
     const nav = document.getElementById('tabsNav');
     const dateBtns = DATA.dateOrder.map(d => `<button data-tab="${d}">${escapeHtml(shortDate(d))}(${dayName(d)})</button>`).join('');
-    nav.innerHTML = dateBtns + `<button data-tab="__student">🔍 학생 찾기</button><button data-tab="__teacher">👩‍🏫 강사별 보기</button>`;
+    nav.innerHTML = dateBtns + (isAdmin ? `<button data-tab="__table">📋 표로 수정</button>` : '') + `<button data-tab="__student">🔍 학생 찾기</button><button data-tab="__teacher">👩‍🏫 강사별 보기</button>`;
     nav.querySelectorAll('button').forEach(btn => btn.addEventListener('click', () => selectTab(btn.getAttribute('data-tab'))));
     updateTabActive();
   }
@@ -554,11 +563,14 @@
   function selectTab(tab){
     currentTab = tab;
     updateTabActive();
-    document.getElementById('tab-dates').style.display = (tab !== '__student' && tab !== '__teacher') ? '' : 'none';
+    if(tab === '__table' && !isAdmin){ tab = currentTab = DATA.dateOrder[0]; updateTabActive(); }
+    document.getElementById('tab-dates').style.display = (tab !== '__student' && tab !== '__teacher' && tab !== '__table') ? '' : 'none';
+    document.getElementById('tab-table').style.display = (tab === '__table') ? '' : 'none';
     document.getElementById('tab-student').style.display = (tab === '__student') ? '' : 'none';
     document.getElementById('tab-teacher').style.display = (tab === '__teacher') ? '' : 'none';
     if(tab === '__student'){ populateClassSelect(); renderStudentSearch(); }
     else if(tab === '__teacher'){ buildTeacherTabs(); renderTeacherView(); }
+    else if(tab === '__table'){ renderTableEditor(); }
     else { renderDateTab(tab); }
   }
 
@@ -658,6 +670,20 @@
           <select data-stu-teacher="${s.ban}" data-teacher-key="teacher2">${teacherOptionsForDate(s.d2, s.teacher2||'')}</select>
         </div>`;
 
+      const appsEditSection = s.baseBan ? '' : `
+        <div style="margin-top:8px; padding-top:8px; border-top:1px dashed var(--border);">
+          <div style="font-size:11px;color:var(--muted); margin-bottom:4px;">🎓 지원 대학 수정 (이미 면접을 봤거나 1단계 불합격이면 상태를 바꿔주세요)</div>
+          ${(s.apps||[]).map((a,i) => `<div style="display:flex; gap:4px; align-items:center; margin:3px 0; flex-wrap:wrap;">
+            <input type="text" data-app-text="${s.ban}" data-idx="${i}" value="${escapeHtml(a)}" style="flex:1; min-width:200px; padding:5px 7px; border-radius:6px; border:1px solid var(--border); font-size:12px;">
+            <select data-app-status="${s.ban}" data-idx="${i}" style="padding:5px 6px; border-radius:6px; border:1px solid var(--border); font-size:12px;">
+              <option value="" ${!(s.appStatus||[])[i]?'selected':''}>진행 예정</option>
+              <option value="done" ${(s.appStatus||[])[i]==='done'?'selected':''}>면접 완료</option>
+              <option value="fail" ${(s.appStatus||[])[i]==='fail'?'selected':''}>1단계 불합격</option>
+            </select>
+            <button type="button" class="stu-x" data-app-del="${s.ban}" data-idx="${i}">삭제</button>
+          </div>`).join('')}
+          <button type="button" class="btn-ghost btn-sm" data-app-add="${s.ban}" style="margin-top:4px;">➕ 지원 대학 추가</button>
+        </div>`;
       const extraSection = s.baseBan ? '' : `
         <div style="margin-top:8px; padding-top:8px; border-top:1px dashed var(--border);">
           <div style="font-size:11px;color:var(--muted); margin-bottom:4px;">➕ 여러 차시를 해야 하는 학생: 날짜와 선생님을 골라 추가 차시를 계속 넣을 수 있습니다</div>
@@ -724,6 +750,7 @@
           </label>
         </div>
         `}
+        ${appsEditSection}
         ${extraSection}
         <div style="margin-top:8px; padding-top:8px; border-top:1px dashed var(--border);">
           <button type="button" class="btn-danger btn-sm" data-delete-student="${s.ban}">🗑 이 학생 삭제 (중도포기 등)</button>
@@ -739,7 +766,7 @@
         <div class="apps-panel" id="apps-${s.ban}-${gid}">
           <b>${escapeHtml(s.field_raw)}</b> · ${s.isJesimun ? `제시문 특별진행 (${DATA.dateOrder.filter(d => (s.skipDates||[]).indexOf(d) === -1).map(shortDate).join(', ') || '없음'}) · 담당:${teacherOrUnassigned(s.teacher1)}${(s.skipDates&&s.skipDates.length) ? ` · <span style="color:var(--muted);font-weight:700;">진행안함: ${s.skipDates.map(shortDate).join(', ')}</span>` : ''}` : `${s.team==='화'?'화요일':'수요일'}팀 (${escapeHtml(s.d1)} / ${escapeHtml(s.d2)}) · 1회차:${s.skip1 ? '<span style="color:var(--muted);font-weight:700;">진행안함(조기종료)</span>' : teacherOrUnassigned(s.teacher1)} / 2회차:${s.skip2 ? '<span style="color:var(--muted);font-weight:700;">진행안함(조기종료)</span>' : teacherOrUnassigned(s.teacher2)}`}
           ${(s.customDate || s.customTime) ? `<div style="margin-top:4px;"><span class="custom-date-badge">📌 별도 일정: ${escapeHtml(s.customDate||'날짜미정')} ${escapeHtml(s.customTime||'')}</span></div>` : ''}
-          ${s.apps && s.apps.length ? `<ul>${s.apps.map(a=>`<li>${escapeHtml(a)}</li>`).join('')}</ul>` : '<div style="margin-top:4px;color:var(--muted);">등록된 지원 정보가 없습니다.</div>'}
+          ${s.apps && s.apps.length ? `<ul>${s.apps.map((a,i)=>{ const st = (s.appStatus||[])[i]; return `<li${st ? ' style="color:var(--muted);' + (st==='fail' ? ' text-decoration:line-through;' : '') + '"' : ''}>${escapeHtml(a)}${st==='done' ? ' <span class="tag-jesimun" style="background:#dcfce7;color:#15803d;">✔ 면접 완료</span>' : st==='fail' ? ' <span class="tag-jesimun" style="background:#fee2e2;color:#dc2626;text-decoration:none;">✖ 1단계 불합격</span>' : ''}</li>`; }).join('')}</ul>` : '<div style="margin-top:4px;color:var(--muted);">등록된 지원 정보가 없습니다.</div>'}
           ${assignHtml}
         </div>
       </li>`;
@@ -880,7 +907,52 @@
     resequenceGroupTimes(date, teacher);
     return x;
   }
+  function wireAppEdits(rootEl){
+    const base = ban => { const cl = findClusterOfBan(ban); return cl ? cl.students.find(x => x.ban === ban) : null; };
+    const sync = b => extrasOf(b).forEach(x => { x.apps = (b.apps||[]).slice(); x.appStatus = (b.appStatus||[]).slice(); });
+    const reopen = () => {
+      const open = [...document.querySelectorAll('.apps-panel.open')].map(e => e.id);
+      rerenderCurrentTab();
+      open.forEach(id => { const e = document.getElementById(id); if(e) e.classList.add('open'); });
+    };
+    rootEl.querySelectorAll('[data-app-text]').forEach(inp => {
+      inp.addEventListener('click', e => e.stopPropagation());
+      inp.addEventListener('change', () => {
+        const b = base(inp.getAttribute('data-app-text')); if(!b) return;
+        b.apps[parseInt(inp.dataset.idx,10)] = inp.value.trim();
+        sync(b); markDirty(); reopen();
+      });
+    });
+    rootEl.querySelectorAll('[data-app-status]').forEach(sel => {
+      sel.addEventListener('click', e => e.stopPropagation());
+      sel.addEventListener('change', () => {
+        const b = base(sel.getAttribute('data-app-status')); if(!b) return;
+        b.appStatus = b.appStatus || [];
+        b.appStatus[parseInt(sel.dataset.idx,10)] = sel.value;
+        sync(b); markDirty(); reopen();
+      });
+    });
+    rootEl.querySelectorAll('[data-app-del]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const b = base(btn.getAttribute('data-app-del')); if(!b) return;
+        const i = parseInt(btn.dataset.idx,10);
+        b.apps.splice(i,1); if(b.appStatus) b.appStatus.splice(i,1);
+        sync(b); markDirty(); reopen();
+      });
+    });
+    rootEl.querySelectorAll('[data-app-add]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const b = base(btn.getAttribute('data-app-add')); if(!b) return;
+        b.apps = b.apps || []; b.apps.push('새 지원 대학 (대학 / 전형 / 학과)');
+        b.appStatus = b.appStatus || []; b.appStatus[b.apps.length-1] = '';
+        sync(b); markDirty(); reopen();
+      });
+    });
+  }
   function wireExtraSessions(rootEl){
+    wireAppEdits(rootEl);
     rootEl.querySelectorAll('[data-extra-add]').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -1520,7 +1592,8 @@
     });
   }
   function rerenderCurrentTab(){
-    if(currentTab === '__student'){ renderStudentSearch(); }
+    if(currentTab === '__table'){ renderTableEditor(); }
+    else if(currentTab === '__student'){ renderStudentSearch(); }
     else if(currentTab === '__teacher'){ renderTeacherView(); }
     else { renderDateTab(currentTab); }
   }
@@ -1860,6 +1933,147 @@
   document.getElementById('asCancel').addEventListener('click', () => { document.getElementById('addStudentOverlay').style.display = 'none'; });
   document.getElementById('asSave').addEventListener('click', saveNewStudent);
   document.getElementById('asTeam').addEventListener('change', syncAddStudentMode);
+
+
+  // ---------- 표로 수정 (관리자 전용, 엑셀처럼 한 번에 수정) ----------
+  let tableFilter = '';
+  function renderTableEditor(){
+    const box = document.getElementById('tab-table');
+    if(!isAdmin){ box.innerHTML = ''; return; }
+    const prevScroll = box.querySelector('.te-wrap');
+    const sTop = prevScroll ? prevScroll.scrollTop : 0, sLeft = prevScroll ? prevScroll.scrollLeft : 0;
+    const q = tableFilter.trim();
+    const firstDates = DATA.dateOrder.filter(isFirstDate), secondDates = DATA.dateOrder.filter(d => !isFirstDate(d));
+    const dOpts = (list, cur) => list.map(d => `<option value="${escapeHtml(d)}" ${d===cur?'selected':''}>${escapeHtml(shortDate(d))}</option>`).join('');
+    const tOpts = (cur) => `<option value="" ${!cur?'selected':''}>미배정</option>` + DATA.clusters.map(c => c.teacher).map(t => `<option value="${escapeHtml(t)}" ${t===cur?'selected':''}>${escapeHtml(t)}</option>`).join('');
+    const stOpts = (cur) => `<option value="" ${!cur?'selected':''}>예정</option><option value="done" ${cur==='done'?'selected':''}>면접완료</option><option value="fail" ${cur==='fail'?'selected':''}>1단계불합격</option>`;
+    const rows = [];
+    DATA.clusters.forEach(c => c.students.forEach(s => {
+      if(q && !(s.name.includes(q) || s.ban.includes(q) || (s.teacher1||'').includes(q) || (s.teacher2||'').includes(q))) return;
+      rows.push(s);
+    }));
+    const appCell = (s, i) => {
+      const a = (s.apps||[])[i];
+      if(s.baseBan) return `<td colspan="2" style="color:var(--muted); font-size:11px;">${a ? escapeHtml(a) : ''}</td>`;
+      return `<td><input class="te-in te-app" data-te="app" data-ban="${escapeHtml(s.ban)}" data-i="${i}" value="${escapeHtml(a||'')}"></td>
+        <td><select class="te-in" data-te="appst" data-ban="${escapeHtml(s.ban)}" data-i="${i}" ${a ? '' : 'disabled'}>${stOpts((s.appStatus||[])[i])}</select></td>`;
+    };
+    let appN = 3; DATA.clusters.forEach(c => c.students.forEach(x => { if((x.apps||[]).length + 1 > appN) appN = Math.min(6, (x.apps||[]).length + 1); }));
+    const body = rows.map(s => {
+      const b = escapeHtml(s.ban);
+      const extra = !!s.baseBan;
+      let sess;
+      if(s.isJesimun){
+        sess = `<td colspan="8" style="text-align:left; color:var(--muted); font-size:11px;">📜 제시문 학생 (송두리, ${DATA.dateOrder.filter(d => (s.skipDates||[]).indexOf(d) === -1).map(shortDate).join(', ') || '없음'}) · 날짜별 수정은 날짜 탭 편집 패널에서</td>`;
+      } else {
+        const part = (n, dKey, tKey, tmKey, skKey, dates) => `
+          <td><select class="te-in" data-te="date" data-key="${dKey}" data-ban="${b}" ${extra?'disabled':''}>${dOpts(dates, s[dKey])}</select></td>
+          <td><select class="te-in" data-te="teacher" data-key="${tKey}" data-ban="${b}">${tOpts(s[tKey]||'')}</select></td>
+          <td><input class="te-in te-time" data-te="time" data-key="${tmKey}" data-ban="${b}" value="${escapeHtml(s[tmKey]||'')}"></td>
+          <td style="text-align:center;"><input type="checkbox" data-te="skip" data-key="${skKey}" data-ban="${b}" data-dkey="${dKey}" data-tkey="${tKey}" data-tmkey="${tmKey}" ${s[skKey]?'checked':''} title="진행 안 함(조기종료)"></td>`;
+        sess = part(1,'d1','teacher1','time1','skip1',firstDates) + part(2,'d2','teacher2','time2','skip2',secondDates);
+      }
+      return `<tr class="${extra?'te-extra':''}">
+        <td><input class="te-in te-ban" data-te="ban" data-ban="${b}" value="${escapeHtml(dispBan(s))}" maxlength="5" ${extra?'disabled':''}></td>
+        <td><input class="te-in te-name" data-te="name" data-ban="${b}" value="${escapeHtml(s.name)}" ${extra?'disabled':''}>${extra?' <span class="tag-jesimun" style="background:#dbeafe;color:#1d4ed8;">추가차시</span>':''}</td>
+        ${sess}
+        ${Array.from({length:appN}, (_,i) => appCell(s,i)).join('')}
+        <td><button type="button" class="stu-x" data-te="del" data-ban="${b}">삭제</button></td>
+      </tr>`;
+    }).join('');
+    box.innerHTML = `
+      <div class="datehead"><span class="datelabel">📋 표로 수정</span>
+        <span style="color:var(--muted); font-size:12px;">칸을 바꾸면 날짜 탭·강사별 보기·공지문에 바로 반영됩니다. (바꾼 뒤 "💾 전체 저장")</span></div>
+      <div style="margin:8px 0;"><input id="teFilter" class="modal-input" style="max-width:260px;" placeholder="이름·학번·선생님으로 거르기" value="${escapeHtml(tableFilter)}"></div>
+      <div class="te-wrap" style="overflow:auto; max-height:72vh; border:1px solid var(--border); border-radius:10px; background:#fff;">
+        <table class="te-table">
+          <thead><tr>
+            <th rowspan="2">학번</th><th rowspan="2">이름</th>
+            <th colspan="4">1회차</th><th colspan="4">2회차</th>
+            ${Array.from({length:appN}, (_,i) => `<th colspan="2">지원${i+1}</th>`).join('')}<th rowspan="2"></th></tr>
+          <tr><th>날짜</th><th>선생님</th><th>시간</th><th>제외</th><th>날짜</th><th>선생님</th><th>시간</th><th>제외</th>
+            ${Array.from({length:appN}, () => '<th>대학·전형·학과</th><th>상태</th>').join('')}</tr></thead>
+        <tbody>${body || '<tr><td colspan="30">해당하는 학생이 없습니다.</td></tr>'}</tbody></table>
+      </div>`;
+    const wrap = box.querySelector('.te-wrap'); wrap.scrollTop = sTop; wrap.scrollLeft = sLeft;
+    const f = document.getElementById('teFilter');
+    f.addEventListener('input', () => { tableFilter = f.value; const pos = f.selectionStart; renderTableEditor(); const nf = document.getElementById('teFilter'); nf.focus(); nf.setSelectionRange(pos,pos); });
+    box.querySelectorAll('[data-te]').forEach(el => el.addEventListener('change', onTableEdit));
+  }
+  function onTableEdit(e){
+    const el = e.target, kind = el.getAttribute('data-te'), ban = el.getAttribute('data-ban');
+    const cl = findClusterOfBan(ban);
+    const s = cl ? cl.students.find(x => x.ban === ban) : null;
+    if(!s) return;
+    let msg = '';
+    if(kind === 'name'){
+      s.name = el.value.trim(); extrasOf(s).forEach(x => { x.name = s.name; });
+    } else if(kind === 'ban'){
+      const nb = el.value.trim();
+      if(nb === s.ban) return;
+      if(!/^\d{5}$/.test(nb)){ showToast('학번은 숫자 5자리로 입력해주세요'); el.value = s.ban; return; }
+      if(findClusterOfBan(nb)){ showToast('이미 같은 학번의 학생이 있습니다'); el.value = s.ban; return; }
+      extrasOf(s).forEach(x => { x.baseBan = nb; x.ban = nb + '#' + (x.ban.split('#')[1] || '2'); x.grade = nb[0]; x.classNo = nb.slice(1,3); x.seatNo = nb.slice(3,5); });
+      s.ban = nb; s.grade = nb[0]; s.classNo = nb.slice(1,3); s.seatNo = nb.slice(3,5);
+      const label = `${s.grade}학년 ${parseInt(s.classNo,10)}반`;
+      if(!(DATA.classes || []).includes(label)){
+        DATA.classes = (DATA.classes || []).concat(label).sort((a,b) => {
+          const pa = a.match(/(\d+)학년\s*(\d+)반/), pb = b.match(/(\d+)학년\s*(\d+)반/);
+          return (parseInt(pa[1],10)*100+parseInt(pa[2],10)) - (parseInt(pb[1],10)*100+parseInt(pb[2],10));
+        });
+        const sel = document.getElementById('classSelect');
+        if(sel){ sel.dataset.filled = ''; sel.innerHTML = '<option value="">-- 학급 선택 --</option>'; }
+      }
+    } else if(kind === 'date'){
+      const key = el.getAttribute('data-key'), tKey = key === 'd1' ? 'teacher1' : 'teacher2', tmKey = key === 'd1' ? 'time1' : 'time2', skKey = key === 'd1' ? 'skip1' : 'skip2';
+      const oldDate = s[key], t = s[tKey];
+      const anc = (t && !s[skKey]) ? groupFirstStart(oldDate, t) : null;
+      s[key] = el.value; s[tmKey] = '';
+      if(key === 'd1') updateTeamLabel(s);
+      if(t && !s[skKey]){ resequenceGroupTimes(oldDate, t, anc); resequenceGroupTimes(s[key], t); }
+    } else if(kind === 'teacher'){
+      const key = el.getAttribute('data-key'), dKey = key === 'teacher1' ? 'd1' : 'd2', tmKey = key === 'teacher1' ? 'time1' : 'time2', skKey = key === 'teacher1' ? 'skip1' : 'skip2';
+      const old = s[key], val = el.value;
+      const anc = (old && !s[skKey]) ? groupFirstStart(s[dKey], old) : null;
+      s[key] = val; s[tmKey] = '';
+      if(!s[skKey]){ if(old) resequenceGroupTimes(s[dKey], old, anc); if(val) resequenceGroupTimes(s[dKey], val); }
+      const avail = val && DATA.teacherAvail && DATA.teacherAvail[val];
+      if(avail && !avail[s[dKey]]) msg = `⚠️ ${val} 선생님은 ${shortDate(s[dKey])}에 불가로 표시돼 있습니다.`;
+    } else if(kind === 'time'){
+      s[el.getAttribute('data-key')] = el.value.trim();
+    } else if(kind === 'skip'){
+      const skKey = el.getAttribute('data-key'), dKey = el.getAttribute('data-dkey'), tKey = el.getAttribute('data-tkey'), tmKey = el.getAttribute('data-tmkey');
+      const t = s[tKey];
+      const anc = t ? groupFirstStart(s[dKey], t) : null;
+      s[skKey] = el.checked;
+      if(!el.checked) s[tmKey] = '';
+      if(t) resequenceGroupTimes(s[dKey], t, anc);
+    } else if(kind === 'app' || kind === 'appst'){
+      const i = parseInt(el.getAttribute('data-i'),10);
+      s.apps = s.apps || []; s.appStatus = s.appStatus || [];
+      if(kind === 'app'){
+        const v = el.value.trim();
+        if(v) { s.apps[i] = v; }
+        else if(i < s.apps.length){ s.apps.splice(i,1); s.appStatus.splice(i,1); }
+      } else { s.appStatus[i] = el.value; }
+      extrasOf(s).forEach(x => { x.apps = s.apps.slice(); x.appStatus = s.appStatus.slice(); });
+    } else if(kind === 'del'){
+      openModal({
+        title: `"${s.name}" 학생을 삭제할까요?`,
+        placeholder: '삭제하려면 "삭제"라고 입력',
+        onConfirm: (val) => {
+          if(val !== '삭제'){ showToast('입력이 일치하지 않아 삭제하지 않았습니다'); return; }
+          const i = cl.students.indexOf(s); if(i > -1) cl.students.splice(i,1);
+          DATA.clusters.forEach(c => { c.students = c.students.filter(x => x.baseBan !== ban); });
+          markDirty(); renderTableEditor(); showToast(`"${s.name}" 학생을 삭제했습니다`);
+        }
+      });
+      return;
+    }
+    markDirty();
+    renderTableEditor();
+    if(msg) showToast(msg);
+  }
 
   // ---------- 학급별 공지문 안내문구 수정 ----------
   function populateNoticeNotesTargetSelect(){
@@ -2390,6 +2604,7 @@
       editNoticeNotesBtn.style.display = 'none';
       excelBtn.style.display = 'none';
     }
+    buildTabsNav();
     selectTab(currentTab);
   }
   document.getElementById('loginBtn').addEventListener('click', () => {

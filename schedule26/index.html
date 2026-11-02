@@ -240,7 +240,7 @@
 <header class="top">
   <div class="inner">
     <h1>🎓 2027 대입면접대비특강 - 날짜별 배정 &amp; 일정 확인</h1>
-    <p class="sub">외부강사 · 본교교사 공용 확인 페이지 (열람 전용) <span style="font-size:10px;color:#9ca3af;">· 버전 11/2 13:00</span></p>
+    <p class="sub">외부강사 · 본교교사 공용 확인 페이지 (열람 전용) <span style="font-size:10px;color:#9ca3af;">· 버전 11/2 13:50</span></p>
     <div class="adminbar">
       <button id="guideBtn" class="btn-guide" style="display:inline-flex; align-items:center; gap:5px;">📖 사용법</button>
       <a href="https://yejiny7179-alt.github.io/jinhak/interview-workbook/" target="_blank" rel="noopener" class="btn-feedback" style="text-decoration:none; display:inline-flex; align-items:center; gap:5px;">🎤 온라인 면접 워크북</a>
@@ -2718,13 +2718,20 @@
   document.getElementById('saveBtn').addEventListener('click', async () => {
     try{
       if(!fbReady || !fbAuth.currentUser){ showToast('⚠️ 로그인 상태가 아닙니다. 다시 로그인해주세요.'); return; }
+      // Firestore는 undefined 값(빈 배열 칸 등)을 거부하므로 저장 전에 정리
+      DATA.clusters.forEach(c => c.students.forEach(x => {
+        x.apps = (x.apps || []).map(a => a == null ? '' : a);
+        if(x.appStatus) x.appStatus = x.apps.map((_, i) => x.appStatus[i] || '');
+        ['time1','time2','teacher1','teacher2','customDate','customTime'].forEach(k => { if(x[k] === undefined) x[k] = ''; });
+      }));
+      DATA = JSON.parse(JSON.stringify(DATA));
       syncDataScript();
       await SCHEDULE_DOC().set(DATA);
       document.getElementById('savebar').classList.add('hidden');
       showToast('저장되었습니다. 모든 사람에게 반영됩니다.');
     }catch(err){
       console.error(err);
-      showToast('저장 실패: ' + (err && err.message ? err.message : '권한이 없거나 오류가 발생했습니다'));
+      showToast('저장 실패' + (err && err.code ? ` [${err.code}]` : '') + ': ' + (err && err.message ? err.message : '권한이 없거나 오류가 발생했습니다'));
     }
   });
   document.getElementById('discardBtn').addEventListener('click', () => { location.reload(); });

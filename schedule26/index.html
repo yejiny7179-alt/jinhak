@@ -225,7 +225,7 @@
 <header class="top">
   <div class="inner">
     <h1>🎓 2027 대입면접대비특강 - 날짜별 배정 &amp; 일정 확인</h1>
-    <p class="sub">외부강사 · 본교교사 공용 확인 페이지 (열람 전용) <span style="font-size:10px;color:#9ca3af;">· 버전 10/30 12:30</span></p>
+    <p class="sub">외부강사 · 본교교사 공용 확인 페이지 (열람 전용) <span style="font-size:10px;color:#9ca3af;">· 버전 11/2 10:50</span></p>
     <div class="adminbar">
       <button id="guideBtn" class="btn-guide" style="display:inline-flex; align-items:center; gap:5px;">📖 사용법</button>
       <a href="https://yejiny7179-alt.github.io/jinhak/interview-workbook/" target="_blank" rel="noopener" class="btn-feedback" style="text-decoration:none; display:inline-flex; align-items:center; gap:5px;">🎤 온라인 면접 워크북</a>
@@ -420,6 +420,12 @@
   let isAdmin = false;
   let currentTab = DATA.dateOrder[0];
 
+  function dispBan(s){ return String((s && s.ban) || '').split('#')[0]; }
+  function extrasOf(base){
+    const out = [];
+    DATA.clusters.forEach(c => c.students.forEach(x => { if(x.baseBan === base.ban) out.push(x); }));
+    return out;
+  }
   function escapeHtml(s){
     return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   }
@@ -652,7 +658,27 @@
           <select data-stu-teacher="${s.ban}" data-teacher-key="teacher2">${teacherOptionsForDate(s.d2, s.teacher2||'')}</select>
         </div>`;
 
-      assignHtml = `
+      const extraSection = s.baseBan ? '' : `
+        <div style="margin-top:8px; padding-top:8px; border-top:1px dashed var(--border);">
+          <div style="font-size:11px;color:var(--muted); margin-bottom:4px;">➕ 여러 차시를 해야 하는 학생: 날짜와 선생님을 골라 추가 차시를 계속 넣을 수 있습니다</div>
+          ${extrasOf(s).map(x => { const first = isFirstDate(x.d1) && !x.skip1; const dt = first ? x.d1 : x.d2; const tc = first ? x.teacher1 : x.teacher2; return `<div style="font-size:12px; margin:2px 0;">• ${escapeHtml(shortDate(dt))} · ${escapeHtml(tc || '미배정')} 선생님 <button type="button" class="stu-x" data-extra-del="${escapeHtml(x.ban)}">삭제</button></div>`; }).join('')}
+          <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center; margin-top:4px;">
+            <select data-extra-date="${s.ban}" style="padding:5px 7px; border-radius:6px; border:1px solid var(--border); font-size:12px;">${DATA.dateOrder.map(d => `<option value="${escapeHtml(d)}">${escapeHtml(shortDate(d))}(${dayName(d)})</option>`).join('')}</select>
+            <select data-extra-teacher="${s.ban}" style="padding:5px 7px; border-radius:6px; border:1px solid var(--border); font-size:12px;">${(DATA.clusters.map(c=>c.teacher)).map(t => `<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join('')}</select>
+            <button type="button" class="btn-ghost btn-sm" data-extra-add="${s.ban}">➕ 차시 추가</button>
+          </div>
+        </div>`;
+      if(s.baseBan){
+        const first = !s.skip1;
+        const key = first ? 'teacher1' : 'teacher2', dt = first ? s.d1 : s.d2;
+        assignHtml = `
+        <div style="margin-top:8px; padding-top:8px; border-top:1px dashed var(--border); display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
+          <span style="font-size:12px;">➕ 추가 차시 · ${escapeHtml(shortDate(dt))}</span>
+          <span class="lbl" style="font-size:11px;color:var(--muted);">선생님</span>
+          <select data-stu-teacher="${s.ban}" data-teacher-key="${key}">${teacherOptionsForDate(dt, s[key]||'')}</select>
+          <button type="button" class="btn-danger btn-sm" data-extra-del="${escapeHtml(s.ban)}">🗑 이 추가 차시 삭제</button>
+        </div>`;
+      } else assignHtml = `
         <div style="margin-top:8px; padding-top:8px; border-top:1px dashed var(--border); display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
           <span class="lbl" style="font-size:11px;color:var(--muted);">이름</span>
           <input type="text" data-stu-name="${s.ban}" value="${escapeHtml(s.name)}" style="max-width:80px; padding:5px 7px; border-radius:6px; border:1px solid var(--border); font-size:12px;" title="이름 수정">
@@ -698,6 +724,7 @@
           </label>
         </div>
         `}
+        ${extraSection}
         <div style="margin-top:8px; padding-top:8px; border-top:1px dashed var(--border);">
           <button type="button" class="btn-danger btn-sm" data-delete-student="${s.ban}">🗑 이 학생 삭제 (중도포기 등)</button>
         </div>`;
@@ -706,7 +733,7 @@
     return `
       <li class="stu" ${isAdmin ? `draggable="true" data-drag-item="${s.ban}"` : ''}>
         <div class="stu-row">
-          <span data-stu-toggle="${s.ban}-${gid}" style="cursor:pointer;">${dragHandle}<span class="nm">${escapeHtml(s.name)}</span> <span class="fld">(${escapeHtml(s.ban)})</span>${dateChangedDot(s)}${customScheduleHtml(s)}</span>
+          <span data-stu-toggle="${s.ban}-${gid}" style="cursor:pointer;">${dragHandle}<span class="nm">${escapeHtml(s.name)}</span> <span class="fld">(${escapeHtml(dispBan(s))})</span>${s.baseBan ? '<span class="tag-jesimun" style="background:#dbeafe;color:#1d4ed8;">추가차시</span>' : ''}${dateChangedDot(s)}${customScheduleHtml(s)}</span>
           <span style="display:flex; align-items:center; gap:6px;">${timeHtml}${s.isJesimun ? '<span class="tag-jesimun">제시문</span>' : ''}${(isAdmin && date) ? `<button type="button" class="stu-x" data-exclude-date="${s.ban}" title="이 날짜에서만 제외">✕ 제외</button>` : ''}</span>
         </div>
         <div class="apps-panel" id="apps-${s.ban}-${gid}">
@@ -738,6 +765,7 @@
   function groupPickerOptions(teacherName, date){
     const opts = [];
     DATA.clusters.forEach(c => c.students.forEach(s => {
+      if(s.baseBan) return;
       const role = studentRoleForDate(s, date);
       const curTeacher = role ? (role === 'first' ? s.teacher1 : s.teacher2) : null;
       if(role && curTeacher === teacherName) return;
@@ -746,7 +774,7 @@
       if(role) note = curTeacher ? `${curTeacher} 선생님 칸` : '미배정';
       else if(s.isJesimun || (s.d1 === date && s.skip1) || (s.d2 === date && s.skip2)) note = '이 날짜 제외됨';
       else note = '이 날짜 일정 없음';
-      opts.push({ban:s.ban, label:`${s.name} (${s.ban}) · ${note}`});
+      opts.push({ban:s.ban, label:`${s.name} (${dispBan(s)}) · ${note}`});
     }));
     opts.sort((a,b) => a.ban < b.ban ? -1 : 1);
     return `<option value="">-- 추가할 학생 선택 --</option>` + opts.map(o => `<option value="${escapeHtml(o.ban)}">${escapeHtml(o.label)}</option>`).join('');
@@ -830,7 +858,61 @@
     rerenderCurrentTab();
     showToast(`${teacherName} 선생님 학생 ${moved}명을 ${shortDate(fromDate)} → ${shortDate(toDate)}(${dayName(toDate)})로 옮겼습니다. "전체 저장"을 눌러주세요.`);
   }
+  function addExtraSession(base, date, teacher){
+    const cl = findClusterOfBan(base.ban);
+    if(!cl) return null;
+    let n = 2; const used = new Set(extrasOf(base).map(x => x.ban));
+    while(used.has(base.ban + '#' + n)) n++;
+    let maxOrder = -1;
+    DATA.clusters.forEach(c => c.students.forEach(x => { if(typeof x.order === 'number' && x.order > maxOrder) maxOrder = x.order; }));
+    const first = isFirstDate(date);
+    const other = DATA.dateOrder.find(d => isFirstDate(d) !== first) || date;
+    const x = JSON.parse(JSON.stringify(base));
+    x.ban = base.ban + '#' + n; x.baseBan = base.ban;
+    x.isJesimun = false; delete x.skipDates;
+    x.customDate = ''; x.customTime = '';
+    x.time1 = ''; x.time2 = '';
+    x.order = maxOrder + 1;
+    if(first){ x.d1 = date; x.d2 = other; x.skip1 = false; x.skip2 = true; x.teacher1 = teacher; x.teacher2 = ''; }
+    else { x.d2 = date; x.d1 = other; x.skip2 = false; x.skip1 = true; x.teacher2 = teacher; x.teacher1 = ''; }
+    x.team = teamOfDate(date); x.origTeam = x.team;
+    cl.students.push(x);
+    resequenceGroupTimes(date, teacher);
+    return x;
+  }
+  function wireExtraSessions(rootEl){
+    rootEl.querySelectorAll('[data-extra-add]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const ban = btn.getAttribute('data-extra-add');
+        const cl = findClusterOfBan(ban);
+        const base = cl ? cl.students.find(x => x.ban === ban) : null;
+        if(!base) return;
+        const date = rootEl.querySelector(`[data-extra-date="${ban}"]`).value;
+        const teacher = rootEl.querySelector(`[data-extra-teacher="${ban}"]`).value;
+        addExtraSession(base, date, teacher);
+        markDirty(); rerenderCurrentTab();
+        const avail = DATA.teacherAvail && DATA.teacherAvail[teacher];
+        showToast(`"${base.name}" 학생의 추가 차시(${shortDate(date)}, ${teacher} 선생님)를 넣었습니다.${(avail && !avail[date]) ? ` ⚠️ ${teacher} 선생님은 이 날짜에 불가로 표시돼 있습니다.` : ''}`);
+      });
+    });
+    rootEl.querySelectorAll('[data-extra-del]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const ban = btn.getAttribute('data-extra-del');
+        const cl = findClusterOfBan(ban);
+        const x = cl ? cl.students.find(y => y.ban === ban) : null;
+        if(!x) return;
+        const first = !x.skip1, dt = first ? x.d1 : x.d2, tc = first ? x.teacher1 : x.teacher2;
+        cl.students.splice(cl.students.indexOf(x), 1);
+        if(tc) resequenceGroupTimes(dt, tc);
+        markDirty(); rerenderCurrentTab();
+        showToast('추가 차시를 삭제했습니다');
+      });
+    });
+  }
   function wireGroupAddRemove(rootEl, teacherName, date){
+    wireExtraSessions(rootEl);
     rootEl.querySelectorAll('[data-exclude-date]').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -1061,6 +1143,7 @@
             if(val !== '삭제'){ showToast('입력이 일치하지 않아 삭제하지 않았습니다'); return; }
             const idx = cl.students.findIndex(s=>s.ban===ban);
             if(idx > -1) cl.students.splice(idx,1);
+            DATA.clusters.forEach(c => { c.students = c.students.filter(x => x.baseBan !== ban); });
             markDirty(); rerenderCurrentTab();
             showToast(`"${stu.name}" 학생을 삭제했습니다`);
           }
@@ -1570,7 +1653,7 @@
         const ban = e.target.getAttribute('data-stu-name');
         const cl = findClusterOfBan(ban);
         const stu = cl ? cl.students.find(s=>s.ban===ban) : null;
-        if(stu) stu.name = e.target.value.trim();
+        if(stu){ stu.name = e.target.value.trim(); extrasOf(stu).forEach(x => { x.name = stu.name; }); }
         markDirty(); renderDateTab(date);
       });
     });
@@ -1583,6 +1666,7 @@
         if(!stu || nb === old) return;
         if(!/^\d{5}$/.test(nb)){ showToast('학번은 숫자 5자리로 입력해주세요'); e.target.value = old; return; }
         if(findClusterOfBan(nb)){ showToast('이미 같은 학번의 학생이 있습니다'); e.target.value = old; return; }
+        extrasOf(stu).forEach(x => { x.baseBan = nb; x.ban = nb + '#' + (x.ban.split('#')[1] || '2'); x.grade = nb[0]; x.classNo = nb.slice(1,3); x.seatNo = nb.slice(3,5); });
         stu.ban = nb; stu.grade = nb[0]; stu.classNo = nb.slice(1,3); stu.seatNo = nb.slice(3,5);
         const label = `${stu.grade}학년 ${parseInt(stu.classNo,10)}반`;
         if(!(DATA.classes || []).includes(label)){
@@ -1873,10 +1957,11 @@
           <span>⏰ <b>${s.time1?escapeHtml(s.time1):'미정'}</b></span>
           <span>🏫 <b>${escapeHtml(roomOf(s.teacher1, ds[0] || ''))}</b></span>`;
     }
-    const part = (label, d, tKey, timeKey, skip) => skip
+    const part = (m, label, d, tKey, timeKey, skip) => skip
       ? `<span>${label}: <b style="color:var(--muted);">${escapeHtml(shortDate(d))} 진행 안 함</b></span>`
-      : `<span>${label}: <b>${escapeHtml(shortDate(d))}</b> · 👩‍🏫 <b>${teacherOrUnassigned(s[tKey])}</b> · ⏰ <b>${s[timeKey]?escapeHtml(s[timeKey]):'미정'}</b> · 🏫 <b>${escapeHtml(roomOf(s[tKey], d))}</b></span>`;
-    return part('1회차', s.d1, 'teacher1', 'time1', !!s.skip1) + part('2회차', s.d2, 'teacher2', 'time2', !!s.skip2);
+      : `<span>${label}: <b>${escapeHtml(shortDate(d))}</b> · 👩‍🏫 <b>${teacherOrUnassigned(m[tKey])}</b> · ⏰ <b>${m[timeKey]?escapeHtml(m[timeKey]):'미정'}</b> · 🏫 <b>${escapeHtml(roomOf(m[tKey], d))}</b></span>`;
+    const ex = extrasOf(s).map(x => { const f = !x.skip1; return part(x, '추가차시', f ? x.d1 : x.d2, f ? 'teacher1' : 'teacher2', f ? 'time1' : 'time2', false); }).join('');
+    return part(s, '1회차', s.d1, 'teacher1', 'time1', !!s.skip1) + part(s, '2회차', s.d2, 'teacher2', 'time2', !!s.skip2) + ex;
   }
   function renderStudentSearch(){
     const q = document.getElementById('studentSearch').value.trim();
@@ -1885,6 +1970,7 @@
     if(!q && !cls){ box.innerHTML = '<div class="empty">이름/학번을 입력하거나 학급을 선택하세요.</div>'; return; }
     const hits = [];
     DATA.clusters.forEach(c => c.students.forEach(s => {
+      if(s.baseBan) return;
       const matchQ = !q || s.name.includes(q) || s.ban.includes(q);
       const matchCls = !cls || classOf(s) === cls;
       if(matchQ && matchCls) hits.push({c,s});
@@ -1894,7 +1980,7 @@
       <div class="card ${s.team==='화'?'tue':'wed'}" style="margin-bottom:12px;">
         <div class="card-head">
           <div>
-            <div class="jo-title">${escapeHtml(s.name)} (${escapeHtml(s.ban)})${dateChangedDot(s)}${customScheduleHtml(s)}</div>
+            <div class="jo-title">${escapeHtml(s.name)} (${escapeHtml(dispBan(s))})${dateChangedDot(s)}${customScheduleHtml(s)}</div>
             <div class="jo-field">${escapeHtml(s.field_raw)} ${s.isJesimun ? '<span class="tag-jesimun">제시문</span>' : ''}</div>
           </div>
           <span class="badge-team badge-${s.team==='화'?'tue':'wed'}">${s.team==='화'?'화요일':'수요일'}</span>
@@ -1916,6 +2002,7 @@
     wireTimeSelectInputs(box);
     wireDeleteStudentButtons(box);
     wireJesimunToggle(box);
+    wireExtraSessions(box);
   }
 
   // ---------- 강사별 보기 ----------
@@ -2176,7 +2263,7 @@
       const classCode = `${grade}-${classNo}`;
       const notesHtml = getClassNoticeNotes(classCode).map(t => `<div class="note">${escapeHtml(t)}</div>`).join('');
       const students = [];
-      DATA.clusters.forEach(c => c.students.forEach(s => { if(classOf(s) === classLabel) students.push(s); }));
+      DATA.clusters.forEach(c => c.students.forEach(s => { if(!s.baseBan && classOf(s) === classLabel) students.push(s); }));
       if(students.length === 0) return;
       students.sort((a,b) => (parseInt(a.seatNo,10)||0) - (parseInt(b.seatNo,10)||0));
       const sessionText = (s, date, teacherKey, skip) => {
@@ -2189,12 +2276,18 @@
       };
       // 일반 학생은 자신의 1차/2차 날짜에만 일정이 있고, 송두리(제시문) 학생은 4일 모두 일정이 있음
       const rows = students.map((s, idx) => {
+        const group = [s].concat(extrasOf(s));
         const cells = DATA.dateOrder.map(date => {
-          const role = studentRoleForDate(s, date);
-          if(!role) return { display: '－', compare: `__na_${idx}_${date}` };
-          const teacherKey = role === 'second' ? 'teacher2' : 'teacher1';
-          const skip = role === 'second' ? !!s.skip2 : !!s.skip1;
-          const text = sessionText(s, date, teacherKey, skip);
+          const texts = [];
+          group.forEach(m => {
+            const role = studentRoleForDate(m, date);
+            if(!role) return;
+            const teacherKey = role === 'second' ? 'teacher2' : 'teacher1';
+            const skip = role === 'second' ? !!m.skip2 : !!m.skip1;
+            texts.push(sessionText(m, date, teacherKey, skip));
+          });
+          if(!texts.length) return { display: '－', compare: `__na_${idx}_${date}` };
+          const text = texts.join(' / ');
           return { display: text, compare: text };
         });
         return { ban: s.ban, name: s.name, cells };
@@ -2230,7 +2323,7 @@
           rows.push({
             seq: seq++,
             timeLabel: `${idx+1}타임(${it.time || '미정'})`,
-            ban: it.s.ban, name: it.s.name,
+            ban: dispBan(it.s), name: it.s.name,
             room: g.room || '미정',
             teacher: g.teacherName || '미배정',
             groupKey: g.teacherName || '__unassigned__'
@@ -2341,7 +2434,7 @@
           const apps = s.apps || [];
           rows.push({
             '연번': seq++,
-            '반': s.ban,
+            '반': dispBan(s),
             '학번': s.name,
             '면접날짜1': s.d1,
             '면접날짜2': s.d2,
